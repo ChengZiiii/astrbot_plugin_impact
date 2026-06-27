@@ -13,5 +13,6 @@
 
 建议：
 
-- 固定 GIF 放入对应目录后，在插件配置里把 `dajiao_media_mode` / `suo_media_mode` 设为 `fixed_gif`
+- 当前默认配置已启用媒体模式：`dajiao_media_mode` / `suo_media_mode` 默认是 `fixed_gif`，`pk_media_mode` / `yinpa_media_mode` 默认是 `avatar_gif`
+- 固定 GIF 放入对应目录后即可直接生效；如果想关闭，可把对应媒体模式改为 `none`
 - 头像 GIF 无需依赖其他插件
