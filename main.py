@@ -79,18 +79,26 @@ class ImpactPlugin(Star):
 
         event.stop_event()
         match reply:
-            case PlainReply(text=text, media_request=media_request, preface_text=preface_text):
+            case PlainReply(text=text, media_request=media_request, preface_text=preface_text, mention_sender=mention_sender):
                 if preface_text:
                     await event.send(event.plain_result(preface_text))
                 media_reply = await self._media_manager.build_media_reply(media_request)
                 if media_reply is None or self._impact_config.media_send_mode == "text_only":
-                    yield event.plain_result(text)
+                    if mention_sender:
+                        yield event.chain_result([Comp.At(qq=str(event.get_sender_id())), Comp.Plain(f"\n{text}")])
+                    else:
+                        yield event.plain_result(text)
                 elif self._impact_config.media_send_mode == "media_only":
+                    if mention_sender:
+                        media_reply = ImageReply(media_reply.image_bytes, media_reply.suffix, media_reply.text, True)
                     yield self._media_manager.build_image_result(event, media_reply)
                 else:
-                    yield self._media_manager.build_image_result(event, self._media_manager.merge_text_with_media(media_reply, text))
-            case ImageReply(image_bytes=image_bytes, suffix=suffix, text=text):
-                yield self._media_manager.build_image_result(event, ImageReply(image_bytes, suffix, text))
+                    merged_reply = self._media_manager.merge_text_with_media(media_reply, text)
+                    if mention_sender:
+                        merged_reply = ImageReply(merged_reply.image_bytes, merged_reply.suffix, merged_reply.text, True)
+                    yield self._media_manager.build_image_result(event, merged_reply)
+            case ImageReply(image_bytes=image_bytes, suffix=suffix, text=text, mention_sender=mention_sender):
+                yield self._media_manager.build_image_result(event, ImageReply(image_bytes, suffix, text, mention_sender))
             case unreachable:
                 assert_never(unreachable)
 

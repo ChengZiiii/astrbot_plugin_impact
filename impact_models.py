@@ -17,6 +17,7 @@ class PlainReply:
     text: str
     media_request: ActionMediaRequest | None = None
     preface_text: str | None = None
+    mention_sender: bool = False
 
 
 @dataclass(frozen=True, slots=True)
@@ -24,3 +25,4 @@ class ImageReply:
     image_bytes: bytes
     suffix: str
     text: str | None = None
+    mention_sender: bool = False

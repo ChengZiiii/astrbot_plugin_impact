@@ -26,10 +26,14 @@ class ImpactMediaManager:
     def build_image_result(self, event: AstrMessageEvent, reply: ImageReply):
         image_path = self._tmp_dir / f"impact_{uuid.uuid4().hex[:8]}{reply.suffix}"
         image_path.write_bytes(reply.image_bytes)
+        message_chain: list[object] = []
+        if reply.mention_sender:
+            message_chain.append(Comp.At(qq=str(event.get_sender_id())))
         if reply.text:
-            result = event.chain_result([Comp.Image(file=str(image_path)), Comp.Plain(f"\n{reply.text}")])
+            message_chain.extend([Comp.Image(file=str(image_path)), Comp.Plain(f"\n{reply.text}")])
         else:
-            result = event.chain_result([Comp.Image(file=str(image_path))])
+            message_chain.append(Comp.Image(file=str(image_path)))
+        result = event.chain_result(message_chain)
         asyncio.create_task(self.cleanup_temp_file(image_path))
         return result
 
@@ -43,7 +47,7 @@ class ImpactMediaManager:
         return None
 
     def merge_text_with_media(self, media_reply: ImageReply, text: str) -> ImageReply:
-        return ImageReply(media_reply.image_bytes, media_reply.suffix, text)
+        return ImageReply(media_reply.image_bytes, media_reply.suffix, text, media_reply.mention_sender)
 
     def _load_fixed_media(self, action: str, negative: bool) -> ImageReply | None:
         folder_name = f"{action}_shrink" if negative else f"{action}_grow"

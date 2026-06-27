@@ -35,38 +35,40 @@ class ImpactService:
             return PlainReply(self._config.not_enabled_reply)
         if not self._store.has_user(sender_id):
             self._store.ensure_user(sender_id, self._config.user_initial_length)
-            return PlainReply(f"你还没有创建{self._jj_name()}喵, 咱帮你创建了喵, 目前长度是{self._config.user_initial_length}cm喵")
+            return PlainReply(f"你还没有创建{self._jj_name()}喵, 咱帮你创建了喵, 目前长度是{self._config.user_initial_length}cm喵", mention_sender=True)
         wait_text = self._cooldown_text(self._dj_cd_data, str(sender_id), self._config.dj_cd_time, "你已经打不动了喵")
         if wait_text is not None:
-            return PlainReply(wait_text)
+            return PlainReply(wait_text, mention_sender=True)
         self._dj_cd_data[str(sender_id)] = time.time()
-        delta_cm = self._random_delta()
+        delta_cm, is_critical = self._random_delta()
         current_length = self._store.change_length(sender_id, delta_cm)
         return PlainReply(
-            self._format_single_change("打胶结束喵", f"你的{self._jj_name()}", delta_cm, current_length),
+            self._format_single_change("打胶结束喵", f"你的{self._jj_name()}", delta_cm, current_length, is_critical),
             media_request=self._build_media_request("dajiao", self._config.dajiao_media_mode, delta_cm < 0, sender_id, None),
+            mention_sender=True,
         )
 
     def handle_suo(self, group_id: int, sender_id: int, at_id: str | None) -> PlainReply:
         if not self._store.is_group_enabled(group_id, self._config.default_group_enabled):
             return PlainReply(self._config.not_enabled_reply)
         if at_id is not None and not self._config.suo_allow_target_other:
-            return PlainReply("当前配置不允许给别人嗦喵")
+            return PlainReply("当前配置不允许给别人嗦喵", mention_sender=True)
         target_id = sender_id if at_id is None else int(at_id)
         if not self._store.has_user(target_id):
             self._store.ensure_user(target_id, self._config.user_initial_length)
             prefix = "你" if target_id == sender_id else "TA"
-            return PlainReply(f"{prefix}还没有创建{self._jj_name()}喵, 咱帮{prefix}创建了喵, 目前长度是{self._config.user_initial_length}cm喵")
+            return PlainReply(f"{prefix}还没有创建{self._jj_name()}喵, 咱帮{prefix}创建了喵, 目前长度是{self._config.user_initial_length}cm喵", mention_sender=True)
         wait_text = self._cooldown_text(self._suo_cd_data, str(sender_id), self._config.suo_cd_time, "你已经嗦不动了喵")
         if wait_text is not None:
-            return PlainReply(wait_text)
+            return PlainReply(wait_text, mention_sender=True)
         self._suo_cd_data[str(sender_id)] = time.time()
-        delta_cm = self._random_delta()
+        delta_cm, is_critical = self._random_delta()
         current_length = self._store.change_length(target_id, delta_cm)
         prefix = "你的" if target_id == sender_id else "对方的"
         return PlainReply(
-            self._format_single_change("嗦完之后喵", f"{prefix}{self._jj_name()}", delta_cm, current_length),
+            self._format_single_change("嗦完之后喵", f"{prefix}{self._jj_name()}", delta_cm, current_length, is_critical),
             media_request=self._build_media_request("suo", self._config.suo_media_mode, delta_cm < 0, sender_id, target_id),
+            mention_sender=True,
         )
 
     def handle_query(self, group_id: int, sender_id: int, at_id: str | None) -> PlainReply:
@@ -76,9 +78,9 @@ class ImpactService:
         if not self._store.has_user(target_id):
             self._store.ensure_user(target_id, self._config.user_initial_length)
             prefix = "你" if target_id == sender_id else "TA"
-            return PlainReply(f"{prefix}还没有创建{self._jj_name()}喵, 咱帮{prefix}创建了喵, 目前长度是{self._config.user_initial_length}cm喵")
+            return PlainReply(f"{prefix}还没有创建{self._jj_name()}喵, 咱帮{prefix}创建了喵, 目前长度是{self._config.user_initial_length}cm喵", mention_sender=True)
         prefix = "你的" if target_id == sender_id else "TA的"
-        return PlainReply(f"{prefix}{self._jj_name()}目前长度为{self._store.get_length(target_id)}cm喵")
+        return PlainReply(f"{prefix}{self._jj_name()}目前长度为{self._store.get_length(target_id)}cm喵", mention_sender=True)
 
     def handle_pk(self, group_id: int, sender_id: int, at_id: str | None) -> PlainReply:
         if not self._store.is_group_enabled(group_id, self._config.default_group_enabled):
@@ -98,7 +100,7 @@ class ImpactService:
         if wait_text is not None:
             return PlainReply(wait_text)
         self._pk_cd_data[str(sender_id)] = time.time()
-        delta_cm = self._random_delta()
+        delta_cm, is_critical = self._random_delta()
         abs_delta = abs(delta_cm)
         winner_gain = round(abs_delta * self._config.pk_winner_gain_ratio, 3)
         winner_delta = winner_gain if delta_cm >= 0 else -winner_gain
@@ -107,13 +109,13 @@ class ImpactService:
             self._store.change_length(sender_id, winner_delta)
             self._store.change_length(target_id, loser_delta)
             return PlainReply(
-                self._format_pk_result(True, delta_cm, winner_delta, loser_delta),
+                self._format_pk_result(True, delta_cm, winner_delta, loser_delta, is_critical),
                 media_request=self._build_media_request("pk", self._config.pk_media_mode, delta_cm < 0, sender_id, target_id),
             )
         self._store.change_length(sender_id, loser_delta)
         self._store.change_length(target_id, winner_delta)
         return PlainReply(
-            self._format_pk_result(False, delta_cm, loser_delta, winner_delta),
+            self._format_pk_result(False, delta_cm, loser_delta, winner_delta, is_critical),
             media_request=self._build_media_request("pk", self._config.pk_media_mode, delta_cm < 0, sender_id, target_id),
         )
 
@@ -130,11 +132,11 @@ class ImpactService:
         target_id = sender_id if at_id is None else int(at_id)
         object_name = "您" if target_id == sender_id else "该用户"
         if "历史" not in normalized and "全部" not in normalized:
-            return PlainReply(f"{object_name}当日总被注射量为{self._store.get_today_injection(target_id)}ml")
+            return PlainReply(f"{object_name}当日总被注射量为{self._store.get_today_injection(target_id)}ml", mention_sender=True)
         history = self._store.get_injection_history(target_id)
         total_volume = round(sum(item.volume_ml for item in history), 3)
         if len(history) < 2:
-            return PlainReply(f"{object_name}历史总被注射量为{total_volume}ml")
+            return PlainReply(f"{object_name}历史总被注射量为{total_volume}ml", mention_sender=True)
         return ({item.date_text: item.volume_ml for item in history}, f"{object_name}历史总被注射量为{total_volume}ml")
 
     def can_yinpa(self, group_id: int, sender_id: int) -> PlainReply | None:
@@ -173,13 +175,15 @@ class ImpactService:
             return self.is_admin(event)
         return self.is_admin(event)
 
-    def _random_delta(self) -> float:
+    def _random_delta(self) -> tuple[float, bool]:
         base_value = random.random()
         if base_value > self._config.lucky_growth_probability:
             delta_cm = random.uniform(self._config.random_growth_min, self._config.random_growth_max)
+            is_critical = False
         else:
             delta_cm = random.uniform(self._config.lucky_growth_min, self._config.lucky_growth_max)
-        return round(delta_cm, 3)
+            is_critical = True
+        return round(delta_cm, 3), is_critical
 
     def _jj_name(self) -> str:
         return random.choice(self._config.jj_names)
@@ -208,10 +212,12 @@ class ImpactService:
         subject_text: str,
         delta_cm: float,
         current_length: float,
+        is_critical: bool,
     ) -> str:
+        critical_prefix = "暴击喵！" if is_critical else ""
         if delta_cm >= 0:
-            return f"{prefix_text}, {subject_text}很满意喵, 长了{round(delta_cm, 3)}cm喵, 目前长度为{current_length}cm喵"
-        return f"{prefix_text}, {subject_text}委屈坏了喵, 缩短了{round(abs(delta_cm), 3)}cm喵, 目前长度只剩{current_length}cm喵"
+            return f"{critical_prefix}{prefix_text}, {subject_text}很满意喵, 长了{round(delta_cm, 3)}cm喵, 目前长度为{current_length}cm喵"
+        return f"{critical_prefix}{prefix_text}, {subject_text}委屈坏了喵, 缩短了{round(abs(delta_cm), 3)}cm喵, 目前长度只剩{current_length}cm喵"
 
     def _format_pk_result(
         self,
@@ -219,25 +225,27 @@ class ImpactService:
         base_delta_cm: float,
         sender_delta_cm: float,
         target_delta_cm: float,
+        is_critical: bool,
     ) -> str:
+        critical_prefix = "暴击喵！" if is_critical else ""
         if base_delta_cm >= 0:
             if is_sender_winner:
                 return (
-                    f"对决胜利喵, 你的{self._jj_name()}增加了{round(sender_delta_cm, 3)}cm喵, "
+                    f"{critical_prefix}对决胜利喵, 你的{self._jj_name()}增加了{round(sender_delta_cm, 3)}cm喵, "
                     f"对面缩短了{round(abs(target_delta_cm), 3)}cm喵"
                 )
             return (
-                f"对决失败喵, 你的{self._jj_name()}缩短了{round(abs(sender_delta_cm), 3)}cm喵, "
+                f"{critical_prefix}对决失败喵, 你的{self._jj_name()}缩短了{round(abs(sender_delta_cm), 3)}cm喵, "
                 f"对面增加了{round(target_delta_cm, 3)}cm喵"
             )
 
         if is_sender_winner:
             return (
-                f"对决虽然赢了喵, 但今天状态不太妙, 你的{self._jj_name()}缩短了{round(abs(sender_delta_cm), 3)}cm喵, "
+                f"{critical_prefix}对决虽然赢了喵, 但今天状态不太妙, 你的{self._jj_name()}缩短了{round(abs(sender_delta_cm), 3)}cm喵, "
                 f"对面也跟着缩短了{round(abs(target_delta_cm), 3)}cm喵"
             )
         return (
-            f"对决失败喵, 今天谁都高兴不起来, 你的{self._jj_name()}缩短了{round(abs(sender_delta_cm), 3)}cm喵, "
+            f"{critical_prefix}对决失败喵, 今天谁都高兴不起来, 你的{self._jj_name()}缩短了{round(abs(sender_delta_cm), 3)}cm喵, "
             f"对面也只缩短了{round(abs(target_delta_cm), 3)}cm喵"
         )
 
