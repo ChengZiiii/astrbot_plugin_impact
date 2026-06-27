@@ -1,4 +1,3 @@
-from .do import generate_do
-from .lash import generate_lash
+from .renderer import has_template, normalize_template_name, render_avatar_gif
 
-__all__ = ["generate_do", "generate_lash"]
+__all__ = ["has_template", "normalize_template_name", "render_avatar_gif"]

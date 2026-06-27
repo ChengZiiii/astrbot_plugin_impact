@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from pathlib import Path
-
 from PIL import Image, ImageDraw
 
 
@@ -27,7 +25,3 @@ def save_gif(output_path: str, frames: list[Image.Image], fps: int) -> str:
         disposal=2,
     )
     return output_path
-
-
-def resource_frames_dir(file_path: str, folder_name: str) -> Path:
-    return Path(file_path).resolve().parent.parent / "resource" / "avatar_gif" / folder_name

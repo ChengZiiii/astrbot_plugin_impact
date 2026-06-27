@@ -1,0 +1,18 @@
+{
+  "name": "lash",
+  "frames_dir": "lash_frames",
+  "frame_count": 9,
+  "fps": 20,
+  "commander": {
+    "size": [22, 22],
+    "rotate_degrees": 0.0,
+    "rotate_mode": "none",
+    "locations": [[84, 25], [87, 23], [87, 27], [86, 28], [62, 26], [59, 28], [76, 20], [85, 24], [80, 23]]
+  },
+  "target": {
+    "size": [22, 22],
+    "rotate_degrees": 30.0,
+    "rotate_mode": "crop",
+    "locations": [[12, 69], [15, 66], [14, 67], [15, 66], [17, 67], [14, 63], [21, 56], [15, 62], [17, 69]]
+  }
+}

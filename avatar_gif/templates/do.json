@@ -1,0 +1,18 @@
+{
+  "name": "do",
+  "frames_dir": "do_frames",
+  "frame_count": 3,
+  "fps": 20,
+  "commander": {
+    "size": [122, 122],
+    "rotate_degrees": -15.0,
+    "rotate_mode": "simple",
+    "locations": [[116, -8], [109, 3], [130, -10]]
+  },
+  "target": {
+    "size": [112, 112],
+    "rotate_degrees": 90.0,
+    "rotate_mode": "simple",
+    "locations": [[2, 177], [12, 172], [6, 158]]
+  }
+}

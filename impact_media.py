@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import functools
 import urllib.request
 import uuid
 from pathlib import Path
@@ -9,7 +10,7 @@ import astrbot.api.message_components as Comp
 from astrbot.api import logger
 from astrbot.api.event import AstrMessageEvent
 
-from .avatar_gif import generate_do, generate_lash
+from .avatar_gif import has_template, normalize_template_name, render_avatar_gif
 from .impact_config import ImpactConfig
 from .impact_models import ActionMediaRequest, ImageReply
 
@@ -98,14 +99,11 @@ class ImpactMediaManager:
 
     @staticmethod
     def _get_avatar_gif_generator(style_name: str):
-        match style_name:
-            case "do":
-                return generate_do
-            case "lash":
-                return generate_lash
-            case _:
-                logger.warning(f"[impact] 未知头像 GIF 样式: {style_name}")
-                return None
+        normalized_name = normalize_template_name(style_name)
+        if has_template(normalized_name):
+            return functools.partial(render_avatar_gif, normalized_name)
+        logger.warning(f"[impact] 未知头像 GIF 模板: {style_name}")
+        return None
 
     @staticmethod
     def _download_avatar_sync(user_id: int, output_path: Path) -> bool:

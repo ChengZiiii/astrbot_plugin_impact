@@ -10,6 +10,7 @@
 - `pk` 与 `yinpa` 使用本插件内置的双头像生成器
 - 配置项里可填 `do`、`lash`，也兼容 `do_frames`、`lash_frames`
 - 当前内置模板帧目录：`avatar_gif/do_frames/`、`avatar_gif/lash_frames/`
+- 新增模板时，优先按 `avatar_gif/README.md` 添加 JSON 模板与帧资源，无需新增 Python 文件
 
 建议：
 
