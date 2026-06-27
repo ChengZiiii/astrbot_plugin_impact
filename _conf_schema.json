@@ -279,12 +279,12 @@
     "description": "PK头像GIF样式列表",
     "type": "list",
     "default": ["lash"],
-    "hint": "当前支持 lash / do。会从列表中随机选一种样式合成。"
+    "hint": "填写 resource/avatar_gif/ 下对应样式子目录名；插件会从列表中随机选一种样式合成。当前仓库内置样式可参考 do_frames / lash_frames。"
   },
   "yinpa_avatar_gif_styles": {
     "description": "透群友头像GIF样式列表",
     "type": "list",
     "default": ["do"],
-    "hint": "当前支持 do / lash。会从列表中随机选一种样式合成。"
+    "hint": "填写 resource/avatar_gif/ 下对应样式子目录名；插件会从列表中随机选一种样式合成。当前仓库内置样式可参考 do_frames / lash_frames。"
   }
 }
