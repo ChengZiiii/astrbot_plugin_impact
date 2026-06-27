@@ -254,25 +254,25 @@
   "dajiao_media_mode": {
     "description": "打胶媒体模式",
     "type": "string",
-    "default": "none",
+    "default": "fixed_gif",
     "hint": "可填 none / fixed_gif。固定 GIF 目录：resource/fixed_gif/dajiao_grow 与 dajiao_shrink。"
   },
   "suo_media_mode": {
     "description": "嗦牛子媒体模式",
     "type": "string",
-    "default": "none",
+    "default": "fixed_gif",
     "hint": "可填 none / fixed_gif。固定 GIF 目录：resource/fixed_gif/suo_grow 与 suo_shrink。"
   },
   "pk_media_mode": {
     "description": "PK媒体模式",
     "type": "string",
-    "default": "none",
+    "default": "avatar_gif",
     "hint": "可填 none / avatar_gif。avatar_gif 会使用本插件自带的双头像 GIF 生成器。"
   },
   "yinpa_media_mode": {
     "description": "透群友媒体模式",
     "type": "string",
-    "default": "none",
+    "default": "avatar_gif",
     "hint": "可填 none / avatar_gif。avatar_gif 会使用本插件自带的双头像 GIF 生成器。"
   },
   "pk_avatar_gif_styles": {
