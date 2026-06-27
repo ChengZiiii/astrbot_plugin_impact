@@ -90,10 +90,10 @@ class ImpactService:
         target_id = int(at_id)
         if target_id == sender_id:
             return PlainReply("你不能pk自己喵")
-        if not self._store.has_user(sender_id) or not self._store.has_user(target_id):
-            self._store.ensure_user(sender_id, self._config.user_initial_length)
-            self._store.ensure_user(target_id, self._config.user_initial_length)
-            return PlainReply(f"你或对面还没有创建{self._jj_name()}喵, 咱全帮你创建了喵, 你们的{self._jj_name()}长度都是{self._config.user_initial_length}cm喵")
+        sender_created = self._store.ensure_user(sender_id, self._config.user_initial_length)
+        target_created = self._store.ensure_user(target_id, self._config.user_initial_length)
+        if sender_created or target_created:
+            return PlainReply(self._format_pk_creation_reply(sender_created, target_created))
         wait_text = self._cooldown_text(self._pk_cd_data, str(sender_id), self._config.pk_cd_time, "你已经pk不动了喵")
         if wait_text is not None:
             return PlainReply(wait_text)
@@ -239,6 +239,22 @@ class ImpactService:
         return (
             f"对决失败喵, 今天谁都高兴不起来, 你的{self._jj_name()}缩短了{round(abs(sender_delta_cm), 3)}cm喵, "
             f"对面也只缩短了{round(abs(target_delta_cm), 3)}cm喵"
+        )
+
+    def _format_pk_creation_reply(self, sender_created: bool, target_created: bool) -> str:
+        if sender_created and target_created:
+            return (
+                f"你和对面都还没有创建{self._jj_name()}喵, 咱都帮你们创建好了喵, "
+                "这次先不对决, 再发一次 pk 试试喵"
+            )
+        if sender_created:
+            return (
+                f"你还没有创建{self._jj_name()}喵, 咱帮你创建好了喵, "
+                "这次先不对决, 再发一次 pk 试试喵"
+            )
+        return (
+            f"对面还没有创建{self._jj_name()}喵, 咱帮TA创建好了喵, "
+            "这次先不对决, 再发一次 pk 试试喵"
         )
 
     @staticmethod
