@@ -9,8 +9,7 @@ import astrbot.api.message_components as Comp
 from astrbot.api import logger
 from astrbot.api.event import AstrMessageEvent
 
-from .avatar_gif_do import generate_do
-from .avatar_gif_lash import generate_lash
+from .avatar_gif import generate_do, generate_lash
 from .impact_config import ImpactConfig
 from .impact_models import ActionMediaRequest, ImageReply
 

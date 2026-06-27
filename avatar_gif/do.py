@@ -1,10 +1,10 @@
 from __future__ import annotations
 
-from pathlib import Path
+from PIL import Image
 
-from PIL import Image, ImageDraw
+from .common import make_circle, resource_frames_dir, save_gif
 
-_FRAMES_DIR = Path(__file__).parent / "resource" / "avatar_gif" / "do_frames"
+_FRAMES_DIR = resource_frames_dir(__file__, "do_frames")
 _FRAME_COUNT = 3
 _SELF_LOCS = [(116, -8), (109, 3), (130, -10)]
 _SELF_SIZE = (122, 122)
@@ -14,28 +14,17 @@ _USER_SIZE = (112, 112)
 _USER_ROTATE = 90.0
 
 
-def _make_circle(image: Image.Image) -> Image.Image:
-    size = image.size[0]
-    mask = Image.new("L", (size, size), 0)
-    draw = ImageDraw.Draw(mask)
-    draw.ellipse((0, 0, size, size), fill=255)
-    result = Image.new("RGBA", (size, size), (0, 0, 0, 0))
-    result.paste(image, (0, 0), mask)
-    return result
-
-
 def generate_do(commander_path: str, target_path: str, output_path: str, fps: int = 20) -> str:
     commander = Image.open(commander_path).convert("RGBA")
     commander = commander.resize(_SELF_SIZE, Image.LANCZOS)
-    commander = _make_circle(commander)
+    commander = make_circle(commander)
     commander = commander.rotate(_SELF_ROTATE, expand=False, resample=Image.BICUBIC)
 
     target = Image.open(target_path).convert("RGBA")
     target = target.resize(_USER_SIZE, Image.LANCZOS)
-    target = _make_circle(target)
+    target = make_circle(target)
     target = target.rotate(_USER_ROTATE, expand=False, resample=Image.BICUBIC)
 
-    duration_ms = int(1000.0 / fps)
     frames: list[Image.Image] = []
     for index in range(_FRAME_COUNT):
         overlay = Image.open(_FRAMES_DIR / f"{index}.png").convert("RGBA")
@@ -45,13 +34,4 @@ def generate_do(commander_path: str, target_path: str, output_path: str, fps: in
         canvas.paste(target, _USER_LOCS[index], target)
         frames.append(canvas)
 
-    frames[0].save(
-        output_path,
-        "GIF",
-        save_all=True,
-        append_images=frames[1:],
-        duration=duration_ms,
-        loop=0,
-        disposal=2,
-    )
-    return output_path
+    return save_gif(output_path, frames, fps)

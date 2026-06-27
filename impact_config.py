@@ -35,6 +35,22 @@ def _to_str_list(value: object, default: list[str]) -> list[str]:
     return default.copy()
 
 
+def _normalize_avatar_gif_templates(values: list[str], default: list[str]) -> list[str]:
+    normalized: list[str] = []
+    for item in values:
+        template_name = item.strip().lower()
+        if not template_name:
+            continue
+        match template_name:
+            case "do" | "do_frames":
+                normalized.append("do")
+            case "lash" | "lash_frames":
+                normalized.append("lash")
+            case _:
+                normalized.append(template_name)
+    return normalized or default.copy()
+
+
 @dataclass(frozen=True, slots=True)
 class ImpactConfig:
     dj_cd_time: int
@@ -94,8 +110,14 @@ class ImpactConfig:
             config.get("commands_enabled"),
             ["dajiao", "suo", "query", "pk", "rank", "toggle", "yinpa", "inject", "help"],
         )
-        pk_avatar_gif_styles = _to_str_list(config.get("pk_avatar_gif_styles"), ["lash"])
-        yinpa_avatar_gif_styles = _to_str_list(config.get("yinpa_avatar_gif_styles"), ["do"])
+        pk_avatar_gif_styles = _normalize_avatar_gif_templates(
+            _to_str_list(config.get("pk_avatar_gif_styles"), ["lash"]),
+            ["lash"],
+        )
+        yinpa_avatar_gif_styles = _normalize_avatar_gif_templates(
+            _to_str_list(config.get("yinpa_avatar_gif_styles"), ["do"]),
+            ["do"],
+        )
         not_enabled_reply = str(
             config.get(
                 "not_enabled_reply",

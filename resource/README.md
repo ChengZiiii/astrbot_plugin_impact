@@ -8,7 +8,7 @@
 头像合成 GIF：
 
 - `pk` 与 `yinpa` 使用本插件内置的双头像生成器
-- 配置项里填写 `resource/avatar_gif/` 下的样式子目录名
+- 配置项里可填 `do`、`lash`，也兼容 `do_frames`、`lash_frames`
 - 当前内置模板帧目录：`avatar_gif/do_frames/`、`avatar_gif/lash_frames/`
 
 建议：
