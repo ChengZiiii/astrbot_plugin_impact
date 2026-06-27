@@ -16,6 +16,8 @@ class ActionMediaRequest:
 class PlainReply:
     text: str
     media_request: ActionMediaRequest | None = None
+    preface_text: str | None = None
+    preface_delay_seconds: float = 0.0
 
 
 @dataclass(frozen=True, slots=True)

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 import random
 from pathlib import Path
 from typing import assert_never
@@ -79,7 +80,11 @@ class ImpactPlugin(Star):
 
         event.stop_event()
         match reply:
-            case PlainReply(text=text, media_request=media_request):
+            case PlainReply(text=text, media_request=media_request, preface_text=preface_text, preface_delay_seconds=preface_delay_seconds):
+                if preface_text:
+                    yield event.plain_result(preface_text)
+                    if preface_delay_seconds > 0:
+                        await asyncio.sleep(preface_delay_seconds)
                 media_reply = await self._media_manager.build_media_reply(media_request)
                 if media_reply is None or self._impact_config.media_send_mode == "text_only":
                     yield event.plain_result(text)
@@ -171,18 +176,22 @@ class ImpactPlugin(Star):
             return PlainReply("没找到合适的目标喵")
         if target_id == sender_id:
             return PlainReply("你透你自己?")
+        sender_name = await self._get_display_name(event, sender_id, members)
+        target_name = await self._get_display_name(event, target_id, members)
+        preface_text = self._build_yinpa_preface(normalized, sender_name)
         injected_volume = self._service.finish_yinpa(sender_id, target_id)
-        sender_name = await self._get_display_name(event, sender_id)
-        target_name = await self._get_display_name(event, target_id)
         total_volume = self._service.get_today_injection(target_id)
+        duration_seconds = random.randint(1, 20)
         return PlainReply(
-            f"好欸！{sender_name}({sender_id})给 {target_name}({target_id}) 注入了{injected_volume}毫升的脱氧核糖核酸, 当日总注入量为：{total_volume}毫升",
+            f"好欸！{sender_name}({sender_id})用时{duration_seconds}秒 \n给 {target_name}({target_id}) 注入了{injected_volume}毫升的脱氧核糖核酸, 当日总注入量为：{total_volume}毫升",
             media_request=ActionMediaRequest(
                 action="yinpa",
                 mode=self._impact_config.yinpa_media_mode,
                 sender_id=sender_id,
                 target_id=target_id,
             ),
+            preface_text=preface_text,
+            preface_delay_seconds=1.0,
         )
 
     async def _handle_injection(self, group_id: int, sender_id: int, normalized: str, at_id: str | None) -> PlainReply | ImageReply:
@@ -204,7 +213,17 @@ class ImpactPlugin(Star):
             return []
         return [member for member in members if isinstance(member, dict)]
 
-    async def _get_display_name(self, event: AstrMessageEvent, user_id: int) -> str:
+    async def _get_display_name(self, event: AstrMessageEvent, user_id: int, members: list[dict] | None = None) -> str:
+        if members is not None:
+            for member in members:
+                if int(member.get("user_id", 0)) != user_id:
+                    continue
+                card_name = member.get("card")
+                if card_name:
+                    return str(card_name)
+                nickname = member.get("nickname")
+                if nickname:
+                    return str(nickname)
         bot = getattr(event, "bot", None)
         if bot is None or not hasattr(bot, "call_api"):
             return str(user_id) if self._impact_config.nickname_fallback_to_user_id else "群友"
@@ -216,6 +235,14 @@ class ImpactPlugin(Star):
         if nickname:
             return str(nickname)
         return str(user_id) if self._impact_config.nickname_fallback_to_user_id else "群友"
+
+    @staticmethod
+    def _build_yinpa_preface(normalized: str, sender_name: str) -> str:
+        if "群主" in normalized:
+            return f"现在咱将把群主\n送给{sender_name}色色！"
+        if "管理" in normalized:
+            return f"现在咱将随机抽取一位幸运管理\n送给{sender_name}色色！"
+        return f"现在咱将随机抽取一位幸运群友\n送给{sender_name}色色！"
 
     def _pick_yinpa_target(self, normalized: str, sender_id: int, at_id: str | None, members: list[dict]) -> int | None:
         if at_id is not None:
