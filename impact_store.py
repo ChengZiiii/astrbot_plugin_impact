@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import random
 import sqlite3
 import time
 from dataclasses import dataclass
@@ -51,6 +52,11 @@ class ImpactStore:
                     volume_ml REAL NOT NULL,
                     PRIMARY KEY (user_id, date_text)
                 );
+
+                CREATE TABLE IF NOT EXISTS plugin_state (
+                    state_key TEXT PRIMARY KEY,
+                    state_value TEXT NOT NULL
+                );
                 """
             )
 
@@ -70,15 +76,12 @@ class ImpactStore:
         return row is not None
 
     def ensure_user(self, user_id: int, initial_length: float = 10.0) -> bool:
-        if self.has_user(user_id):
-            return False
-
         with self._connect() as connection:
-            connection.execute(
-                "INSERT INTO users(user_id, jj_length, last_active_at) VALUES (?, ?, ?)",
+            cursor = connection.execute(
+                "INSERT OR IGNORE INTO users(user_id, jj_length, last_active_at) VALUES (?, ?, ?)",
                 (user_id, round(initial_length, 3), self._now_ts()),
             )
-        return True
+        return cursor.rowcount > 0
 
     def get_length(self, user_id: int) -> float:
         with self._connect() as connection:
@@ -172,6 +175,24 @@ class ImpactStore:
                     "UPDATE users SET jj_length = ? WHERE user_id = ?",
                     (new_length, int(row["user_id"])),
                 )
+
+    def get_state_value(self, state_key: str) -> str | None:
+        with self._connect() as connection:
+            row = connection.execute(
+                "SELECT state_value FROM plugin_state WHERE state_key = ?",
+                (state_key,),
+            ).fetchone()
+        if row is None:
+            return None
+        return str(row["state_value"])
+
+    def set_state_value(self, state_key: str, state_value: str) -> None:
+        with self._connect() as connection:
+            connection.execute(
+                "INSERT INTO plugin_state(state_key, state_value) VALUES (?, ?) "
+                "ON CONFLICT(state_key) DO UPDATE SET state_value = excluded.state_value",
+                (state_key, state_value),
+            )
 
     def get_rankings(self) -> list[RankEntry]:
         with self._connect() as connection:

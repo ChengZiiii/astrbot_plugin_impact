@@ -108,6 +108,10 @@ class ImpactPlugin(Star):
         if is_private and not self._impact_config.private_chat_enabled:
             return None
         group_id = 0 if is_private else int(str(group_id_raw))
+        group_enabled = self._impact_config.private_chat_enabled if is_private else self._store.is_group_enabled(
+            group_id,
+            self._impact_config.default_group_enabled,
+        )
 
         if not is_private:
             group_id_text = str(group_id)
@@ -124,29 +128,29 @@ class ImpactPlugin(Star):
             logger.debug(f"[impact] dispatch normalized={normalized} group_id={group_id} private={is_private} at_id={at_id}")
 
         if self._is_command_enabled("dajiao") and self._matches_command(normalized, COMMAND_GROUP_MAP["dajiao"]):
-            return self._service.handle_dajiao(group_id, sender_id)
+            return self._service.handle_dajiao(group_enabled, sender_id)
         if self._is_command_enabled("suo") and self._matches_command(normalized, COMMAND_GROUP_MAP["suo"]):
-            return self._service.handle_suo(group_id, sender_id, at_id)
+            return self._service.handle_suo(group_enabled, sender_id, at_id)
         if self._is_command_enabled("query") and self._matches_command(normalized, COMMAND_GROUP_MAP["query"]):
-            return self._service.handle_query(group_id, sender_id, at_id)
+            return self._service.handle_query(group_enabled, sender_id, at_id)
         if self._is_command_enabled("pk") and self._matches_command(normalized, COMMAND_GROUP_MAP["pk"]):
-            return self._service.handle_pk(group_id, sender_id, at_id)
+            return self._service.handle_pk(group_enabled, sender_id, at_id)
         if self._is_command_enabled("rank") and self._matches_command(normalized, COMMAND_GROUP_MAP["rank"]):
-            return await self._handle_rank(group_id, sender_id, event)
+            return await self._handle_rank(group_enabled, sender_id, event)
         if not is_private and self._is_command_enabled("toggle") and self._matches_command(normalized, COMMAND_GROUP_MAP["toggle"]):
             return self._service.handle_toggle(group_id, normalized, event)
         if not is_private and self._is_command_enabled("yinpa") and self._matches_command(normalized, COMMAND_GROUP_MAP["yinpa"]):
-            return await self._handle_yinpa(group_id, sender_id, normalized, at_id, event)
+            return await self._handle_yinpa(group_enabled, group_id, sender_id, normalized, at_id, event)
         if self._is_command_enabled("inject") and self._matches_command(normalized, COMMAND_GROUP_MAP["inject"]):
-            return await self._handle_injection(group_id, sender_id, normalized, at_id)
+            return await self._handle_injection(group_enabled, sender_id, normalized, at_id)
         if self._is_command_enabled("help") and self._matches_command(normalized, COMMAND_GROUP_MAP["help"]):
             if self._impact_config.usage_image_enabled:
                 return ImageReply(image_bytes=await txt_to_img.txt_to_img(USAGE_TEXT), suffix=".png")
             return PlainReply(USAGE_TEXT)
         return None
 
-    async def _handle_rank(self, group_id: int, sender_id: int, event: AstrMessageEvent) -> PlainReply | ImageReply:
-        if not self._store.is_group_enabled(group_id, self._impact_config.default_group_enabled):
+    async def _handle_rank(self, group_enabled: bool, sender_id: int, event: AstrMessageEvent) -> PlainReply | ImageReply:
+        if not group_enabled:
             return PlainReply(self._impact_config.not_enabled_reply)
         if not self._store.has_user(sender_id):
             self._store.ensure_user(sender_id, self._impact_config.user_initial_length)
@@ -169,8 +173,16 @@ class ImpactPlugin(Star):
         image_bytes = await draw_bar_chart.draw_bar_chart(chart_data)
         return ImageReply(image_bytes=image_bytes, suffix=".png", text=f"你的排名为{my_rank}喵")
 
-    async def _handle_yinpa(self, group_id: int, sender_id: int, normalized: str, at_id: str | None, event: AstrMessageEvent) -> PlainReply:
-        gate_reply = self._service.can_yinpa(group_id, sender_id)
+    async def _handle_yinpa(
+        self,
+        group_enabled: bool,
+        group_id: int,
+        sender_id: int,
+        normalized: str,
+        at_id: str | None,
+        event: AstrMessageEvent,
+    ) -> PlainReply:
+        gate_reply = self._service.can_yinpa(group_enabled, sender_id)
         if gate_reply is not None:
             return gate_reply
         members = await self._get_group_members(event, group_id)
@@ -183,7 +195,7 @@ class ImpactPlugin(Star):
             return PlainReply("你透你自己?")
         sender_name = await self._get_display_name(event, sender_id, members)
         target_name = await self._get_display_name(event, target_id, members)
-        preface_text = self._build_yinpa_preface(normalized, sender_name)
+        preface_text = self._build_yinpa_preface(normalized, sender_name, at_id, target_name, target_id)
         injected_volume = self._service.finish_yinpa(sender_id, target_id)
         total_volume = self._service.get_today_injection(target_id)
         duration_seconds = random.randint(1, 20)
@@ -198,8 +210,8 @@ class ImpactPlugin(Star):
             preface_text=preface_text,
         )
 
-    async def _handle_injection(self, group_id: int, sender_id: int, normalized: str, at_id: str | None) -> PlainReply | ImageReply:
-        result = self._service.handle_injection(group_id, sender_id, normalized, at_id)
+    async def _handle_injection(self, group_enabled: bool, sender_id: int, normalized: str, at_id: str | None) -> PlainReply | ImageReply:
+        result = self._service.handle_injection(group_enabled, sender_id, normalized, at_id)
         if isinstance(result, PlainReply):
             return result
         chart_data, text = result
@@ -241,7 +253,15 @@ class ImpactPlugin(Star):
         return str(user_id) if self._impact_config.nickname_fallback_to_user_id else "群友"
 
     @staticmethod
-    def _build_yinpa_preface(normalized: str, sender_name: str) -> str:
+    def _build_yinpa_preface(
+        normalized: str,
+        sender_name: str,
+        at_id: str | None,
+        target_name: str,
+        target_id: int,
+    ) -> str:
+        if at_id is not None:
+            return f"现在咱将把{target_name}({target_id})\n送给{sender_name}色色！"
         if "群主" in normalized:
             return f"现在咱将把群主\n送给{sender_name}色色！"
         if "管理" in normalized:

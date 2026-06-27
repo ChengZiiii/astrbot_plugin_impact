@@ -17,21 +17,22 @@ class ImpactService:
         self._pk_cd_data: dict[str, float] = {}
         self._suo_cd_data: dict[str, float] = {}
         self._yinpa_cd_data: dict[str, float] = {}
-        self._last_penalty_day = ""
+        self._last_penalty_state_key = "last_inactive_penalty_day"
 
     def run_daily_maintenance(self) -> None:
         current_day = time.strftime("%Y-%m-%d", time.localtime())
-        if not self._config.enable_inactive_penalty or self._last_penalty_day == current_day:
+        last_penalty_day = self._store.get_state_value(self._last_penalty_state_key)
+        if not self._config.enable_inactive_penalty or last_penalty_day == current_day:
             return
         self._store.punish_inactive_users(
             penalty_min=self._config.inactive_penalty_min,
             penalty_max=self._config.inactive_penalty_max,
             floor_length=self._config.inactive_penalty_floor,
         )
-        self._last_penalty_day = current_day
+        self._store.set_state_value(self._last_penalty_state_key, current_day)
 
-    def handle_dajiao(self, group_id: int, sender_id: int) -> PlainReply:
-        if not self._store.is_group_enabled(group_id, self._config.default_group_enabled):
+    def handle_dajiao(self, group_enabled: bool, sender_id: int) -> PlainReply:
+        if not group_enabled:
             return PlainReply(self._config.not_enabled_reply)
         if not self._store.has_user(sender_id):
             self._store.ensure_user(sender_id, self._config.user_initial_length)
@@ -48,8 +49,8 @@ class ImpactService:
             mention_sender=True,
         )
 
-    def handle_suo(self, group_id: int, sender_id: int, at_id: str | None) -> PlainReply:
-        if not self._store.is_group_enabled(group_id, self._config.default_group_enabled):
+    def handle_suo(self, group_enabled: bool, sender_id: int, at_id: str | None) -> PlainReply:
+        if not group_enabled:
             return PlainReply(self._config.not_enabled_reply)
         if at_id is not None and not self._config.suo_allow_target_other:
             return PlainReply("当前配置不允许给别人嗦喵", mention_sender=True)
@@ -71,8 +72,8 @@ class ImpactService:
             mention_sender=True,
         )
 
-    def handle_query(self, group_id: int, sender_id: int, at_id: str | None) -> PlainReply:
-        if not self._store.is_group_enabled(group_id, self._config.default_group_enabled):
+    def handle_query(self, group_enabled: bool, sender_id: int, at_id: str | None) -> PlainReply:
+        if not group_enabled:
             return PlainReply(self._config.not_enabled_reply)
         target_id = sender_id if at_id is None else int(at_id)
         if not self._store.has_user(target_id):
@@ -82,8 +83,8 @@ class ImpactService:
         prefix = "你的" if target_id == sender_id else "TA的"
         return PlainReply(f"{prefix}{self._jj_name()}目前长度为{self._store.get_length(target_id)}cm喵", mention_sender=True)
 
-    def handle_pk(self, group_id: int, sender_id: int, at_id: str | None) -> PlainReply:
-        if not self._store.is_group_enabled(group_id, self._config.default_group_enabled):
+    def handle_pk(self, group_enabled: bool, sender_id: int, at_id: str | None) -> PlainReply:
+        if not group_enabled:
             return PlainReply(self._config.not_enabled_reply)
         if at_id is None and self._config.pk_require_at:
             return PlainReply("pk 需要 @ 一个目标喵")
@@ -126,8 +127,8 @@ class ImpactService:
         self._store.set_group_enabled(group_id, enabled)
         return PlainReply("功能已开启喵" if enabled else "功能已禁用喵")
 
-    def handle_injection(self, group_id: int, sender_id: int, normalized: str, at_id: str | None) -> PlainReply | tuple[dict[str, float], str]:
-        if not self._store.is_group_enabled(group_id, self._config.default_group_enabled):
+    def handle_injection(self, group_enabled: bool, sender_id: int, normalized: str, at_id: str | None) -> PlainReply | tuple[dict[str, float], str]:
+        if not group_enabled:
             return PlainReply(self._config.not_enabled_reply)
         target_id = sender_id if at_id is None else int(at_id)
         object_name = "您" if target_id == sender_id else "该用户"
@@ -139,8 +140,8 @@ class ImpactService:
             return PlainReply(f"{object_name}历史总被注射量为{total_volume}ml", mention_sender=True)
         return ({item.date_text: item.volume_ml for item in history}, f"{object_name}历史总被注射量为{total_volume}ml")
 
-    def can_yinpa(self, group_id: int, sender_id: int) -> PlainReply | None:
-        if not self._store.is_group_enabled(group_id, self._config.default_group_enabled):
+    def can_yinpa(self, group_enabled: bool, sender_id: int) -> PlainReply | None:
+        if not group_enabled:
             return PlainReply(self._config.not_enabled_reply)
         wait_text = self._cooldown_text(self._yinpa_cd_data, str(sender_id), self._config.fuck_cd_time, "你已经榨不出来任何东西了")
         if wait_text is not None:
@@ -173,7 +174,7 @@ class ImpactService:
             return True
         if self._config.admin_only_toggle:
             return self.is_admin(event)
-        return self.is_admin(event)
+        return True
 
     def _random_delta(self) -> tuple[float, bool]:
         base_value = random.random()
