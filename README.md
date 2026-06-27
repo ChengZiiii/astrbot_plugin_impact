@@ -1,4 +1,4 @@
-# nonebot_plugin_impact
+# astrbot_plugin_impact
 
 响应器如下
 
