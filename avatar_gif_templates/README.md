@@ -1,12 +1,36 @@
-# Avatar GIF Templates
+# Avatar GIF Template Development
 
-`avatar_gif/` uses JSON template definitions so contributors can add most new two-avatar GIF templates without writing Python.
+`avatar_gif_templates/` stores the code-side template system.
+Frame images still belong in `resource/avatar_gif/`.
 
 ## How To Add A New Template
 
 1. Put frame assets under `resource/avatar_gif/<template_name>_frames/`.
-2. Add `avatar_gif/templates/<template_name>.json`.
+2. Add `avatar_gif_templates/templates/<template_name>.json`.
 3. Reference the template name in `pk_avatar_gif_styles` or `yinpa_avatar_gif_styles`.
+
+## Minimal JSON Example
+
+```json
+{
+  "name": "example",
+  "frames_dir": "example_frames",
+  "frame_count": 2,
+  "fps": 20,
+  "commander": {
+    "size": [64, 64],
+    "rotate_degrees": 0.0,
+    "rotate_mode": "none",
+    "locations": [[10, 10], [12, 12]]
+  },
+  "target": {
+    "size": [64, 64],
+    "rotate_degrees": 15.0,
+    "rotate_mode": "simple",
+    "locations": [[100, 100], [102, 98]]
+  }
+}
+```
 
 ## Template JSON Fields
 

@@ -10,7 +10,7 @@ import astrbot.api.message_components as Comp
 from astrbot.api import logger
 from astrbot.api.event import AstrMessageEvent
 
-from .avatar_gif import has_template, normalize_template_name, render_avatar_gif
+from .avatar_gif_templates import has_template, normalize_template_name, render_avatar_gif
 from .impact_config import ImpactConfig
 from .impact_models import ActionMediaRequest, ImageReply
 
