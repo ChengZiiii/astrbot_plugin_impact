@@ -1,0 +1,8 @@
+name: astrbot_plugin_impact
+display_name: 淫趴小游戏
+desc: 从 nonebot_plugin_impact 迁移的 AstrBot 群聊小游戏插件，支持打胶、嗦牛子、对决、排行、注入查询和群开关。
+version: v0.1.0
+author: Soren
+repo: https://github.com/Special-Week/nonebot_plugin_impact
+support_platforms:
+  - aiocqhttp

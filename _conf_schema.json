@@ -1,0 +1,290 @@
+{
+  "djcdtime": {
+    "description": "打胶冷却秒数",
+    "type": "int",
+    "default": 300,
+    "hint": "用户执行 打胶 / 开导 的冷却时间。"
+  },
+  "pkcdtime": {
+    "description": "对决冷却秒数",
+    "type": "int",
+    "default": 60,
+    "hint": "用户执行 pk / 对决 的冷却时间。"
+  },
+  "suocdtime": {
+    "description": "嗦牛子冷却秒数",
+    "type": "int",
+    "default": 300,
+    "hint": "用户执行 嗦牛子 的冷却时间。"
+  },
+  "fuckcdtime": {
+    "description": "淫趴冷却秒数",
+    "type": "int",
+    "default": 3600,
+    "hint": "用户执行 日群友 / 透群友 / 日群主 / 透管理 等命令的冷却时间。"
+  },
+  "isalive": {
+    "description": "启用不活跃惩罚",
+    "type": "bool",
+    "default": false,
+    "hint": "开启后，插件会按天惩罚超过 24 小时未活跃的用户。"
+  },
+  "default_group_enabled": {
+    "description": "新群默认开启",
+    "type": "bool",
+    "default": false,
+    "hint": "群还没有单独写入开关记录时，默认是否视为已开启。"
+  },
+  "rank_min_users": {
+    "description": "排行榜最少人数",
+    "type": "int",
+    "default": 5,
+    "hint": "小于该人数时不显示排行榜。"
+  },
+  "rank_top_count": {
+    "description": "排行榜前列人数",
+    "type": "int",
+    "default": 5,
+    "hint": "排行榜展示前多少名。"
+  },
+  "rank_bottom_count": {
+    "description": "排行榜后列人数",
+    "type": "int",
+    "default": 5,
+    "hint": "排行榜展示后多少名。"
+  },
+  "pk_require_at": {
+    "description": "PK必须@目标",
+    "type": "bool",
+    "default": true,
+    "hint": "关闭后仅放宽匹配限制，但当前逻辑仍建议显式 @。"
+  },
+  "suo_allow_target_other": {
+    "description": "允许嗦别人",
+    "type": "bool",
+    "default": true,
+    "hint": "关闭后，嗦牛子只能对自己生效。"
+  },
+  "yinpa_allow_random_target": {
+    "description": "允许随机群友目标",
+    "type": "bool",
+    "default": true,
+    "hint": "关闭后，日群友/透群友 未 @ 目标时不会随机抽人。"
+  },
+  "yinpa_allow_owner_target": {
+    "description": "允许群主目标",
+    "type": "bool",
+    "default": true,
+    "hint": "关闭后，日群主/透群主 不可用。"
+  },
+  "yinpa_allow_admin_target": {
+    "description": "允许管理目标",
+    "type": "bool",
+    "default": true,
+    "hint": "关闭后，日管理/透管理 不可用。"
+  },
+  "admin_only_toggle": {
+    "description": "仅管理员可切换开关",
+    "type": "bool",
+    "default": false,
+    "hint": "开启后，仅 AstrBot 管理员或 admin_list 中用户可切换开关。"
+  },
+  "user_initial_length": {
+    "description": "初始长度",
+    "type": "float",
+    "default": 10.0,
+    "hint": "用户首次创建时的初始长度。"
+  },
+  "random_growth_min": {
+    "description": "普通增长最小值",
+    "type": "float",
+    "default": 0.0,
+    "hint": "普通随机增长区间下限。"
+  },
+  "random_growth_max": {
+    "description": "普通增长最大值",
+    "type": "float",
+    "default": 1.0,
+    "hint": "普通随机增长区间上限。"
+  },
+  "lucky_growth_min": {
+    "description": "暴击增长最小值",
+    "type": "float",
+    "default": 1.0,
+    "hint": "暴击随机增长区间下限。"
+  },
+  "lucky_growth_max": {
+    "description": "暴击增长最大值",
+    "type": "float",
+    "default": 2.0,
+    "hint": "暴击随机增长区间上限。"
+  },
+  "lucky_growth_probability": {
+    "description": "暴击概率",
+    "type": "float",
+    "default": 0.1,
+    "hint": "触发暴击增长区间的概率，推荐 0~1。"
+  },
+  "pk_winner_gain_ratio": {
+    "description": "PK胜者收益比例",
+    "type": "float",
+    "default": 0.5,
+    "hint": "胜者获得败者损失量的比例。"
+  },
+  "inactive_penalty_min": {
+    "description": "不活跃惩罚最小值",
+    "type": "float",
+    "default": 0.0,
+    "hint": "每日不活跃惩罚的随机下限。"
+  },
+  "inactive_penalty_max": {
+    "description": "不活跃惩罚最大值",
+    "type": "float",
+    "default": 1.0,
+    "hint": "每日不活跃惩罚的随机上限。"
+  },
+  "inactive_penalty_floor": {
+    "description": "不活跃惩罚保底长度",
+    "type": "float",
+    "default": 1.0,
+    "hint": "惩罚后不会低于该长度。"
+  },
+  "yinpa_volume_min": {
+    "description": "单次注入最小值",
+    "type": "float",
+    "default": 1.0,
+    "hint": "淫趴单次注入量随机下限。"
+  },
+  "yinpa_volume_max": {
+    "description": "单次注入最大值",
+    "type": "float",
+    "default": 100.0,
+    "hint": "淫趴单次注入量随机上限。"
+  },
+  "enabled_groups": {
+    "description": "允许群号白名单",
+    "type": "list",
+    "default": [],
+    "hint": "留空表示不限制。填了后仅这些群能使用。"
+  },
+  "disabled_groups": {
+    "description": "禁用群号黑名单",
+    "type": "list",
+    "default": [],
+    "hint": "这些群会被直接禁用。"
+  },
+  "admin_list": {
+    "description": "额外管理员列表",
+    "type": "list",
+    "default": [],
+    "hint": "可填 QQ 号字符串，作为插件额外管理员。"
+  },
+  "private_chat_enabled": {
+    "description": "允许私聊使用",
+    "type": "bool",
+    "default": false,
+    "hint": "开启后，部分命令可在私聊触发。群开关类和淫趴类仍只适用于群聊。"
+  },
+  "commands_enabled": {
+    "description": "启用的命令组",
+    "type": "list",
+    "default": ["dajiao", "suo", "query", "pk", "rank", "toggle", "yinpa", "inject", "help"],
+    "hint": "可选键：dajiao,suo,query,pk,rank,toggle,yinpa,inject,help。删除某项即可禁用对应命令组。"
+  },
+  "jj_names": {
+    "description": "长度称呼候选词",
+    "type": "list",
+    "default": ["牛子", "牛牛", "丁丁", "JJ"],
+    "hint": "回复文案里会随机使用其中一个称呼。"
+  },
+  "not_enabled_reply": {
+    "description": "未开启时提示语",
+    "type": "string",
+    "default": "群内还未开启淫趴游戏, 请管理员或群主发送\"开启淫趴\", \"禁止淫趴\"以开启/关闭该功能",
+    "hint": "群未开启时返回的提示语。"
+  },
+  "rank_image_enabled": {
+    "description": "排行榜使用图片",
+    "type": "bool",
+    "default": true,
+    "hint": "关闭后，排行榜改为纯文本输出。"
+  },
+  "usage_image_enabled": {
+    "description": "帮助使用图片",
+    "type": "bool",
+    "default": true,
+    "hint": "关闭后，淫趴介绍 改为纯文本输出。"
+  },
+  "nickname_fallback_to_user_id": {
+    "description": "昵称失败回退到QQ号",
+    "type": "bool",
+    "default": true,
+    "hint": "取不到昵称时，是否回退显示 QQ 号。"
+  },
+  "yinpa_require_member_api": {
+    "description": "淫趴强依赖群成员接口",
+    "type": "bool",
+    "default": true,
+    "hint": "关闭后，如果拿不到群成员列表但消息里有 @ 目标，仍允许执行。"
+  },
+  "temp_file_ttl_seconds": {
+    "description": "临时图片保留秒数",
+    "type": "int",
+    "default": 10,
+    "hint": "生成的图片文件发送后保留多久再删除。"
+  },
+  "strict_command_match": {
+    "description": "严格命令匹配",
+    "type": "bool",
+    "default": true,
+    "hint": "开启时只允许精确命中或命令后接空格/@；关闭时仅要求前缀匹配。"
+  },
+  "log_debug": {
+    "description": "输出调试日志",
+    "type": "bool",
+    "default": false,
+    "hint": "开启后输出插件调试日志，方便排查问题。"
+  },
+  "media_send_mode": {
+    "description": "媒体发送模式",
+    "type": "string",
+    "default": "text_and_media",
+    "hint": "可填 text_only / media_only / text_and_media。"
+  },
+  "dajiao_media_mode": {
+    "description": "打胶媒体模式",
+    "type": "string",
+    "default": "none",
+    "hint": "可填 none / fixed_gif。固定 GIF 目录：resource/fixed_gif/dajiao_grow 与 dajiao_shrink。"
+  },
+  "suo_media_mode": {
+    "description": "嗦牛子媒体模式",
+    "type": "string",
+    "default": "none",
+    "hint": "可填 none / fixed_gif。固定 GIF 目录：resource/fixed_gif/suo_grow 与 suo_shrink。"
+  },
+  "pk_media_mode": {
+    "description": "PK媒体模式",
+    "type": "string",
+    "default": "none",
+    "hint": "可填 none / avatar_gif。avatar_gif 会使用本插件自带的双头像 GIF 生成器。"
+  },
+  "yinpa_media_mode": {
+    "description": "透群友媒体模式",
+    "type": "string",
+    "default": "none",
+    "hint": "可填 none / avatar_gif。avatar_gif 会使用本插件自带的双头像 GIF 生成器。"
+  },
+  "pk_avatar_gif_styles": {
+    "description": "PK头像GIF样式列表",
+    "type": "list",
+    "default": ["lash"],
+    "hint": "当前支持 lash / do。会从列表中随机选一种样式合成。"
+  },
+  "yinpa_avatar_gif_styles": {
+    "description": "透群友头像GIF样式列表",
+    "type": "list",
+    "default": ["do"],
+    "hint": "当前支持 do / lash。会从列表中随机选一种样式合成。"
+  }
+}
