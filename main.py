@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import asyncio
 import random
 from pathlib import Path
 from typing import assert_never
@@ -80,11 +79,9 @@ class ImpactPlugin(Star):
 
         event.stop_event()
         match reply:
-            case PlainReply(text=text, media_request=media_request, preface_text=preface_text, preface_delay_seconds=preface_delay_seconds):
+            case PlainReply(text=text, media_request=media_request, preface_text=preface_text):
                 if preface_text:
-                    yield event.plain_result(preface_text)
-                    if preface_delay_seconds > 0:
-                        await asyncio.sleep(preface_delay_seconds)
+                    await event.send(event.plain_result(preface_text))
                 media_reply = await self._media_manager.build_media_reply(media_request)
                 if media_reply is None or self._impact_config.media_send_mode == "text_only":
                     yield event.plain_result(text)
@@ -191,7 +188,6 @@ class ImpactPlugin(Star):
                 target_id=target_id,
             ),
             preface_text=preface_text,
-            preface_delay_seconds=1.0,
         )
 
     async def _handle_injection(self, group_id: int, sender_id: int, normalized: str, at_id: str | None) -> PlainReply | ImageReply:
