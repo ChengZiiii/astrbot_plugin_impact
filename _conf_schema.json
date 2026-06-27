@@ -87,7 +87,7 @@
     "description": "仅管理员可切换开关",
     "type": "bool",
     "default": false,
-    "hint": "开启后，仅 AstrBot 管理员或 admin_list 中用户可切换开关。"
+    "hint": "开启后，仅 AstrBot 管理员或 admin_list 中用户可切换开关；关闭后，普通群成员也可切换。"
   },
   "user_initial_length": {
     "description": "初始长度",
@@ -183,7 +183,7 @@
     "description": "允许私聊使用",
     "type": "bool",
     "default": false,
-    "hint": "开启后，部分命令可在私聊触发。群开关类和淫趴类仍只适用于群聊。"
+    "hint": "开启后，打胶/嗦牛子/查询/pk/排行榜/注入查询/帮助 可在私聊触发；群开关类和淫趴类仍只适用于群聊。"
   },
   "commands_enabled": {
     "description": "启用的命令组",
