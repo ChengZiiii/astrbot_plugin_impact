@@ -1,6 +1,6 @@
 [project]
 name = "astrbot_plugin_impact"
-version = "0.1.0"
+version = "0.2.0"
 description = "从 nonebot_plugin_impact 迁移而来的 AstrBot 淫趴小游戏插件"
 authors = [{ name = "Special-Week", email = "HuaMing27499@gmail.com" }]
 dependencies = [

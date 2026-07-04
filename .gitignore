@@ -1,5 +1,8 @@
 sync.bat
 __pycache__/
 *.pyc
+data_qa/
 开发需求清单.md
 玩法拓展策划案.md
+v0.2执行实施手册.md
+v0.2执行型AI提示词.md
