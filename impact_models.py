@@ -26,3 +26,12 @@ class ImageReply:
     suffix: str
     text: str | None = None
     mention_sender: bool = False
+
+
+@dataclass(frozen=True, slots=True)
+class WeeklyResultEntry:
+    category: str
+    rank_no: int
+    user_id: int
+    metric_value: float
+    title_text: str | None = None
