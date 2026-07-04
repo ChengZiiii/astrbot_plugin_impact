@@ -188,8 +188,26 @@
   "commands_enabled": {
     "description": "启用的命令组",
     "type": "list",
-    "default": ["dajiao", "suo", "query", "pk", "rank", "toggle", "yinpa", "inject", "help"],
-    "hint": "可选键：dajiao,suo,query,pk,rank,toggle,yinpa,inject,help。删除某项即可禁用对应命令组。"
+    "default": ["dajiao", "suo", "query", "pk", "rank", "toggle", "yinpa", "inject", "help", "weekly_report", "weekly_rank", "weekly_stats", "rival", "honor"],
+    "hint": "可选键：dajiao,suo,query,pk,rank,toggle,yinpa,inject,help,weekly_report,weekly_rank,weekly_stats,rival,honor。删除某项即可禁用对应命令组。"
+  },
+  "weekly_rival_threshold": {
+    "description": "宿敌触发阈值",
+    "type": "int",
+    "default": 3,
+    "hint": "同一自然周内，同一群里两人 PK 次数达到该值后视为宿敌。"
+  },
+  "honor_wall_weeks": {
+    "description": "荣誉墙展示周数",
+    "type": "int",
+    "default": 4,
+    "hint": "群荣誉 / 荣誉墙 展示最近多少个已结算自然周。"
+  },
+  "weekly_top_n": {
+    "description": "周榜保留名次",
+    "type": "int",
+    "default": 3,
+    "hint": "周榜各分类默认保留前几名。最惨榜固定只保留第 1 名。"
   },
   "jj_names": {
     "description": "长度称呼候选词",

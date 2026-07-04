@@ -94,6 +94,9 @@ class ImpactConfig:
     temp_file_ttl_seconds: int
     strict_command_match: bool
     log_debug: bool
+    weekly_rival_threshold: int
+    honor_wall_weeks: int
+    weekly_top_n: int
     media_send_mode: str
     dajiao_media_mode: str
     suo_media_mode: str
@@ -108,7 +111,22 @@ class ImpactConfig:
         jj_names = _to_str_list(config.get("jj_names"), ["牛子", "牛牛", "丁丁", "JJ"])
         commands_enabled = _to_str_list(
             config.get("commands_enabled"),
-            ["dajiao", "suo", "query", "pk", "rank", "toggle", "yinpa", "inject", "help"],
+            [
+                "dajiao",
+                "suo",
+                "query",
+                "pk",
+                "rank",
+                "toggle",
+                "yinpa",
+                "inject",
+                "help",
+                "weekly_report",
+                "weekly_rank",
+                "weekly_stats",
+                "rival",
+                "honor",
+            ],
         )
         pk_avatar_gif_styles = _normalize_avatar_gif_templates(
             _to_str_list(config.get("pk_avatar_gif_styles"), ["lash"]),
@@ -166,6 +184,9 @@ class ImpactConfig:
             temp_file_ttl_seconds=max(0, _to_int(config.get("temp_file_ttl_seconds"), 10)),
             strict_command_match=_to_bool(config.get("strict_command_match"), True),
             log_debug=_to_bool(config.get("log_debug"), False),
+            weekly_rival_threshold=max(1, _to_int(config.get("weekly_rival_threshold"), 3)),
+            honor_wall_weeks=max(1, _to_int(config.get("honor_wall_weeks"), 4)),
+            weekly_top_n=max(1, _to_int(config.get("weekly_top_n"), 3)),
             media_send_mode=str(config.get("media_send_mode", "text_and_media")).strip() or "text_and_media",
             dajiao_media_mode=str(config.get("dajiao_media_mode", "fixed_gif")).strip() or "fixed_gif",
             suo_media_mode=str(config.get("suo_media_mode", "fixed_gif")).strip() or "fixed_gif",
