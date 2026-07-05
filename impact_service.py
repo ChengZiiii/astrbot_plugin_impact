@@ -18,12 +18,12 @@ class ImpactService(ImpactServiceWeeklyMixin, ImpactServiceGameplayMixin):
         self._yinpa_cd_data: dict[str, float] = {}
         self._last_penalty_state_key = "last_inactive_penalty_day"
         self._weekly_title_map = {
-            "length_top": {1: "本周牛王", 2: "本周二当家", 3: "本周牛界名流"},
-            "growth_top": {1: "本周最强发育", 2: "成长型选手", 3: "潜力股"},
-            "pk_top": {1: "本周决斗恶霸", 2: "本周单挑王", 3: "群内约架冠军"},
-            "inject_out_top": {1: "本周银趴之神", 2: "输出核心", 3: "注入达人"},
-            "inject_in_top": {1: "本周人形输液架", 2: "重点关照对象", 3: "高危受害者"},
-            "worst_shrink": {1: "本周最惨选手"},
+            "length_top": {1: "长度第一"},
+            "growth_top": {1: "涨得最多"},
+            "pk_top": {1: "干得最猛"},
+            "inject_out_top": {1: "输出最多"},
+            "inject_in_top": {1: "最倒霉"},
+            "worst_shrink": {1: "掉得最多"},
         }
 
     def run_daily_maintenance(self) -> None:

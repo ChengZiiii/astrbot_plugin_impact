@@ -32,7 +32,7 @@ class ImpactPluginHandlersMixin:
             return None
         group_id_raw = event.get_group_id()
         is_private = not group_id_raw
-        if is_private and command_key in {"weekly_report", "last_weekly_report", "weekly_rank", "weekly_stats", "rival", "honor"}:
+        if is_private and command_key in {"weekly_report", "last_weekly_report", "weekly_stats", "rival", "honor"}:
             return PlainReply("周玩法请在群聊查看喵")
         if is_private and not self._impact_config.private_chat_enabled:
             return None
@@ -86,8 +86,6 @@ class ImpactPluginHandlersMixin:
             return self._service.handle_weekly_report(group_id)
         if command_key == "last_weekly_report" and not is_private:
             return self._service.handle_last_weekly_report(group_id)
-        if command_key == "weekly_rank" and not is_private:
-            return self._service.handle_weekly_rank(group_id)
         if command_key == "weekly_stats" and not is_private:
             return self._service.handle_my_weekly_stats(group_id, sender_id)
         if command_key == "rival" and not is_private:
@@ -115,7 +113,11 @@ class ImpactPluginHandlersMixin:
             return PlainReply(f"你的全局长度为{current_length}cm喵\n你的全局排名为{global_rank}喵", mention_sender=True)
         top_slice = rankings[: self._impact_config.rank_top_count]
         picked = top_slice + [item for item in rankings[-self._impact_config.rank_bottom_count :] if item.user_id not in {rank.user_id for rank in top_slice}]
-        name_map = {item.user_id: await self._get_display_name(event, item.user_id) for item in picked}
+        picked_ids = [item.user_id for item in picked]
+        name_map = self._store.get_group_display_names(group_id, picked_ids)
+        for user_id in picked_ids:
+            if user_id not in name_map:
+                name_map[user_id] = await self._get_display_name(event, user_id)
         for user_id, display_name in name_map.items():
             self._store.upsert_group_display_name(group_id, user_id, display_name)
         chart_data = {name_map[item.user_id]: item.length_cm for item in picked}

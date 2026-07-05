@@ -3,6 +3,28 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 
+LEGACY_DEFAULT_COMMANDS = [
+    "dajiao",
+    "suo",
+    "query",
+    "pk",
+    "rank",
+    "toggle",
+    "yinpa",
+    "inject",
+    "help",
+]
+
+DEFAULT_COMMANDS = [
+    *LEGACY_DEFAULT_COMMANDS,
+    "weekly_report",
+    "last_weekly_report",
+    "weekly_stats",
+    "rival",
+    "honor",
+]
+
+
 def _to_bool(value: object, default: bool) -> bool:
     if isinstance(value, bool):
         return value
@@ -117,26 +139,10 @@ class ImpactConfig:
         weekly_broadcast_minute = max(0, min(59, weekly_broadcast_minute))
 
         jj_names = _to_str_list(config.get("jj_names"), ["牛子", "牛牛", "丁丁", "JJ"])
-        commands_enabled = _to_str_list(
-            config.get("commands_enabled"),
-            [
-                "dajiao",
-                "suo",
-                "query",
-                "pk",
-                "rank",
-                "toggle",
-                "yinpa",
-                "inject",
-                "help",
-                "weekly_report",
-                "last_weekly_report",
-                "weekly_rank",
-                "weekly_stats",
-                "rival",
-                "honor",
-            ],
-        )
+        commands_enabled = _to_str_list(config.get("commands_enabled"), DEFAULT_COMMANDS)
+        if set(commands_enabled) == set(LEGACY_DEFAULT_COMMANDS):
+            commands_enabled = DEFAULT_COMMANDS.copy()
+        commands_enabled = [command for command in commands_enabled if command != "weekly_rank"]
         pk_avatar_gif_styles = _normalize_avatar_gif_templates(
             _to_str_list(config.get("pk_avatar_gif_styles"), ["lash"]),
             ["lash"],

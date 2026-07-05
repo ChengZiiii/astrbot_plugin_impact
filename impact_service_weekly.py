@@ -17,7 +17,7 @@ class ImpactServiceWeeklyMixin:
             return None
         results = self._build_weekly_results(group_id, rows)
         name_map = self._build_group_name_map(group_id, rows, results)
-        report_text = self._build_weekly_report(previous_week_key, rows, results, name_map)
+        report_text = self._build_settled_weekly_report(previous_week_key, rows, results, name_map)
         self._store.save_weekly_settlement(previous_week_key, group_id, results, report_text)
         return report_text
 
@@ -26,15 +26,15 @@ class ImpactServiceWeeklyMixin:
         self._store.refresh_weekly_length_snapshots(week_key, group_id)
         rows = self._store.get_weekly_stats_rows(week_key, group_id)
         if not rows:
-            return PlainReply(f"【本群 {week_key} 周报】\n本周还没有人留下战绩喵")
+            return PlainReply("【本群本周周报】\n这周还没闹出什么动静，暂时还写不出什么像样的周报。")
         results = self._build_weekly_results(group_id, rows)
         name_map = self._build_group_name_map(group_id, rows, results)
-        return PlainReply(self._build_weekly_report(week_key, rows, results, name_map))
+        return PlainReply(self._build_current_weekly_report(week_key, rows, results, name_map))
 
     def handle_last_weekly_report(self, group_id: int) -> PlainReply:
         report = self._store.get_latest_settled_report(group_id)
         if report is None:
-            return PlainReply("本群目前还没有已结算周报喵")
+            return PlainReply("还没有能翻的上周周报，之前那点事还没攒出来。")
         _, report_text = report
         return PlainReply(report_text)
 
@@ -54,16 +54,6 @@ class ImpactServiceWeeklyMixin:
 
     def get_scheduled_weekly_report(self, group_id: int, current_week_key: str) -> str | None:
         return self.ensure_weekly_settlement(group_id, current_week_key)
-
-    def handle_weekly_rank(self, group_id: int) -> PlainReply:
-        week_key = get_current_week_key()
-        self._store.refresh_weekly_length_snapshots(week_key, group_id)
-        rows = self._store.get_weekly_stats_rows(week_key, group_id)
-        if not rows:
-            return PlainReply(f"【本群 {week_key} 周榜】\n本周还没有人留下战绩喵")
-        results = self._build_weekly_results(group_id, rows)
-        name_map = self._build_group_name_map(group_id, rows, results)
-        return PlainReply(self._build_weekly_rank_text(week_key, rows, results, name_map))
 
     def handle_my_weekly_stats(self, group_id: int, user_id: int) -> PlainReply:
         week_key = get_current_week_key()
@@ -159,19 +149,25 @@ class ImpactServiceWeeklyMixin:
             for index, row in enumerate(filtered_rows, start=1)
         ]
 
-    def _build_weekly_rank_text(self, week_key: str, rows: list[object], results: list[WeeklyResultEntry], name_map: dict[int, str]) -> str:
+    def _build_current_weekly_report(self, week_key: str, rows: list[object], results: list[WeeklyResultEntry], name_map: dict[int, str]) -> str:
         rows_by_user = {int(row["user_id"]): row for row in rows}
-        lines = [f"【本群 {week_key} 周榜】"]
-        lines.append(self._format_weekly_result_line("本周牛王", self._find_result(results, "length_top", 1), rows_by_user, "cm", name_map=name_map))
-        lines.append(self._format_weekly_result_line("本周成长之星", self._find_result(results, "growth_top", 1), rows_by_user, "cm", signed=True, empty_text="暂无成长之星", name_map=name_map))
-        lines.append(self._format_weekly_result_line("本周决斗恶霸", self._find_result(results, "pk_top", 1), rows_by_user, "胜", pk_mode=True, empty_text="本周没人约架", name_map=name_map))
-        lines.append(self._format_weekly_result_line("本周注入王", self._find_result(results, "inject_out_top", 1), rows_by_user, "ml", empty_text="本周无人输出", name_map=name_map))
-        lines.append(self._format_weekly_result_line("本周头号受害者", self._find_result(results, "inject_in_top", 1), rows_by_user, "ml", empty_text="本周无人受害", name_map=name_map))
-        lines.append(self._format_weekly_result_line("本周最惨选手", self._find_result(results, "worst_shrink", 1), rows_by_user, "cm", signed=True, empty_text="本周无人缩水", name_map=name_map))
+        lines = [f"【本群本周周报】（{week_key}）"]
+        lines.append(self._format_weekly_result_line("长度第一", self._find_result(results, "length_top", 1), rows_by_user, "cm", name_map=name_map))
+        lines.append(self._format_weekly_result_line("涨得最多", self._find_result(results, "growth_top", 1), rows_by_user, "cm", signed=True, empty_text="暂无", name_map=name_map))
+        lines.append(self._format_weekly_result_line("干得最猛", self._find_result(results, "pk_top", 1), rows_by_user, "胜", pk_mode=True, empty_text="暂无", name_map=name_map))
+        lines.append(self._format_weekly_result_line("最倒霉", self._find_result(results, "inject_in_top", 1), rows_by_user, "ml", empty_text="暂无", name_map=name_map))
+        lines.append(self._format_weekly_result_line("掉得最多", self._find_result(results, "worst_shrink", 1), rows_by_user, "cm", signed=True, empty_text="暂无", name_map=name_map))
         return "\n".join(lines)
 
-    def _build_weekly_report(self, week_key: str, rows: list[object], results: list[WeeklyResultEntry], name_map: dict[int, str]) -> str:
-        return self._build_weekly_rank_text(week_key, rows, results, name_map).replace("周榜", "周报", 1)
+    def _build_settled_weekly_report(self, week_key: str, rows: list[object], results: list[WeeklyResultEntry], name_map: dict[int, str]) -> str:
+        rows_by_user = {int(row["user_id"]): row for row in rows}
+        lines = [f"【本群上周周报】（{week_key}）"]
+        lines.append(self._format_weekly_result_line("长度第一", self._find_result(results, "length_top", 1), rows_by_user, "cm", name_map=name_map))
+        lines.append(self._format_weekly_result_line("涨得最多", self._find_result(results, "growth_top", 1), rows_by_user, "cm", signed=True, empty_text="暂无", name_map=name_map))
+        lines.append(self._format_weekly_result_line("干得最猛", self._find_result(results, "pk_top", 1), rows_by_user, "胜", pk_mode=True, empty_text="暂无", name_map=name_map))
+        lines.append(self._format_weekly_result_line("最倒霉", self._find_result(results, "inject_in_top", 1), rows_by_user, "ml", empty_text="暂无", name_map=name_map))
+        lines.append(self._format_weekly_result_line("掉得最多", self._find_result(results, "worst_shrink", 1), rows_by_user, "cm", signed=True, empty_text="暂无", name_map=name_map))
+        return "\n".join(lines)
 
     def _format_weekly_result_line(
         self,

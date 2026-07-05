@@ -241,11 +241,16 @@ async def run_phase_three(plugin_dir: Path) -> None:
             replies = await harness.send_group("10001", "本周周报", "20001")
             assert_reply_count(replies)
             assert_any_contains(replies, "2026-W27")
-            assert_any_contains(replies, "本群本周周报")
+            assert_any_contains(replies, "【本群本周周报】")
+            assert_any_contains(replies, "长度第一")
+            assert_any_contains(replies, "涨得最多")
+            assert_any_contains(replies, "干得最猛")
+            assert_any_contains(replies, "最倒霉")
+            assert_any_contains(replies, "掉得最多")
 
             hidden_alias_replies = await harness.send_group("10001", "周榜", "20001")
             assert_reply_count(hidden_alias_replies)
-            assert_any_contains(hidden_alias_replies, "本群本周周报")
+            assert_any_contains(hidden_alias_replies, "【本群本周周报】")
 
         with harness.freeze_time("2026-07-06 10:00:00"):
             proactive_messages = await harness.run_scheduled_weekly_report_once()
@@ -256,7 +261,7 @@ async def run_phase_three(plugin_dir: Path) -> None:
                 raise AssertionError(f"unexpected weekly report destination: {proactive_messages!r}")
             assert_any_contains([proactive_text], "周报")
             assert_any_contains([proactive_text], "2026-W27")
-            assert_any_contains([proactive_text], "本群上周周报")
+            assert_any_contains([proactive_text], "【本群上周周报】")
 
             latest_report = harness.store.get_latest_settled_report(20001)
             if latest_report is None:
@@ -274,7 +279,7 @@ async def run_phase_three(plugin_dir: Path) -> None:
             replies = await harness.send_group("10001", "本周周报", "20001")
             assert_reply_count(replies)
             assert_any_contains(replies, get_current_week_key())
-            assert_any_contains(replies, "本群本周周报")
+            assert_any_contains(replies, "【本群本周周报】")
 
             replies = await harness.send_group("10001", "上周周报", "20001")
             assert_reply_count(replies)

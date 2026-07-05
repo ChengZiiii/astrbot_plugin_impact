@@ -148,9 +148,15 @@ async def run_deep_edges(plugin_dir: Path) -> None:
                 await nickname_harness.send_group("10002", "查询", "20001")
                 replies = await nickname_harness.send_group("10001", "本周周报", "20001")
                 assert_any_contains(replies, "阿杰")
-                assert_any_contains(replies, "小白")
                 if any("10001" in reply or "10002" in reply for reply in replies):
                     raise AssertionError(f"weekly report leaked raw ids: {replies!r}")
+
+                honor_replies = await nickname_harness.send_group("10001", "群荣誉墙", "20001")
+                if any("10001" in reply or "10002" in reply for reply in honor_replies):
+                    raise AssertionError(f"honor wall leaked raw ids: {honor_replies!r}")
+
+                rank_replies = await nickname_harness.send_group("10001", "牛子排行", "20001")
+                assert_any_contains(rank_replies, "阿杰")
         finally:
             await nickname_harness.terminate()
 
