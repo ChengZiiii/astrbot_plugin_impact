@@ -53,8 +53,8 @@ class ImpactStoreWeeklyReportsMixin:
         with self._connect() as connection:
             for result in results:
                 connection.execute(
-                    "INSERT OR REPLACE INTO weekly_results(week_key, group_id, category, rank_no, user_id, metric_value, title_text, generated_at) "
-                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+                    "INSERT OR REPLACE INTO weekly_results(week_key, group_id, category, rank_no, user_id, metric_value, title_text, display_name_snapshot, generated_at) "
+                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
                     (
                         week_key,
                         group_id,
@@ -63,6 +63,7 @@ class ImpactStoreWeeklyReportsMixin:
                         result.user_id,
                         result.metric_value,
                         result.title_text,
+                        result.display_name_snapshot,
                         now_ts,
                     ),
                 )

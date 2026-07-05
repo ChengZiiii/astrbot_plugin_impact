@@ -138,6 +138,22 @@ async def run_deep_edges(plugin_dir: Path) -> None:
             if config_key not in schema:
                 raise AssertionError(f"schema missing config key: {config_key}")
 
+        nickname_harness = ImpactHarness(plugin_dir=plugin_dir, config=DEFAULT_CONFIG, data_subdir="runtime_phase13_names")
+        nickname_harness.add_user("10001", "Alice", admin=True)
+        nickname_harness.add_user("10002", "Bob")
+        nickname_harness.set_group_members("20001", [("10001", "阿杰"), ("10002", "小白")])
+        try:
+            with nickname_harness.freeze_time("2026-07-05 10:00:00"):
+                await nickname_harness.send_group("10001", "查询", "20001")
+                await nickname_harness.send_group("10002", "查询", "20001")
+                replies = await nickname_harness.send_group("10001", "本周周报", "20001")
+                assert_any_contains(replies, "阿杰")
+                assert_any_contains(replies, "小白")
+                if any("10001" in reply or "10002" in reply for reply in replies):
+                    raise AssertionError(f"weekly report leaked raw ids: {replies!r}")
+        finally:
+            await nickname_harness.terminate()
+
         replies = await harness.send_private("10001", "jj排行榜")
         assert_any_contains(replies, "全局排名")
         if any("群内排名" in reply for reply in replies):

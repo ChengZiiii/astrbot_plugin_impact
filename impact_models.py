@@ -35,3 +35,4 @@ class WeeklyResultEntry:
     user_id: int
     metric_value: float
     title_text: str | None = None
+    display_name_snapshot: str | None = None
