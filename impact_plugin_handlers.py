@@ -8,6 +8,24 @@ from astrbot.api.event import AstrMessageEvent
 
 from .draw_img import draw_bar_chart
 from .impact_command_defs import COMMAND_GROUP_MAP
+from .impact_copy_bank import (
+    DISABLED_COMMAND,
+    DISABLED_GROUP,
+    NO_DATA_RANK,
+    NO_DATA_WEEKLY,
+    NO_HONOR,
+    NO_LAST_WEEKLY,
+    NO_RIVAL,
+    NO_WEEKLY_STATS,
+    PRIVATE_WEEKLY,
+    WHITELIST_GROUP,
+    YINPA_NO_MEMBERS,
+    YINPA_NO_TARGET,
+    YINPA_PREFACE,
+    YINPA_RESULT,
+    YINPA_SELF_TARGET,
+    pick,
+)
 from .impact_models import ActionMediaRequest, ImageReply, PlainReply
 from .impact_time import get_current_week_key
 
@@ -28,12 +46,12 @@ class ImpactPluginHandlersMixin:
         if command_key is None:
             disabled_command_key = self._resolve_known_command_key(normalized)
             if disabled_command_key is not None and not self._is_command_enabled(disabled_command_key):
-                return PlainReply("这个命令现在没开，别试了。")
+                return PlainReply(pick(DISABLED_COMMAND))
             return None
         group_id_raw = event.get_group_id()
         is_private = not group_id_raw
         if is_private and command_key in {"weekly_report", "last_weekly_report", "weekly_stats", "rival", "honor"}:
-            return PlainReply("周玩法去群里看，私聊里没这些素材。")
+            return PlainReply(pick(PRIVATE_WEEKLY))
         if is_private and not self._impact_config.private_chat_enabled:
             return None
         group_id = 0 if is_private else int(str(group_id_raw))
@@ -42,9 +60,9 @@ class ImpactPluginHandlersMixin:
         if not is_private:
             group_id_text = str(group_id)
             if group_id_text in self._impact_config.disabled_groups:
-                return PlainReply("当前群已被插件黑名单禁用")
+                return PlainReply(pick(DISABLED_GROUP))
             if self._impact_config.enabled_groups and group_id_text not in self._impact_config.enabled_groups:
-                return PlainReply("当前群不在插件白名单中")
+                return PlainReply(pick(WHITELIST_GROUP))
 
         self._service.run_daily_maintenance()
         sender_id = int(event.get_sender_id())
@@ -105,7 +123,7 @@ class ImpactPluginHandlersMixin:
             self._store.ensure_user(sender_id, self._impact_config.user_initial_length)
         rankings = self._store.get_rankings() if is_private else self._store.get_group_rankings(group_id)
         if len(rankings) < self._impact_config.rank_min_users:
-            return PlainReply(f"目前记录的数据量小于{self._impact_config.rank_min_users}，凑不出像样的排行。")
+            return PlainReply(pick(NO_DATA_RANK).format(min=self._impact_config.rank_min_users))
         my_rank = next(index + 1 for index, item in enumerate(rankings) if item.user_id == sender_id)
         global_rank = self._store.get_global_rank(sender_id)
         if is_private:
@@ -135,22 +153,22 @@ class ImpactPluginHandlersMixin:
             return gate_reply
         members = await self._get_group_members(event, group_id)
         if not members and (self._impact_config.yinpa_require_member_api or at_id is None):
-            return PlainReply("这边拉不到群成员列表，这次没法随机点人。")
+            return PlainReply(pick(YINPA_NO_MEMBERS))
         target_id = self._pick_yinpa_target(normalized, sender_id, at_id, members)
         if target_id is None:
-            return PlainReply("这次没翻到合适的目标。")
+            return PlainReply(pick(YINPA_NO_TARGET))
         if target_id == sender_id:
-            return PlainReply("你连自己都不放过，是今天真没别的活人了？")
+            return PlainReply(pick(YINPA_SELF_TARGET))
         sender_name = await self._get_display_name(event, sender_id, members)
         target_name = await self._get_display_name(event, target_id, members)
         self._store.upsert_group_display_name(group_id, sender_id, sender_name)
         self._store.upsert_group_display_name(group_id, target_id, target_name)
-        preface_text = self._build_yinpa_preface(normalized, sender_name, at_id, target_name, target_id)
+        preface_text = pick(YINPA_PREFACE).format(sender=sender_name, target=target_name)
         injected_volume = self._service.finish_yinpa(sender_id, target_id, group_id)
         total_volume = self._service.get_today_injection(target_id)
         duration_seconds = random.randint(1, 20)
         return PlainReply(
-            f"{sender_name}磨蹭了{duration_seconds}秒，给{target_name}灌了{injected_volume}毫升脱氧核糖核酸。{target_name}今天已经累计吃了{total_volume}毫升。",
+            pick(YINPA_RESULT).format(sender=sender_name, target=target_name, duration=duration_seconds, volume=injected_volume, total=total_volume),
             media_request=ActionMediaRequest(action="yinpa", mode=self._impact_config.yinpa_media_mode, sender_id=sender_id, target_id=target_id),
             preface_text=preface_text,
         )
@@ -196,16 +214,6 @@ class ImpactPluginHandlersMixin:
         if nickname:
             return str(nickname)
         return str(user_id) if self._impact_config.nickname_fallback_to_user_id else "群友"
-
-    @staticmethod
-    def _build_yinpa_preface(normalized: str, sender_name: str, at_id: str | None, target_name: str, target_id: int) -> str:
-        if at_id is not None:
-            return f"这次点名 {target_name}。\n{sender_name}，别装了，你上。"
-        if "群主" in normalized:
-            return f"这次抽到群主。\n{sender_name}，别装了，你上。"
-        if "管理" in normalized:
-            return f"这次抽到一位管理。\n{sender_name}，别装了，你上。"
-        return f"这次抽到一位群友。\n{sender_name}，别装了，你上。"
 
     def _pick_yinpa_target(self, normalized: str, sender_id: int, at_id: str | None, members: list[dict]) -> int | None:
         if at_id is not None:

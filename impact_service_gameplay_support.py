@@ -2,9 +2,25 @@ from __future__ import annotations
 
 import random
 import time
+from typing import Sequence
 
 from astrbot.api.event import AstrMessageEvent
 
+from .impact_copy_bank import (
+    COOLDOWN_DAJIAO,
+    COOLDOWN_PK,
+    COOLDOWN_SUO,
+    COOLDOWN_YINPA,
+    DAJIAO_GROWTH,
+    DAJIAO_SHRINK,
+    PK_LOSE_BOTH,
+    PK_LOSE_NEGATIVE,
+    PK_WIN_NEGATIVE,
+    PK_WIN_POSITIVE,
+    SUO_GROWTH,
+    SUO_SHRINK,
+    pick,
+)
 from .impact_models import ActionMediaRequest
 from .impact_time import get_current_week_key
 
@@ -61,35 +77,37 @@ class ImpactServiceGameplaySupportMixin:
             return None
         return ActionMediaRequest(action=action, mode=mode, negative=negative, sender_id=sender_id, target_id=target_id)
 
-    def _format_single_change(self, prefix_text: str, subject_text: str, delta_cm: float, current_length: float, is_critical: bool) -> str:
+    def _format_single_change(self, growth_pool: tuple[str, ...], shrink_pool: tuple[str, ...], delta_cm: float, current_length: float, is_critical: bool) -> str:
         critical_prefix = "暴击。" if is_critical else ""
+        jj = self._jj_name()
         if delta_cm >= 0:
-            return f"{critical_prefix}{prefix_text}，{subject_text}涨了{round(delta_cm, 3)}cm，今天还算没白忙。现在是{current_length}cm。"
-        return f"{critical_prefix}{prefix_text}，{subject_text}掉了{round(abs(delta_cm), 3)}cm，这把多少有点丢人。现在只剩{current_length}cm。"
+            return critical_prefix + pick(growth_pool).format(delta=round(delta_cm, 3), jj=jj)
+        result = critical_prefix + pick(shrink_pool).format(delta=round(abs(delta_cm), 3), jj=jj)
+        result += f"现在是{current_length}cm。"
+        return result
 
     def _format_pk_result(self, is_sender_winner: bool, base_delta_cm: float, sender_delta_cm: float, target_delta_cm: float, is_critical: bool) -> str:
         critical_prefix = "暴击。" if is_critical else ""
+        jj = self._jj_name()
         if base_delta_cm >= 0:
-            if is_sender_winner:
-                return f"{critical_prefix}这把你赢了，你的{self._jj_name()}加了{round(sender_delta_cm, 3)}cm，对面掉了{round(abs(target_delta_cm), 3)}cm。场面算你撑住了。"
-            return f"{critical_prefix}这把你输了，你的{self._jj_name()}掉了{round(abs(sender_delta_cm), 3)}cm，对面反而加了{round(target_delta_cm, 3)}cm。脸基本是送出去了。"
-        if is_sender_winner:
-            return f"{critical_prefix}这把虽然是你赢，但状态也够烂。你的{self._jj_name()}掉了{round(abs(sender_delta_cm), 3)}cm，对面也跟着掉了{round(abs(target_delta_cm), 3)}cm。"
-        return f"{critical_prefix}这把你没赢，场面也没多体面。你的{self._jj_name()}掉了{round(abs(sender_delta_cm), 3)}cm，对面也只掉了{round(abs(target_delta_cm), 3)}cm。"
+            pool = PK_WIN_POSITIVE if is_sender_winner else PK_LOSE_NEGATIVE
+        else:
+            pool = PK_WIN_NEGATIVE if is_sender_winner else PK_LOSE_BOTH
+        return critical_prefix + pick(pool).format(delta=round(abs(sender_delta_cm), 3), jj=jj)
 
     def _format_pk_creation_reply(self, sender_created: bool, target_created: bool) -> str:
         if sender_created and target_created:
-            return f"你和对面都还没建档，已经顺手补上了。这把先不算，再发一次 pk。"
+            return "你和对面都还没建档，已经顺手补上了。这把先不算，再发一次 pk。"
         if sender_created:
-            return f"你还没建档，已经先给你补上了。这把先不算，再发一次 pk。"
-        return f"对面还没建档，已经先给 TA 补上了。这把先不算，再发一次 pk。"
+            return "你还没建档，已经先给你补上了。这把先不算，再发一次 pk。"
+        return "对面还没建档，已经先给 TA 补上了。这把先不算，再发一次 pk。"
 
     @staticmethod
-    def _cooldown_text(cache: dict[str, float], key: str, cooldown_seconds: int, prefix: str) -> str | None:
+    def _cooldown_text(cache: dict[str, float], key: str, cooldown_seconds: int, cooldown_pool: tuple[str, ...], **fmt_kwargs: str | float) -> str | None:
         last_ts = cache.get(key)
         if last_ts is None:
             return None
         remaining = cooldown_seconds - (time.time() - last_ts)
         if remaining <= 0:
             return None
-        return f"{prefix}，{round(remaining, 3)}秒后再来。"
+        return pick(cooldown_pool).format(cd=round(remaining, 3), **fmt_kwargs)

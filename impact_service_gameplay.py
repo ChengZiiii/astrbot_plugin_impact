@@ -3,7 +3,29 @@ from __future__ import annotations
 import random
 import time
 
-from .impact_copy_bank import QUERY_SELF_HIGH, QUERY_SELF_LOW, QUERY_SELF_MID, QUERY_TARGET_HIGH, QUERY_TARGET_LOW, QUERY_TARGET_MID, pick
+from .impact_copy_bank import (
+    COOLDOWN_DAJIAO,
+    COOLDOWN_PK,
+    COOLDOWN_SUO,
+    COOLDOWN_YINPA,
+    DAJIAO_GROWTH,
+    DAJIAO_SHRINK,
+    INJECTION_HISTORY,
+    INJECTION_TODAY,
+    NEW_USER_REPLY,
+    PK_NO_TARGET,
+    PK_SELF_TARGET,
+    QUERY_SELF_HIGH,
+    QUERY_SELF_LOW,
+    QUERY_SELF_MID,
+    QUERY_TARGET_HIGH,
+    QUERY_TARGET_LOW,
+    QUERY_TARGET_MID,
+    SUO_GROWTH,
+    SUO_SHRINK,
+    TOGGLE_ADMIN_ONLY,
+    pick,
+)
 
 from astrbot.api.event import AstrMessageEvent
 
@@ -18,15 +40,15 @@ class ImpactServiceGameplayMixin(ImpactServiceGameplaySupportMixin):
             return PlainReply(self._config.not_enabled_reply)
         if not self._store.has_user(sender_id):
             self._store.ensure_user(sender_id, self._config.user_initial_length)
-            return PlainReply(f"你还没建档，先给你补个 {self._config.user_initial_length}cm 的起步款。", mention_sender=True)
-        wait_text = self._cooldown_text(self._dj_cd_data, str(sender_id), self._config.dj_cd_time, "刚打完，先缓缓")
+            return PlainReply(pick(NEW_USER_REPLY).format(length=self._config.user_initial_length), mention_sender=True)
+        wait_text = self._cooldown_text(self._dj_cd_data, str(sender_id), self._config.dj_cd_time, COOLDOWN_DAJIAO, jj=self._jj_name())
         if wait_text is not None:
             return PlainReply(wait_text, mention_sender=True)
         self._dj_cd_data[str(sender_id)] = time.time()
         delta_cm, is_critical = self._random_delta()
         current_length = self._store.change_length(sender_id, delta_cm)
         self._record_group_length_change(group_id, sender_id, delta_cm, current_length, "dajiao_count", True)
-        return PlainReply(self._format_single_change("这把打完了", f"你的{self._jj_name()}", delta_cm, current_length, is_critical), media_request=self._build_media_request("dajiao", self._config.dajiao_media_mode, delta_cm < 0, sender_id, None), mention_sender=True)
+        return PlainReply(self._format_single_change(DAJIAO_GROWTH, DAJIAO_SHRINK, delta_cm, current_length, is_critical), media_request=self._build_media_request("dajiao", self._config.dajiao_media_mode, delta_cm < 0, sender_id, None), mention_sender=True)
 
     def handle_suo(self, group_enabled: bool, sender_id: int, at_id: str | None, group_id: int | None = None) -> PlainReply:
         if not group_enabled:
@@ -38,7 +60,7 @@ class ImpactServiceGameplayMixin(ImpactServiceGameplaySupportMixin):
             self._store.ensure_user(target_id, self._config.user_initial_length)
             prefix = "你" if target_id == sender_id else "TA"
             return PlainReply(f"{prefix}还没建档，先补个 {self._config.user_initial_length}cm 的起步款。", mention_sender=True)
-        wait_text = self._cooldown_text(self._suo_cd_data, str(sender_id), self._config.suo_cd_time, "你刚嗦过，先歇会")
+        wait_text = self._cooldown_text(self._suo_cd_data, str(sender_id), self._config.suo_cd_time, COOLDOWN_SUO)
         if wait_text is not None:
             return PlainReply(wait_text, mention_sender=True)
         self._suo_cd_data[str(sender_id)] = time.time()
@@ -49,8 +71,7 @@ class ImpactServiceGameplayMixin(ImpactServiceGameplaySupportMixin):
         else:
             self._record_group_length_change(group_id, sender_id, 0.0, self._store.get_length(sender_id), "suo_count", True)
             self._record_group_length_change(group_id, target_id, delta_cm, current_length, None, False)
-        prefix = "你的" if target_id == sender_id else "对方的"
-        return PlainReply(self._format_single_change("这口下去", f"{prefix}{self._jj_name()}", delta_cm, current_length, is_critical), media_request=self._build_media_request("suo", self._config.suo_media_mode, delta_cm < 0, sender_id, target_id), mention_sender=True)
+        return PlainReply(self._format_single_change(SUO_GROWTH, SUO_SHRINK, delta_cm, current_length, is_critical), media_request=self._build_media_request("suo", self._config.suo_media_mode, delta_cm < 0, sender_id, target_id), mention_sender=True)
 
     def handle_query(self, group_enabled: bool, sender_id: int, at_id: str | None, group_id: int | None = None) -> PlainReply:
         if not group_enabled:
@@ -77,17 +98,17 @@ class ImpactServiceGameplayMixin(ImpactServiceGameplaySupportMixin):
         if not group_enabled:
             return PlainReply(self._config.not_enabled_reply)
         if at_id is None and self._config.pk_require_at:
-            return PlainReply("pk 得先 @ 一个目标。")
+            return PlainReply(pick(PK_NO_TARGET))
         if at_id is None:
-            return PlainReply("现在没可打的目标。")
+            return PlainReply(pick(PK_NO_TARGET))
         target_id = int(at_id)
         if target_id == sender_id:
-            return PlainReply("你打自己是想图什么。")
+            return PlainReply(pick(PK_SELF_TARGET))
         sender_created = self._store.ensure_user(sender_id, self._config.user_initial_length)
         target_created = self._store.ensure_user(target_id, self._config.user_initial_length)
         if sender_created or target_created:
             return PlainReply(self._format_pk_creation_reply(sender_created, target_created))
-        wait_text = self._cooldown_text(self._pk_cd_data, str(sender_id), self._config.pk_cd_time, "刚打完一场，先冷静")
+        wait_text = self._cooldown_text(self._pk_cd_data, str(sender_id), self._config.pk_cd_time, COOLDOWN_PK)
         if wait_text is not None:
             return PlainReply(wait_text)
         self._pk_cd_data[str(sender_id)] = time.time()
@@ -108,10 +129,11 @@ class ImpactServiceGameplayMixin(ImpactServiceGameplaySupportMixin):
 
     def handle_toggle(self, group_id: int, normalized: str, event: AstrMessageEvent) -> PlainReply:
         if not self.is_sender_admin(event):
-            return PlainReply("这开关得管理员或群主来动。")
+            return PlainReply(pick(TOGGLE_ADMIN_ONLY))
         enabled = "开启" in normalized or "开始" in normalized
         self._store.set_group_enabled(group_id, enabled)
-        return PlainReply("已经开了，想玩就继续。" if enabled else "已经关了，先到这里。")
+        from .impact_copy_bank import TOGGLE_ON, TOGGLE_OFF
+        return PlainReply(pick(TOGGLE_ON) if enabled else pick(TOGGLE_OFF))
 
     def handle_injection(self, group_enabled: bool, sender_id: int, normalized: str, at_id: str | None, group_id: int | None = None) -> PlainReply | tuple[dict[str, float], str]:
         if not group_enabled:
@@ -120,17 +142,17 @@ class ImpactServiceGameplayMixin(ImpactServiceGameplaySupportMixin):
         object_name = "您" if target_id == sender_id else "该用户"
         self._record_group_query(group_id, sender_id)
         if "历史" not in normalized and "全部" not in normalized:
-            return PlainReply(f"{object_name}当日总被注射量为{self._store.get_today_injection(target_id)}ml", mention_sender=True)
+            return PlainReply(pick(INJECTION_TODAY).format(object=object_name, volume=self._store.get_today_injection(target_id)), mention_sender=True)
         history = self._store.get_injection_history(target_id)
         total_volume = round(sum(item.volume_ml for item in history), 3)
         if len(history) < 2:
-            return PlainReply(f"{object_name}历史总被注射量为{total_volume}ml", mention_sender=True)
-        return ({item.date_text: item.volume_ml for item in history}, f"{object_name}历史总被注射量为{total_volume}ml")
+            return PlainReply(pick(INJECTION_HISTORY).format(object=object_name, volume=total_volume), mention_sender=True)
+        return ({item.date_text: item.volume_ml for item in history}, pick(INJECTION_HISTORY).format(object=object_name, volume=total_volume))
 
     def can_yinpa(self, group_enabled: bool, sender_id: int) -> PlainReply | None:
         if not group_enabled:
             return PlainReply(self._config.not_enabled_reply)
-        wait_text = self._cooldown_text(self._yinpa_cd_data, str(sender_id), self._config.fuck_cd_time, "你这边刚结束，先缓一缓")
+        wait_text = self._cooldown_text(self._yinpa_cd_data, str(sender_id), self._config.fuck_cd_time, COOLDOWN_YINPA)
         if wait_text is not None:
             return PlainReply(wait_text)
         return None

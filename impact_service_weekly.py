@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from datetime import datetime
 
-from .impact_copy_bank import WEEKLY_CLOSERS, WEEKLY_OPENERS_CURRENT, WEEKLY_OPENERS_SETTLED, pick
+from .impact_copy_bank import NO_DATA_WEEKLY, NO_HONOR, NO_LAST_WEEKLY, NO_RIVAL, NO_WEEKLY_STATS, WEEKLY_CLOSERS, WEEKLY_OPENERS_CURRENT, WEEKLY_OPENERS_SETTLED, pick
 from .impact_models import PlainReply, WeeklyResultEntry
 from .impact_time import get_current_week_key, get_previous_week_key
 
@@ -27,7 +27,7 @@ class ImpactServiceWeeklyMixin:
         self._store.refresh_weekly_length_snapshots(week_key, group_id)
         rows = self._store.get_weekly_stats_rows(week_key, group_id)
         if not rows:
-            return PlainReply("【本群本周周报】\n这周还没闹出什么动静，暂时还写不出什么像样的周报。")
+            return PlainReply("【本群本周周报】\n" + pick(NO_DATA_WEEKLY))
         results = self._build_weekly_results(group_id, rows)
         name_map = self._build_group_name_map(group_id, rows, results)
         return PlainReply(self._build_current_weekly_report(week_key, rows, results, name_map))
@@ -35,7 +35,7 @@ class ImpactServiceWeeklyMixin:
     def handle_last_weekly_report(self, group_id: int) -> PlainReply:
         report = self._store.get_latest_settled_report(group_id)
         if report is None:
-            return PlainReply("还没有能翻的上周周报，之前那点事还没攒出来。")
+            return PlainReply(pick(NO_LAST_WEEKLY))
         _, report_text = report
         return PlainReply(report_text)
 
@@ -60,7 +60,7 @@ class ImpactServiceWeeklyMixin:
         week_key = get_current_week_key()
         row = self._store.get_weekly_user_row(week_key, group_id, user_id)
         if row is None:
-            return PlainReply("你这周在本群还没什么数据可看。")
+            return PlainReply(pick(NO_WEEKLY_STATS))
         rankings = self._store.get_group_rankings(group_id)
         rank_no = next(index + 1 for index, item in enumerate(rankings) if item.user_id == user_id)
         current_length = self._store.get_length(user_id)
@@ -89,7 +89,7 @@ class ImpactServiceWeeklyMixin:
         targeting_me = summary["targeting_me"]
         i_target = summary["i_target"]
         if revenge_target is None and not rivals and targeting_me is None and i_target is None:
-            return PlainReply("你这周还没和谁结下梁子。")
+            return PlainReply(pick(NO_RIVAL))
         all_ids = {revenge_target} | set(rivals) | {targeting_me, i_target}
         all_ids.discard(None)
         name_map = self._store.get_group_display_names(group_id, sorted(all_ids))
@@ -107,7 +107,7 @@ class ImpactServiceWeeklyMixin:
     def handle_honor_wall(self, group_id: int) -> PlainReply:
         honor_weeks = self._store.get_recent_honor_weeks(group_id, self._config.honor_wall_weeks)
         if not honor_weeks:
-            return PlainReply("本群现在还攒不出荣誉墙，再玩几轮。")
+            return PlainReply(pick(NO_HONOR))
         all_user_ids = sorted({int(row["user_id"]) for _, rows in honor_weeks for row in rows})
         name_map = self._store.get_group_display_names(group_id, all_user_ids)
         lines = ["【群荣誉墙】"]
