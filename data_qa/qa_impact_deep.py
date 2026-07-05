@@ -160,6 +160,12 @@ async def run_deep_edges(plugin_dir: Path) -> None:
         finally:
             await nickname_harness.terminate()
 
+        help_replies = await harness.send_group("10001", "淫趴介绍", "20001")
+        assert_any_contains(help_replies, "牛子排行")
+        assert_any_contains(help_replies, "本周周报")
+        if any("周榜" in reply for reply in help_replies):
+            raise AssertionError(f"help text still advertises weekly rank: {help_replies!r}")
+
         replies = await harness.send_private("10001", "jj排行榜")
         assert_any_contains(replies, "全局排名")
         if any("群内排名" in reply for reply in replies):
@@ -234,7 +240,7 @@ async def run_deep_edges(plugin_dir: Path) -> None:
 
             replies = await toggle_harness.send_group("10002", "查询", "20001")
             assert_reply_count(replies)
-            assert_any_contains(replies, "目前长度")
+            assert_any_contains(replies, "你现在")
             log_case("开启后普通命令可用", replies)
         finally:
             await toggle_harness.terminate()
@@ -260,7 +266,7 @@ async def run_deep_edges(plugin_dir: Path) -> None:
 
             replies = await gate_harness.send_group("10001", "查询", "20001")
             assert_reply_count(replies)
-            assert_any_contains(replies, "目前长度")
+            assert_any_contains(replies, "你现在")
             log_case("群白名单放行", replies)
         finally:
             await gate_harness.terminate()
@@ -279,7 +285,7 @@ async def run_deep_edges(plugin_dir: Path) -> None:
 
             replies = await disabled_harness.send_group("10001", "查询", "20001")
             assert_reply_count(replies)
-            assert_any_contains(replies, "目前长度")
+            assert_any_contains(replies, "你现在")
             log_case("保留查询命令", replies)
         finally:
             await disabled_harness.terminate()

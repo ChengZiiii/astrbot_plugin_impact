@@ -3,6 +3,8 @@ from __future__ import annotations
 import random
 import time
 
+from .impact_copy_bank import QUERY_HIGH, QUERY_LOW, QUERY_MID, pick
+
 from astrbot.api.event import AstrMessageEvent
 
 from .impact_models import PlainReply
@@ -59,8 +61,16 @@ class ImpactServiceGameplayMixin(ImpactServiceGameplaySupportMixin):
             prefix = "你" if target_id == sender_id else "TA"
             return PlainReply(f"{prefix}还没有创建{self._jj_name()}喵, 咱帮{prefix}创建了喵, 目前长度是{self._config.user_initial_length}cm喵", mention_sender=True)
         self._record_group_query(group_id, sender_id)
-        prefix = "你的" if target_id == sender_id else "TA的"
-        return PlainReply(f"{prefix}{self._jj_name()}目前长度为{self._store.get_length(target_id)}cm喵", mention_sender=True)
+        current_length = self._store.get_length(target_id)
+        if current_length < 12:
+            query_text = pick(QUERY_LOW)
+        elif current_length < 18:
+            query_text = pick(QUERY_MID)
+        else:
+            query_text = pick(QUERY_HIGH)
+        display_text = query_text.format(length=current_length)
+        mention_sender = target_id == sender_id
+        return PlainReply(display_text, mention_sender=mention_sender)
 
     def handle_pk(self, group_enabled: bool, sender_id: int, at_id: str | None, group_id: int | None = None) -> PlainReply:
         if not group_enabled:

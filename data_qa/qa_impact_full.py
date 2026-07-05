@@ -81,11 +81,11 @@ async def run_baseline(plugin_dir: Path) -> None:
 
         replies = await harness.send_group("10001", "查询", "20001")
         assert_reply_count(replies)
-        assert_any_contains(replies, "目前长度")
+        assert_any_contains(replies, "你现在")
 
         replies = await harness.send_group("10001", "查询", "20001", at="10002")
         assert_reply_count(replies)
-        assert_any_contains_one_of(replies, ("创建", "目前长度"))
+        assert_any_contains_one_of(replies, ("创建", "你现在"))
 
         replies = await harness.send_group("10003", "打胶", "20001")
         assert_reply_count(replies)

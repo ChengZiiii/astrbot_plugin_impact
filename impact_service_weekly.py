@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from datetime import datetime
 
+from .impact_copy_bank import WEEKLY_CLOSERS, WEEKLY_OPENERS_CURRENT, WEEKLY_OPENERS_SETTLED, pick
 from .impact_models import PlainReply, WeeklyResultEntry
 from .impact_time import get_current_week_key, get_previous_week_key
 
@@ -152,21 +153,25 @@ class ImpactServiceWeeklyMixin:
     def _build_current_weekly_report(self, week_key: str, rows: list[object], results: list[WeeklyResultEntry], name_map: dict[int, str]) -> str:
         rows_by_user = {int(row["user_id"]): row for row in rows}
         lines = [f"【本群本周周报】（{week_key}）"]
+        lines.append(pick(WEEKLY_OPENERS_CURRENT))
         lines.append(self._format_weekly_result_line("长度第一", self._find_result(results, "length_top", 1), rows_by_user, "cm", name_map=name_map))
         lines.append(self._format_weekly_result_line("涨得最多", self._find_result(results, "growth_top", 1), rows_by_user, "cm", signed=True, empty_text="暂无", name_map=name_map))
         lines.append(self._format_weekly_result_line("干得最猛", self._find_result(results, "pk_top", 1), rows_by_user, "胜", pk_mode=True, empty_text="暂无", name_map=name_map))
         lines.append(self._format_weekly_result_line("最倒霉", self._find_result(results, "inject_in_top", 1), rows_by_user, "ml", empty_text="暂无", name_map=name_map))
         lines.append(self._format_weekly_result_line("掉得最多", self._find_result(results, "worst_shrink", 1), rows_by_user, "cm", signed=True, empty_text="暂无", name_map=name_map))
+        lines.append(pick(WEEKLY_CLOSERS))
         return "\n".join(lines)
 
     def _build_settled_weekly_report(self, week_key: str, rows: list[object], results: list[WeeklyResultEntry], name_map: dict[int, str]) -> str:
         rows_by_user = {int(row["user_id"]): row for row in rows}
         lines = [f"【本群上周周报】（{week_key}）"]
+        lines.append(pick(WEEKLY_OPENERS_SETTLED))
         lines.append(self._format_weekly_result_line("长度第一", self._find_result(results, "length_top", 1), rows_by_user, "cm", name_map=name_map))
         lines.append(self._format_weekly_result_line("涨得最多", self._find_result(results, "growth_top", 1), rows_by_user, "cm", signed=True, empty_text="暂无", name_map=name_map))
         lines.append(self._format_weekly_result_line("干得最猛", self._find_result(results, "pk_top", 1), rows_by_user, "胜", pk_mode=True, empty_text="暂无", name_map=name_map))
         lines.append(self._format_weekly_result_line("最倒霉", self._find_result(results, "inject_in_top", 1), rows_by_user, "ml", empty_text="暂无", name_map=name_map))
         lines.append(self._format_weekly_result_line("掉得最多", self._find_result(results, "worst_shrink", 1), rows_by_user, "cm", signed=True, empty_text="暂无", name_map=name_map))
+        lines.append(pick(WEEKLY_CLOSERS))
         return "\n".join(lines)
 
     def _format_weekly_result_line(
