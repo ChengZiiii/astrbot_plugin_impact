@@ -116,7 +116,7 @@ async def run_deep_edges(plugin_dir: Path) -> None:
                 replies = await harness.send_group("10001", "pk", "20001", at="10002")
                 assert_reply_count(replies)
             replies = await harness.send_group("10002", "恩怨", "20001")
-            assert_any_contains(replies, "本周宿敌：10001")
+            assert_any_contains(replies, "本周宿敌：Alice")
 
         empty_harness = ImpactHarness(plugin_dir=plugin_dir, config=DEFAULT_CONFIG, data_subdir="runtime_phase06_empty")
         empty_harness.add_user("10001", "Alice", admin=True)
@@ -331,7 +331,7 @@ async def run_deep_edges(plugin_dir: Path) -> None:
             replies = await image_harness.send_group("10001", "jj排行榜", "20001")
             assert_reply_count(replies)
             assert_any_contains(replies, "[image:")
-            assert_any_contains(replies, "群内排名")
+            assert_any_contains(replies, "群内第")
             log_case("排行榜图片输出", replies)
         finally:
             await image_harness.terminate()

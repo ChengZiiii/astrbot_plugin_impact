@@ -60,12 +60,12 @@ class ImpactServiceWeeklyMixin:
         week_key = get_current_week_key()
         row = self._store.get_weekly_user_row(week_key, group_id, user_id)
         if row is None:
-            return PlainReply("你这周在本群还没有周数据喵")
+            return PlainReply("你这周在本群还没什么数据可看。")
         rankings = self._store.get_group_rankings(group_id)
         rank_no = next(index + 1 for index, item in enumerate(rankings) if item.user_id == user_id)
         current_length = self._store.get_length(user_id)
         lines = [
-            f"【我的周数据 {week_key}】",
+            f"【我的本周数据 {week_key}】",
             f"当前全局长度：{current_length}cm",
             f"当前群内排名：{rank_no}",
             f"本周净增长：{round(float(row['week_growth_total']), 3)}cm",
@@ -89,12 +89,19 @@ class ImpactServiceWeeklyMixin:
         targeting_me = summary["targeting_me"]
         i_target = summary["i_target"]
         if revenge_target is None and not rivals and targeting_me is None and i_target is None:
-            return PlainReply("你这周还没和谁结下梁子喵")
-        lines = [f"【我的恩怨 {week_key}】"]
-        lines.append(f"复仇目标：{revenge_target if revenge_target is not None else '暂无'}")
-        lines.append(f"本周宿敌：{', '.join(str(item) for item in rivals) if rivals else '暂无'}")
-        lines.append(f"谁最常针对我：{targeting_me if targeting_me is not None else '暂无'}")
-        lines.append(f"我最常针对谁：{i_target if i_target is not None else '暂无'}")
+            return PlainReply("你这周还没和谁结下梁子。")
+        all_ids = {revenge_target} | set(rivals) | {targeting_me, i_target}
+        all_ids.discard(None)
+        name_map = self._store.get_group_display_names(group_id, sorted(all_ids))
+        def name_or_id(uid: int | None) -> str:
+            if uid is None:
+                return "暂无"
+            return name_map.get(uid, str(uid))
+        lines = [f"【我的恩怨簿 {week_key}】"]
+        lines.append(f"复仇目标：{name_or_id(revenge_target)}")
+        lines.append(f"本周宿敌：{', '.join(name_or_id(item) for item in rivals) if rivals else '暂无'}")
+        lines.append(f"谁最常针对我：{name_or_id(targeting_me)}")
+        lines.append(f"我最常针对谁：{name_or_id(i_target)}")
         return PlainReply("\n".join(lines))
 
     def handle_honor_wall(self, group_id: int) -> PlainReply:

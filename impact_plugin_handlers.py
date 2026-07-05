@@ -105,12 +105,12 @@ class ImpactPluginHandlersMixin:
             self._store.ensure_user(sender_id, self._impact_config.user_initial_length)
         rankings = self._store.get_rankings() if is_private else self._store.get_group_rankings(group_id)
         if len(rankings) < self._impact_config.rank_min_users:
-            return PlainReply(f"目前记录的数据量小于{self._impact_config.rank_min_users}, 无法显示rank喵")
+            return PlainReply(f"目前记录的数据量小于{self._impact_config.rank_min_users}，凑不出像样的排行。")
         my_rank = next(index + 1 for index, item in enumerate(rankings) if item.user_id == sender_id)
         global_rank = self._store.get_global_rank(sender_id)
         if is_private:
             current_length = self._store.get_length(sender_id)
-            return PlainReply(f"你的全局长度为{current_length}cm喵\n你的全局排名为{global_rank}喵", mention_sender=True)
+            return PlainReply(f"你当前 {current_length}cm，全局排名第{global_rank}。", mention_sender=True)
         top_slice = rankings[: self._impact_config.rank_top_count]
         picked = top_slice + [item for item in rankings[-self._impact_config.rank_bottom_count :] if item.user_id not in {rank.user_id for rank in top_slice}]
         picked_ids = [item.user_id for item in picked]
@@ -122,12 +122,12 @@ class ImpactPluginHandlersMixin:
             self._store.upsert_group_display_name(group_id, user_id, display_name)
         chart_data = {name_map[item.user_id]: item.length_cm for item in picked}
         if not self._impact_config.rank_image_enabled:
-            lines = [f"你的群内排名为{my_rank}喵", f"你的全局排名为{global_rank}喵", "", "本群排行榜:"]
+            lines = [f"你群内第{my_rank}，全局第{global_rank}。", "", "本群排行榜:"]
             for item in picked:
                 lines.append(f"{name_map[item.user_id]}: {item.length_cm}cm")
             return PlainReply("\n".join(lines))
         image_bytes = await draw_bar_chart.draw_bar_chart(chart_data)
-        return ImageReply(image_bytes=image_bytes, suffix=".png", text=f"你的群内排名为{my_rank}喵\n你的全局排名为{global_rank}喵")
+        return ImageReply(image_bytes=image_bytes, suffix=".png", text=f"你群内第{my_rank}，全局第{global_rank}。")
 
     async def _handle_yinpa(self, group_enabled: bool, group_id: int, sender_id: int, normalized: str, at_id: str | None, event: AstrMessageEvent) -> PlainReply:
         gate_reply = self._service.can_yinpa(group_enabled, sender_id)

@@ -133,15 +133,15 @@ async def run_baseline(plugin_dir: Path) -> None:
 
         replies = await harness.send_group("10001", "jj排行榜", "20002")
         assert_reply_count(replies)
-        assert_any_contains(replies, "群内排名")
+        assert_any_contains(replies, "群内第")
         if any("Bob" in reply for reply in replies):
             raise AssertionError(f"group ranking should not include Bob in group two: {replies!r}")
 
         replies = await harness.send_private("10001", "jj排行榜")
         assert_reply_count(replies)
-        assert_any_contains(replies, "全局长度")
+        assert_any_contains(replies, "你当前")
         assert_any_contains(replies, "全局排名")
-        if any("群内排名" in reply for reply in replies):
+        if any("群内" in reply for reply in replies):
             raise AssertionError(f"private rank should not mention group rank: {replies!r}")
 
         print("PASS phase1 group membership and rank semantics")
@@ -309,20 +309,20 @@ async def run_phase_four(plugin_dir: Path) -> None:
                 replies = await harness.send_group("10001", "日群友", "20001", at="10002")
                 assert_reply_count(replies, minimum=2)
 
-            replies = await harness.send_group("10001", "我的周数据", "20001")
+            replies = await harness.send_group("10001", "我的本周数据", "20001")
             assert_reply_count(replies)
-            assert_any_contains(replies, "我的周数据")
+            assert_any_contains(replies, "我的本周数据")
             assert_any_contains(replies, "PK 场次 / 胜 / 负：3 / 3 / 0")
 
             replies = await harness.send_group("10002", "恩怨", "20001")
             assert_reply_count(replies)
-            assert_any_contains(replies, "复仇目标：10001")
-            assert_any_contains(replies, "本周宿敌：10001")
-            assert_any_contains(replies, "谁最常针对我：10001")
+            assert_any_contains(replies, "复仇目标：Alice")
+            assert_any_contains(replies, "本周宿敌：Alice")
+            assert_any_contains(replies, "谁最常针对我：Alice")
 
             replies = await harness.send_group("10001", "我的宿敌", "20001")
             assert_reply_count(replies)
-            assert_any_contains(replies, "我最常针对谁：10002")
+            assert_any_contains(replies, "我最常针对谁：Bob")
 
         settlement_dates = [
             ("2026-06-08 10:00:00", "2026-06-15 10:00:00"),
