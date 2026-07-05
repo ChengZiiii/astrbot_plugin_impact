@@ -39,6 +39,12 @@ CREATE TABLE IF NOT EXISTS plugin_state (
 
 CREATE INDEX IF NOT EXISTS idx_group_memberships_user
 ON group_memberships (user_id);
+
+CREATE TABLE IF NOT EXISTS group_sessions (
+    group_id INTEGER PRIMARY KEY,
+    unified_msg_origin TEXT NOT NULL,
+    updated_at INTEGER NOT NULL
+);
 """
 
 
@@ -126,6 +132,31 @@ class ImpactStoreBasicMixin:
                 "SELECT enabled FROM groups WHERE group_id = ?", (group_id,)
             ).fetchone()
         return bool(row["enabled"]) if row is not None else default_enabled
+
+    def save_group_session(self, group_id: int, unified_msg_origin: str) -> None:
+        with self._connect() as connection:
+            connection.execute(
+                "INSERT INTO group_sessions(group_id, unified_msg_origin, updated_at) VALUES (?, ?, ?) "
+                "ON CONFLICT(group_id) DO UPDATE SET unified_msg_origin = excluded.unified_msg_origin, updated_at = excluded.updated_at",
+                (group_id, unified_msg_origin, self._now_ts()),
+            )
+
+    def get_group_session(self, group_id: int) -> str | None:
+        with self._connect() as connection:
+            row = connection.execute(
+                "SELECT unified_msg_origin FROM group_sessions WHERE group_id = ?",
+                (group_id,),
+            ).fetchone()
+        if row is None:
+            return None
+        return str(row["unified_msg_origin"])
+
+    def list_group_sessions(self) -> list[tuple[int, str]]:
+        with self._connect() as connection:
+            rows = connection.execute(
+                "SELECT group_id, unified_msg_origin FROM group_sessions ORDER BY group_id ASC"
+            ).fetchall()
+        return [(int(row["group_id"]), str(row["unified_msg_origin"])) for row in rows]
 
     def set_group_enabled(self, group_id: int, enabled: bool) -> None:
         with self._connect() as connection:

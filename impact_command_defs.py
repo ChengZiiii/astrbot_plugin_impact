@@ -7,6 +7,7 @@ COMMAND_ALIASES = {
     "yinpa": ("日群友", "透群友", "日群主", "透群主", "日管理", "透管理"),
     "inject": ("注入查询", "摄入查询", "射入查询"),
     "weekly_report": ("本周周报", "周报"),
+    "last_weekly_report": ("上周周报",),
     "weekly_rank": ("本周榜", "周榜"),
     "weekly_stats": ("我的周数据",),
     "rival": ("我的宿敌", "恩怨"),
@@ -23,6 +24,7 @@ COMMAND_GROUP_MAP = {
     "yinpa": COMMAND_ALIASES["yinpa"],
     "inject": COMMAND_ALIASES["inject"],
     "weekly_report": COMMAND_ALIASES["weekly_report"],
+    "last_weekly_report": COMMAND_ALIASES["last_weekly_report"],
     "weekly_rank": COMMAND_ALIASES["weekly_rank"],
     "weekly_stats": COMMAND_ALIASES["weekly_stats"],
     "rival": COMMAND_ALIASES["rival"],
@@ -38,4 +40,10 @@ USAGE_TEXT = """指令1: 嗦牛子 (给目标牛牛增加长度, 自己或者他
 指令6: 开始银趴 | 关闭银趴 | 开启淫趴 | 禁止淫趴 | 开启银趴 | 禁止银趴 (由管理员或群主开启或者关闭)
 指令7: 日群友 | 透群友 | 日群主 | 透群主 | 日管理 | 透管理 (当使用透群友的时候如果at了人那么直接指定)
 指令8: 注入查询 | 摄入查询 | 射入查询 (查询目标被透注入的量，后接历史或全部可查看总量)
-指令9: 淫趴介绍 (输出淫趴插件的命令列表)"""
+指令9: 本周周报 | 周报 (查看当前周实时周报)
+指令10: 上周周报 (查看最近一次已结算的上周周报)
+指令11: 本周榜 | 周榜 (查看当前周实时周榜)
+指令12: 我的周数据 (查看你在本群当前周的详细数据)
+指令13: 我的宿敌 | 恩怨 (查看你在本群当前周的复仇目标和宿敌)
+指令14: 群荣誉 | 荣誉墙 (查看本群最近几周的荣誉墙)
+指令15: 淫趴介绍 (输出淫趴插件的命令列表)"""

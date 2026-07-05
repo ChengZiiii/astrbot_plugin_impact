@@ -53,6 +53,8 @@ def _normalize_avatar_gif_templates(values: list[str], default: list[str]) -> li
 
 @dataclass(frozen=True, slots=True)
 class ImpactConfig:
+    weekly_broadcast_hour: int
+    weekly_broadcast_minute: int
     dj_cd_time: int
     pk_cd_time: int
     suo_cd_time: int
@@ -108,6 +110,12 @@ class ImpactConfig:
     @staticmethod
     def from_dict(raw: dict | None) -> ImpactConfig:
         config = raw or {}
+
+        weekly_broadcast_hour = _to_int(config.get("weekly_broadcast_hour"), 10)
+        weekly_broadcast_minute = _to_int(config.get("weekly_broadcast_minute"), 0)
+        weekly_broadcast_hour = max(0, min(23, weekly_broadcast_hour))
+        weekly_broadcast_minute = max(0, min(59, weekly_broadcast_minute))
+
         jj_names = _to_str_list(config.get("jj_names"), ["牛子", "牛牛", "丁丁", "JJ"])
         commands_enabled = _to_str_list(
             config.get("commands_enabled"),
@@ -122,6 +130,7 @@ class ImpactConfig:
                 "inject",
                 "help",
                 "weekly_report",
+                "last_weekly_report",
                 "weekly_rank",
                 "weekly_stats",
                 "rival",
@@ -143,6 +152,8 @@ class ImpactConfig:
             )
         )
         return ImpactConfig(
+            weekly_broadcast_hour=weekly_broadcast_hour,
+            weekly_broadcast_minute=weekly_broadcast_minute,
             dj_cd_time=_to_int(config.get("djcdtime"), 300),
             pk_cd_time=_to_int(config.get("pkcdtime"), 60),
             suo_cd_time=_to_int(config.get("suocdtime"), 300),

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 from pathlib import Path
 from typing import assert_never
 
@@ -16,6 +17,7 @@ from .impact_models import ImageReply, PlainReply
 from .impact_plugin_handlers import ImpactPluginHandlersMixin
 from .impact_service import ImpactService
 from .impact_store import ImpactStore
+from .impact_time import get_current_week_key
 from .txt2img import txt_to_img
 
 
@@ -40,8 +42,43 @@ class ImpactPlugin(ImpactPluginHandlersMixin, Star):
         self._media_manager = ImpactMediaManager(self._impact_config, self._tmp_dir, self._resource_dir)
         self._txt_to_img = txt_to_img
         self._usage_text = USAGE_TEXT
+        self._weekly_broadcast_task = None
+        try:
+            self._weekly_broadcast_task = asyncio.create_task(self._weekly_broadcast_loop())
+        except RuntimeError:
+            self._weekly_broadcast_task = None
         if self._impact_config.log_debug:
             logger.info(f"[impact] loaded config: {self._impact_config}")
+
+    async def _weekly_broadcast_loop(self) -> None:
+        await asyncio.sleep(5)
+        while True:
+            try:
+                await self._run_scheduled_weekly_report_once()
+            except asyncio.CancelledError:
+                raise
+            except Exception:
+                logger.exception("[impact] 周报定时播报失败")
+            await asyncio.sleep(30)
+
+    async def _run_scheduled_weekly_report_once(self) -> None:
+        current_week_key = get_current_week_key()
+        if not self._service.should_run_scheduled_weekly_report():
+            return
+        had_pending_report = False
+        send_failed = False
+        for group_id, umo in self._store.list_group_sessions():
+            report_text = self._service.ensure_weekly_settlement(group_id, current_week_key)
+            if report_text is None:
+                continue
+            had_pending_report = True
+            try:
+                await self.context.send_message(umo, [Comp.Plain(report_text)])
+            except Exception as exc:
+                send_failed = True
+                logger.warning(f"[impact] 周报主动播报失败: group_id={group_id}, error={exc}")
+        if not had_pending_report or not send_failed:
+            self._service.mark_scheduled_weekly_report_sent(current_week_key)
 
     @filter.event_message_type(EventMessageType.ALL)
     async def handle_all_commands(self, event: AstrMessageEvent):
@@ -78,3 +115,12 @@ class ImpactPlugin(ImpactPluginHandlersMixin, Star):
                 yield self._media_manager.build_image_result(event, ImageReply(image_bytes, suffix, text, mention_sender))
             case unreachable:
                 assert_never(unreachable)
+
+    async def terminate(self) -> None:
+        task = self._weekly_broadcast_task
+        if task is not None and not task.done():
+            task.cancel()
+            try:
+                await task
+            except asyncio.CancelledError:
+                pass

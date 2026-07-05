@@ -1,4 +1,16 @@
 {
+  "weekly_broadcast_hour": {
+    "description": "周报播报小时",
+    "type": "int",
+    "default": 10,
+    "hint": "每周一主动播报上周周报的小时，使用 0~23 的服务器本地时间。"
+  },
+  "weekly_broadcast_minute": {
+    "description": "周报播报分钟",
+    "type": "int",
+    "default": 0,
+    "hint": "每周一主动播报上周周报的分钟，使用 0~59 的服务器本地时间。"
+  },
   "djcdtime": {
     "description": "打胶冷却秒数",
     "type": "int",
@@ -188,8 +200,8 @@
   "commands_enabled": {
     "description": "启用的命令组",
     "type": "list",
-    "default": ["dajiao", "suo", "query", "pk", "rank", "toggle", "yinpa", "inject", "help", "weekly_report", "weekly_rank", "weekly_stats", "rival", "honor"],
-    "hint": "可选键：dajiao,suo,query,pk,rank,toggle,yinpa,inject,help,weekly_report,weekly_rank,weekly_stats,rival,honor。删除某项即可禁用对应命令组。"
+    "default": ["dajiao", "suo", "query", "pk", "rank", "toggle", "yinpa", "inject", "help", "weekly_report", "last_weekly_report", "weekly_rank", "weekly_stats", "rival", "honor"],
+    "hint": "可选键：dajiao,suo,query,pk,rank,toggle,yinpa,inject,help,weekly_report,last_weekly_report,weekly_rank,weekly_stats,rival,honor。删除某项即可禁用对应命令组。"
   },
   "weekly_rival_threshold": {
     "description": "宿敌触发阈值",

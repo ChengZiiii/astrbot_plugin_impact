@@ -19,7 +19,7 @@ class ImpactPluginHandlersMixin:
             return None
         group_id_raw = event.get_group_id()
         is_private = not group_id_raw
-        if is_private and command_key in {"weekly_report", "weekly_rank", "weekly_stats", "rival", "honor"}:
+        if is_private and command_key in {"weekly_report", "last_weekly_report", "weekly_rank", "weekly_stats", "rival", "honor"}:
             return PlainReply("周玩法请在群聊查看喵")
         if is_private and not self._impact_config.private_chat_enabled:
             return None
@@ -41,6 +41,9 @@ class ImpactPluginHandlersMixin:
             settlement_report = self._service.ensure_weekly_settlement(group_id, get_current_week_key())
             if settlement_report is not None:
                 await event.send(event.plain_result(settlement_report))
+            umo = getattr(event, "unified_msg_origin", None)
+            if isinstance(umo, str) and umo:
+                self._store.save_group_session(group_id, umo)
             member_ids = [sender_id]
             if at_id is not None:
                 member_ids.append(int(at_id))
@@ -67,6 +70,8 @@ class ImpactPluginHandlersMixin:
             return await self._handle_injection(group_enabled, sender_id, normalized, at_id, None if is_private else group_id)
         if command_key == "weekly_report" and not is_private:
             return self._service.handle_weekly_report(group_id)
+        if command_key == "last_weekly_report" and not is_private:
+            return self._service.handle_last_weekly_report(group_id)
         if command_key == "weekly_rank" and not is_private:
             return self._service.handle_weekly_rank(group_id)
         if command_key == "weekly_stats" and not is_private:

@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from datetime import datetime
+
 from .impact_models import PlainReply, WeeklyResultEntry
 from .impact_time import get_current_week_key, get_previous_week_key
 
@@ -19,11 +21,37 @@ class ImpactServiceWeeklyMixin:
         return report_text
 
     def handle_weekly_report(self, group_id: int) -> PlainReply:
+        week_key = get_current_week_key()
+        self._store.refresh_weekly_length_snapshots(week_key, group_id)
+        rows = self._store.get_weekly_stats_rows(week_key, group_id)
+        if not rows:
+            return PlainReply(f"【本群 {week_key} 周报】\n本周还没有人留下战绩喵")
+        results = self._build_weekly_results(rows)
+        return PlainReply(self._build_weekly_report(week_key, rows, results))
+
+    def handle_last_weekly_report(self, group_id: int) -> PlainReply:
         report = self._store.get_latest_settled_report(group_id)
         if report is None:
             return PlainReply("本群目前还没有已结算周报喵")
         _, report_text = report
         return PlainReply(report_text)
+
+    def should_run_scheduled_weekly_report(self) -> bool:
+        now_value = datetime.now()
+        current_week_key = get_current_week_key()
+        if now_value.weekday() != 0:
+            return False
+        if now_value.hour != self._config.weekly_broadcast_hour or now_value.minute != self._config.weekly_broadcast_minute:
+            return False
+        if self._store.get_state_value("last_weekly_broadcast_week") == current_week_key:
+            return False
+        return True
+
+    def mark_scheduled_weekly_report_sent(self, current_week_key: str) -> None:
+        self._store.set_state_value("last_weekly_broadcast_week", current_week_key)
+
+    def get_scheduled_weekly_report(self, group_id: int, current_week_key: str) -> str | None:
+        return self.ensure_weekly_settlement(group_id, current_week_key)
 
     def handle_weekly_rank(self, group_id: int) -> PlainReply:
         week_key = get_current_week_key()
