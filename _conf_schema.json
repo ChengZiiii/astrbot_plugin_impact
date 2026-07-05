@@ -200,8 +200,8 @@
   "commands_enabled": {
     "description": "启用的命令组",
     "type": "list",
-    "default": ["dajiao", "suo", "query", "pk", "rank", "toggle", "yinpa", "inject", "help", "weekly_report", "last_weekly_report", "weekly_rank", "weekly_stats", "rival", "honor"],
-    "hint": "可选键：dajiao,suo,query,pk,rank,toggle,yinpa,inject,help,weekly_report,last_weekly_report,weekly_rank,weekly_stats,rival,honor。删除某项即可禁用对应命令组。"
+    "default": ["dajiao", "suo", "query", "pk", "rank", "toggle", "yinpa", "inject", "help", "weekly_report", "last_weekly_report", "weekly_stats", "rival", "honor"],
+    "hint": "可选键：dajiao,suo,query,pk,rank,toggle,yinpa,inject,help,weekly_report,last_weekly_report,weekly_stats,rival,honor。删除某项即可禁用对应命令组。"
   },
   "weekly_rival_threshold": {
     "description": "宿敌触发阈值",
