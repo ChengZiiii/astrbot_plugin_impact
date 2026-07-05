@@ -25,17 +25,32 @@ WEEKLY_CLOSERS = (
     "总的来说，这周谁体面谁难看，基本都已经写在这了。",
 )
 
-QUERY_LOW = (
-    "你现在是 {length}cm，说有也算有。",
-    "你现在 {length}cm，暂时还没什么排面。",
+QUERY_SELF_LOW = (
+    "你现在 {length}cm，先别急着吹。",
+    "你现在 {length}cm，排面还没攒起来。",
 )
 
-QUERY_MID = (
-    "你现在 {length}cm，混日子是够了。",
-    "你现在 {length}cm，不算难看，但也别太急着装。",
+QUERY_SELF_MID = (
+    "你现在 {length}cm，勉强算能看。",
+    "你现在 {length}cm，混日子够了，但也别太有自信。",
 )
 
-QUERY_HIGH = (
-    "你现在 {length}cm，已经有点让人看着不爽了。",
-    "你现在 {length}cm，位置摆在这，别人多少会有点烦。",
+QUERY_SELF_HIGH = (
+    "你现在 {length}cm，难怪别人看你不顺眼。",
+    "你现在 {length}cm，这数摆出来就挺招人烦。",
+)
+
+QUERY_TARGET_LOW = (
+    "TA现在 {length}cm，排面还没攒出来。",
+    "TA现在 {length}cm，基本还在起步阶段。",
+)
+
+QUERY_TARGET_MID = (
+    "TA现在 {length}cm，混得过去。",
+    "TA现在 {length}cm，不算丢人，但也没多强。",
+)
+
+QUERY_TARGET_HIGH = (
+    "TA现在 {length}cm，难怪你专门来查。",
+    "TA现在 {length}cm，怪不得容易招人惦记。",
 )

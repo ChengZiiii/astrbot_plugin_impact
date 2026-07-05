@@ -69,15 +69,19 @@ async def run_baseline(plugin_dir: Path) -> None:
 
         replies = await harness.send_group("10001", "打胶", "20001")
         assert_reply_count(replies)
-        assert_any_contains_one_of(replies, ("创建", "打胶结束"))
+        assert_any_contains_one_of(replies, ("建档", "这把"))
 
         replies = await harness.send_group("10001", "打胶", "20001")
         assert_reply_count(replies)
-        assert_any_contains(replies, "打胶结束")
+        assert_any_contains(replies, "这把")
+        if any("喵" in reply for reply in replies):
+            raise AssertionError(f"gameplay reply should use new copy tone: {replies!r}")
 
         replies = await harness.send_group("10001", "嗦牛子", "20001")
         assert_reply_count(replies)
-        assert_any_contains(replies, "嗦完之后")
+        assert_any_contains(replies, "这口")
+        if any("喵" in reply for reply in replies):
+            raise AssertionError(f"suo reply should use new copy tone: {replies!r}")
 
         replies = await harness.send_group("10001", "查询", "20001")
         assert_reply_count(replies)
@@ -85,14 +89,14 @@ async def run_baseline(plugin_dir: Path) -> None:
 
         replies = await harness.send_group("10001", "查询", "20001", at="10002")
         assert_reply_count(replies)
-        assert_any_contains_one_of(replies, ("创建", "你现在"))
+        assert_any_contains_one_of(replies, ("建档", "TA现在"))
 
         replies = await harness.send_group("10003", "打胶", "20001")
         assert_reply_count(replies)
 
         replies = await harness.send_group("10001", "pk", "20001", at="10002")
         assert_reply_count(replies)
-        assert_any_contains(replies, "对决")
+        assert_any_contains(replies, "这把")
 
         replies = await harness.send_group("10001", "jj排行榜", "20001")
         assert_reply_count(replies)
@@ -100,7 +104,7 @@ async def run_baseline(plugin_dir: Path) -> None:
 
         replies = await harness.send_group("10001", "日群友", "20001", at="10002")
         assert_reply_count(replies, minimum=2)
-        assert_any_contains(replies, "注入")
+        assert_any_contains(replies, "脱氧核糖核酸")
 
         replies = await harness.send_group("10001", "注入查询", "20001", at="10002")
         assert_reply_count(replies)
@@ -245,6 +249,7 @@ async def run_phase_three(plugin_dir: Path) -> None:
             assert_any_contains(replies, "长度第一")
             assert_any_contains(replies, "涨得最多")
             assert_any_contains(replies, "干得最猛")
+            assert_any_contains(replies, "输出最多")
             assert_any_contains(replies, "最倒霉")
             assert_any_contains(replies, "掉得最多")
 

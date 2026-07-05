@@ -62,27 +62,27 @@ class ImpactServiceGameplaySupportMixin:
         return ActionMediaRequest(action=action, mode=mode, negative=negative, sender_id=sender_id, target_id=target_id)
 
     def _format_single_change(self, prefix_text: str, subject_text: str, delta_cm: float, current_length: float, is_critical: bool) -> str:
-        critical_prefix = "暴击喵！" if is_critical else ""
+        critical_prefix = "暴击。" if is_critical else ""
         if delta_cm >= 0:
-            return f"{critical_prefix}{prefix_text}, {subject_text}很满意喵, 长了{round(delta_cm, 3)}cm喵, 目前长度为{current_length}cm喵"
-        return f"{critical_prefix}{prefix_text}, {subject_text}委屈坏了喵, 缩短了{round(abs(delta_cm), 3)}cm喵, 目前长度只剩{current_length}cm喵"
+            return f"{critical_prefix}{prefix_text}，{subject_text}涨了{round(delta_cm, 3)}cm，今天还算没白忙。现在是{current_length}cm。"
+        return f"{critical_prefix}{prefix_text}，{subject_text}掉了{round(abs(delta_cm), 3)}cm，这把多少有点丢人。现在只剩{current_length}cm。"
 
     def _format_pk_result(self, is_sender_winner: bool, base_delta_cm: float, sender_delta_cm: float, target_delta_cm: float, is_critical: bool) -> str:
-        critical_prefix = "暴击喵！" if is_critical else ""
+        critical_prefix = "暴击。" if is_critical else ""
         if base_delta_cm >= 0:
             if is_sender_winner:
-                return f"{critical_prefix}对决胜利喵, 你的{self._jj_name()}增加了{round(sender_delta_cm, 3)}cm喵, 对面缩短了{round(abs(target_delta_cm), 3)}cm喵"
-            return f"{critical_prefix}对决失败喵, 你的{self._jj_name()}缩短了{round(abs(sender_delta_cm), 3)}cm喵, 对面增加了{round(target_delta_cm, 3)}cm喵"
+                return f"{critical_prefix}这把你赢了，你的{self._jj_name()}加了{round(sender_delta_cm, 3)}cm，对面掉了{round(abs(target_delta_cm), 3)}cm。场面算你撑住了。"
+            return f"{critical_prefix}这把你输了，你的{self._jj_name()}掉了{round(abs(sender_delta_cm), 3)}cm，对面反而加了{round(target_delta_cm, 3)}cm。脸基本是送出去了。"
         if is_sender_winner:
-            return f"{critical_prefix}对决虽然赢了喵, 但今天状态不太妙, 你的{self._jj_name()}缩短了{round(abs(sender_delta_cm), 3)}cm喵, 对面也跟着缩短了{round(abs(target_delta_cm), 3)}cm喵"
-        return f"{critical_prefix}对决失败喵, 今天谁都高兴不起来, 你的{self._jj_name()}缩短了{round(abs(sender_delta_cm), 3)}cm喵, 对面也只缩短了{round(abs(target_delta_cm), 3)}cm喵"
+            return f"{critical_prefix}这把虽然是你赢，但状态也够烂。你的{self._jj_name()}掉了{round(abs(sender_delta_cm), 3)}cm，对面也跟着掉了{round(abs(target_delta_cm), 3)}cm。"
+        return f"{critical_prefix}这把你没赢，场面也没多体面。你的{self._jj_name()}掉了{round(abs(sender_delta_cm), 3)}cm，对面也只掉了{round(abs(target_delta_cm), 3)}cm。"
 
     def _format_pk_creation_reply(self, sender_created: bool, target_created: bool) -> str:
         if sender_created and target_created:
-            return f"你和对面都还没有创建{self._jj_name()}喵, 咱都帮你们创建好了喵, 这次先不对决, 再发一次 pk 试试喵"
+            return f"你和对面都还没建档，已经顺手补上了。这把先不算，再发一次 pk。"
         if sender_created:
-            return f"你还没有创建{self._jj_name()}喵, 咱帮你创建好了喵, 这次先不对决, 再发一次 pk 试试喵"
-        return f"对面还没有创建{self._jj_name()}喵, 咱帮TA创建好了喵, 这次先不对决, 再发一次 pk 试试喵"
+            return f"你还没建档，已经先给你补上了。这把先不算，再发一次 pk。"
+        return f"对面还没建档，已经先给 TA 补上了。这把先不算，再发一次 pk。"
 
     @staticmethod
     def _cooldown_text(cache: dict[str, float], key: str, cooldown_seconds: int, prefix: str) -> str | None:
@@ -92,4 +92,4 @@ class ImpactServiceGameplaySupportMixin:
         remaining = cooldown_seconds - (time.time() - last_ts)
         if remaining <= 0:
             return None
-        return f"{prefix}, 请等待{round(remaining, 3)}秒后再试喵"
+        return f"{prefix}，{round(remaining, 3)}秒后再来。"

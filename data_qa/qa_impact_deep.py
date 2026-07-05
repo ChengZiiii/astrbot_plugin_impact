@@ -57,7 +57,7 @@ async def run_deep_edges(plugin_dir: Path) -> None:
     try:
         replies = await harness.send_private("10001", "周报")
         assert_reply_count(replies)
-        assert_any_contains(replies, "群聊查看")
+        assert_any_contains(replies, "周玩法去群里看")
         log_case("私聊周报拦截", replies)
 
         cooldown_config = dict(DEFAULT_CONFIG)
@@ -71,7 +71,7 @@ async def run_deep_edges(plugin_dir: Path) -> None:
                 assert_reply_count(replies)
                 log_case("打胶冷却-首次", replies)
                 replies = await cooldown_harness.send_group("10001", "打胶", "20001")
-                assert_any_contains(replies, "请等待")
+                assert_any_contains(replies, "秒后再来")
                 log_case("打胶冷却-立即重试", replies)
             with cooldown_harness.freeze_time("2026-07-05 10:01:01"):
                 replies = await cooldown_harness.send_group("10001", "打胶", "20001")
@@ -88,6 +88,10 @@ async def run_deep_edges(plugin_dir: Path) -> None:
             with patch("random.uniform", return_value=7.0):
                 replies = await harness.send_group("10001", "日群友", "20001", at="10002")
                 assert_reply_count(replies, minimum=2)
+                assert_any_contains(replies, "Alice")
+                assert_any_contains(replies, "Bob")
+                if any("10001" in reply or "10002" in reply for reply in replies):
+                    raise AssertionError(f"yinpa reply leaked raw ids: {replies!r}")
                 log_case("日群友@目标", replies)
             replies = await harness.send_group("10001", "注入查询 历史", "20001", at="10002")
             assert_reply_count(replies)
@@ -230,12 +234,12 @@ async def run_deep_edges(plugin_dir: Path) -> None:
         try:
             replies = await toggle_harness.send_group("10002", "开启淫趴", "20001")
             assert_reply_count(replies)
-            assert_any_contains(replies, "只有管理员或群主")
+            assert_any_contains(replies, "管理员或群主")
             log_case("非管理员切换开关", replies)
 
             replies = await toggle_harness.send_group("10001", "开启淫趴", "20001")
             assert_reply_count(replies)
-            assert_any_contains(replies, "功能已开启")
+            assert_any_contains(replies, "已经开了")
             log_case("管理员切换开关", replies)
 
             replies = await toggle_harness.send_group("10002", "查询", "20001")
@@ -279,7 +283,7 @@ async def run_deep_edges(plugin_dir: Path) -> None:
         try:
             replies = await disabled_harness.send_group("10001", "周报", "20001")
             assert_reply_count(replies)
-            assert_any_contains(replies, "已被插件配置禁用")
+            assert_any_contains(replies, "现在没开")
             print("CASE 禁用周报命令")
             print(f"  -> {replies[0]}")
 
@@ -313,6 +317,19 @@ async def run_deep_edges(plugin_dir: Path) -> None:
         finally:
             await legacy_harness.terminate()
 
+        migrated_weekly_rank_config = dict(DEFAULT_CONFIG)
+        migrated_weekly_rank_config["commands_enabled"] = ["query", "weekly_rank"]
+        migrated_harness = ImpactHarness(plugin_dir=plugin_dir, config=migrated_weekly_rank_config, data_subdir="runtime_phase09_weekly_rank_migration")
+        migrated_harness.add_user("10001", "Alice", admin=True)
+        migrated_harness.set_group_members("20001", [("10001", "Alice")])
+        try:
+            replies = await migrated_harness.send_group("10001", "周报", "20001")
+            assert_reply_count(replies)
+            assert_any_contains(replies, "【本群本周周报】")
+            log_case("weekly_rank 旧配置迁移", replies)
+        finally:
+            await migrated_harness.terminate()
+
         image_config = dict(DEFAULT_CONFIG)
         image_config["rank_image_enabled"] = True
         image_config["usage_image_enabled"] = True
@@ -336,6 +353,29 @@ async def run_deep_edges(plugin_dir: Path) -> None:
         finally:
             await image_harness.terminate()
 
+        snapshot_harness = ImpactHarness(plugin_dir=plugin_dir, config=DEFAULT_CONFIG, data_subdir="runtime_phase13_snapshot")
+        snapshot_harness.add_user("10001", "Alice", admin=True)
+        snapshot_harness.add_user("10002", "Bob")
+        snapshot_harness.set_group_members("20001", [("10001", "阿杰"), ("10002", "小白")])
+        try:
+            with snapshot_harness.freeze_time("2026-07-05 10:00:00"):
+                with patch("random.random", side_effect=[1.0, 1.0]), patch("random.uniform", return_value=1.0):
+                    await snapshot_harness.send_group("10001", "打胶", "20001")
+                await snapshot_harness.send_group("10002", "查询", "20001")
+            with snapshot_harness.freeze_time("2026-07-06 10:00:00"):
+                await snapshot_harness.send_group("10001", "查询", "20001")
+            snapshot_harness.set_group_members("20001", [("10001", "老王"), ("10002", "老李")])
+            report_replies = await snapshot_harness.send_group("10001", "上周周报", "20001")
+            assert_any_contains(report_replies, "阿杰")
+            if any("老王" in reply or "老李" in reply for reply in report_replies):
+                raise AssertionError(f"settled weekly report should keep historical snapshot names: {report_replies!r}")
+            honor_replies = await snapshot_harness.send_group("10001", "群荣誉墙", "20001")
+            assert_any_contains(honor_replies, "阿杰")
+            if any("老王" in reply or "老李" in reply for reply in honor_replies):
+                raise AssertionError(f"honor wall should keep historical snapshot names: {honor_replies!r}")
+        finally:
+            await snapshot_harness.terminate()
+
         yinpa_config = dict(DEFAULT_CONFIG)
         yinpa_config["yinpa_allow_random_target"] = False
         yinpa_config["yinpa_allow_admin_target"] = False
@@ -355,12 +395,12 @@ async def run_deep_edges(plugin_dir: Path) -> None:
         try:
             replies = await yinpa_harness.send_group("10002", "日群友", "20001")
             assert_reply_count(replies)
-            assert_any_contains(replies, "没找到合适的目标")
+            assert_any_contains(replies, "没翻到合适的目标")
             log_case("禁用随机群友目标", replies)
 
             replies = await yinpa_harness.send_group("10002", "日管理", "20001")
             assert_reply_count(replies)
-            assert_any_contains(replies, "没找到合适的目标")
+            assert_any_contains(replies, "没翻到合适的目标")
             log_case("禁用管理目标", replies)
         finally:
             await yinpa_harness.terminate()

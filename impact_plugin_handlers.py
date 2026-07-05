@@ -28,12 +28,12 @@ class ImpactPluginHandlersMixin:
         if command_key is None:
             disabled_command_key = self._resolve_known_command_key(normalized)
             if disabled_command_key is not None and not self._is_command_enabled(disabled_command_key):
-                return PlainReply("这个命令当前已被插件配置禁用喵")
+                return PlainReply("这个命令现在没开，别试了。")
             return None
         group_id_raw = event.get_group_id()
         is_private = not group_id_raw
         if is_private and command_key in {"weekly_report", "last_weekly_report", "weekly_stats", "rival", "honor"}:
-            return PlainReply("周玩法请在群聊查看喵")
+            return PlainReply("周玩法去群里看，私聊里没这些素材。")
         if is_private and not self._impact_config.private_chat_enabled:
             return None
         group_id = 0 if is_private else int(str(group_id_raw))
@@ -135,12 +135,12 @@ class ImpactPluginHandlersMixin:
             return gate_reply
         members = await self._get_group_members(event, group_id)
         if not members and (self._impact_config.yinpa_require_member_api or at_id is None):
-            return PlainReply("当前平台无法获取群成员列表, 暂时不能透群友喵")
+            return PlainReply("这边拉不到群成员列表，这次没法随机点人。")
         target_id = self._pick_yinpa_target(normalized, sender_id, at_id, members)
         if target_id is None:
-            return PlainReply("没找到合适的目标喵")
+            return PlainReply("这次没翻到合适的目标。")
         if target_id == sender_id:
-            return PlainReply("你透你自己?")
+            return PlainReply("你连自己都不放过，是今天真没别的活人了？")
         sender_name = await self._get_display_name(event, sender_id, members)
         target_name = await self._get_display_name(event, target_id, members)
         self._store.upsert_group_display_name(group_id, sender_id, sender_name)
@@ -150,7 +150,7 @@ class ImpactPluginHandlersMixin:
         total_volume = self._service.get_today_injection(target_id)
         duration_seconds = random.randint(1, 20)
         return PlainReply(
-            f"好欸！{sender_name}({sender_id})用时{duration_seconds}秒 \n给 {target_name}({target_id}) 注入了{injected_volume}毫升的脱氧核糖核酸, 当日总注入量为：{total_volume}毫升",
+            f"{sender_name}磨蹭了{duration_seconds}秒，给{target_name}灌了{injected_volume}毫升脱氧核糖核酸。{target_name}今天已经累计吃了{total_volume}毫升。",
             media_request=ActionMediaRequest(action="yinpa", mode=self._impact_config.yinpa_media_mode, sender_id=sender_id, target_id=target_id),
             preface_text=preface_text,
         )
@@ -200,12 +200,12 @@ class ImpactPluginHandlersMixin:
     @staticmethod
     def _build_yinpa_preface(normalized: str, sender_name: str, at_id: str | None, target_name: str, target_id: int) -> str:
         if at_id is not None:
-            return f"现在咱将把{target_name}({target_id})\n送给{sender_name}色色！"
+            return f"这次点名 {target_name}。\n{sender_name}，别装了，你上。"
         if "群主" in normalized:
-            return f"现在咱将把群主\n送给{sender_name}色色！"
+            return f"这次抽到群主。\n{sender_name}，别装了，你上。"
         if "管理" in normalized:
-            return f"现在咱将随机抽取一位幸运管理\n送给{sender_name}色色！"
-        return f"现在咱将随机抽取一位幸运群友\n送给{sender_name}色色！"
+            return f"这次抽到一位管理。\n{sender_name}，别装了，你上。"
+        return f"这次抽到一位群友。\n{sender_name}，别装了，你上。"
 
     def _pick_yinpa_target(self, normalized: str, sender_id: int, at_id: str | None, members: list[dict]) -> int | None:
         if at_id is not None:

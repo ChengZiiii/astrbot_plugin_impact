@@ -142,6 +142,8 @@ class ImpactConfig:
         commands_enabled = _to_str_list(config.get("commands_enabled"), DEFAULT_COMMANDS)
         if set(commands_enabled) == set(LEGACY_DEFAULT_COMMANDS):
             commands_enabled = DEFAULT_COMMANDS.copy()
+        elif "weekly_rank" in commands_enabled and "weekly_report" not in commands_enabled:
+            commands_enabled.append("weekly_report")
         commands_enabled = [command for command in commands_enabled if command != "weekly_rank"]
         pk_avatar_gif_styles = _normalize_avatar_gif_templates(
             _to_str_list(config.get("pk_avatar_gif_styles"), ["lash"]),

@@ -107,7 +107,7 @@ class ImpactServiceWeeklyMixin:
     def handle_honor_wall(self, group_id: int) -> PlainReply:
         honor_weeks = self._store.get_recent_honor_weeks(group_id, self._config.honor_wall_weeks)
         if not honor_weeks:
-            return PlainReply("本群目前还没有可展示的荣誉墙喵")
+            return PlainReply("本群现在还攒不出荣誉墙，再玩几轮。")
         all_user_ids = sorted({int(row["user_id"]) for _, rows in honor_weeks for row in rows})
         name_map = self._store.get_group_display_names(group_id, all_user_ids)
         lines = ["【群荣誉墙】"]
@@ -164,6 +164,7 @@ class ImpactServiceWeeklyMixin:
         lines.append(self._format_weekly_result_line("长度第一", self._find_result(results, "length_top", 1), rows_by_user, "cm", name_map=name_map))
         lines.append(self._format_weekly_result_line("涨得最多", self._find_result(results, "growth_top", 1), rows_by_user, "cm", signed=True, empty_text="暂无", name_map=name_map))
         lines.append(self._format_weekly_result_line("干得最猛", self._find_result(results, "pk_top", 1), rows_by_user, "胜", pk_mode=True, empty_text="暂无", name_map=name_map))
+        lines.append(self._format_weekly_result_line("输出最多", self._find_result(results, "inject_out_top", 1), rows_by_user, "ml", empty_text="暂无", name_map=name_map))
         lines.append(self._format_weekly_result_line("最倒霉", self._find_result(results, "inject_in_top", 1), rows_by_user, "ml", empty_text="暂无", name_map=name_map))
         lines.append(self._format_weekly_result_line("掉得最多", self._find_result(results, "worst_shrink", 1), rows_by_user, "cm", signed=True, empty_text="暂无", name_map=name_map))
         lines.append(pick(WEEKLY_CLOSERS))
@@ -176,6 +177,7 @@ class ImpactServiceWeeklyMixin:
         lines.append(self._format_weekly_result_line("长度第一", self._find_result(results, "length_top", 1), rows_by_user, "cm", name_map=name_map))
         lines.append(self._format_weekly_result_line("涨得最多", self._find_result(results, "growth_top", 1), rows_by_user, "cm", signed=True, empty_text="暂无", name_map=name_map))
         lines.append(self._format_weekly_result_line("干得最猛", self._find_result(results, "pk_top", 1), rows_by_user, "胜", pk_mode=True, empty_text="暂无", name_map=name_map))
+        lines.append(self._format_weekly_result_line("输出最多", self._find_result(results, "inject_out_top", 1), rows_by_user, "ml", empty_text="暂无", name_map=name_map))
         lines.append(self._format_weekly_result_line("最倒霉", self._find_result(results, "inject_in_top", 1), rows_by_user, "ml", empty_text="暂无", name_map=name_map))
         lines.append(self._format_weekly_result_line("掉得最多", self._find_result(results, "worst_shrink", 1), rows_by_user, "cm", signed=True, empty_text="暂无", name_map=name_map))
         lines.append(pick(WEEKLY_CLOSERS))
@@ -213,6 +215,9 @@ class ImpactServiceWeeklyMixin:
     def _format_honor_user(row: object | None, name_map: dict[int, str] | None = None) -> str:
         if row is None:
             return "暂无"
+        snapshot = row["display_name_snapshot"] if "display_name_snapshot" in row.keys() else None
+        if snapshot:
+            return str(snapshot)
         user_id = int(row["user_id"])
         if name_map and user_id in name_map:
             return name_map[user_id]
