@@ -13,9 +13,22 @@ from .impact_time import get_current_week_key
 
 
 class ImpactPluginHandlersMixin:
+    async def _remember_group_display_name(self, event: AstrMessageEvent, group_id: int, user_id: int, members: list[dict] | None = None) -> None:
+        display_name = await self._get_display_name(event, user_id, members)
+        if display_name and display_name != str(user_id):
+            self._store.upsert_group_display_name(group_id, user_id, display_name)
+
+    async def _remember_group_display_names(self, event: AstrMessageEvent, group_id: int, user_ids: list[int]) -> None:
+        members = await self._get_group_members(event, group_id)
+        for uid in user_ids:
+            await self._remember_group_display_name(event, group_id, uid, members)
+
     async def _dispatch(self, event: AstrMessageEvent, normalized: str) -> PlainReply | ImageReply | None:
         command_key = self._resolve_command_key(normalized)
         if command_key is None:
+            disabled_command_key = self._resolve_known_command_key(normalized)
+            if disabled_command_key is not None and not self._is_command_enabled(disabled_command_key):
+                return PlainReply("这个命令当前已被插件配置禁用喵")
             return None
         group_id_raw = event.get_group_id()
         is_private = not group_id_raw
@@ -48,6 +61,7 @@ class ImpactPluginHandlersMixin:
             if at_id is not None:
                 member_ids.append(int(at_id))
             self._store.register_group_members(group_id, member_ids, self._impact_config.user_initial_length)
+            await self._remember_group_display_names(event, group_id, member_ids)
 
         if self._impact_config.log_debug:
             logger.debug(f"[impact] dispatch normalized={normalized} command_key={command_key} group_id={group_id} private={is_private} at_id={at_id}")
@@ -102,6 +116,8 @@ class ImpactPluginHandlersMixin:
         top_slice = rankings[: self._impact_config.rank_top_count]
         picked = top_slice + [item for item in rankings[-self._impact_config.rank_bottom_count :] if item.user_id not in {rank.user_id for rank in top_slice}]
         name_map = {item.user_id: await self._get_display_name(event, item.user_id) for item in picked}
+        for user_id, display_name in name_map.items():
+            self._store.upsert_group_display_name(group_id, user_id, display_name)
         chart_data = {name_map[item.user_id]: item.length_cm for item in picked}
         if not self._impact_config.rank_image_enabled:
             lines = [f"你的群内排名为{my_rank}喵", f"你的全局排名为{global_rank}喵", "", "本群排行榜:"]
@@ -125,6 +141,8 @@ class ImpactPluginHandlersMixin:
             return PlainReply("你透你自己?")
         sender_name = await self._get_display_name(event, sender_id, members)
         target_name = await self._get_display_name(event, target_id, members)
+        self._store.upsert_group_display_name(group_id, sender_id, sender_name)
+        self._store.upsert_group_display_name(group_id, target_id, target_name)
         preface_text = self._build_yinpa_preface(normalized, sender_name, at_id, target_name, target_id)
         injected_volume = self._service.finish_yinpa(sender_id, target_id, group_id)
         total_volume = self._service.get_today_injection(target_id)
@@ -237,6 +255,12 @@ class ImpactPluginHandlersMixin:
         for command_key, commands in COMMAND_GROUP_MAP.items():
             if not self._is_command_enabled(command_key):
                 continue
+            if self._matches_command(normalized, commands):
+                return command_key
+        return None
+
+    def _resolve_known_command_key(self, normalized: str) -> str | None:
+        for command_key, commands in COMMAND_GROUP_MAP.items():
             if self._matches_command(normalized, commands):
                 return command_key
         return None

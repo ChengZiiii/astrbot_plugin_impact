@@ -15,8 +15,9 @@ class ImpactServiceWeeklyMixin:
         rows = self._store.get_weekly_stats_rows(previous_week_key, group_id)
         if not rows:
             return None
-        results = self._build_weekly_results(rows)
-        report_text = self._build_weekly_report(previous_week_key, rows, results)
+        results = self._build_weekly_results(group_id, rows)
+        name_map = self._build_group_name_map(group_id, rows, results)
+        report_text = self._build_weekly_report(previous_week_key, rows, results, name_map)
         self._store.save_weekly_settlement(previous_week_key, group_id, results, report_text)
         return report_text
 
@@ -26,8 +27,9 @@ class ImpactServiceWeeklyMixin:
         rows = self._store.get_weekly_stats_rows(week_key, group_id)
         if not rows:
             return PlainReply(f"【本群 {week_key} 周报】\n本周还没有人留下战绩喵")
-        results = self._build_weekly_results(rows)
-        return PlainReply(self._build_weekly_report(week_key, rows, results))
+        results = self._build_weekly_results(group_id, rows)
+        name_map = self._build_group_name_map(group_id, rows, results)
+        return PlainReply(self._build_weekly_report(week_key, rows, results, name_map))
 
     def handle_last_weekly_report(self, group_id: int) -> PlainReply:
         report = self._store.get_latest_settled_report(group_id)
@@ -59,8 +61,9 @@ class ImpactServiceWeeklyMixin:
         rows = self._store.get_weekly_stats_rows(week_key, group_id)
         if not rows:
             return PlainReply(f"【本群 {week_key} 周榜】\n本周还没有人留下战绩喵")
-        results = self._build_weekly_results(rows)
-        return PlainReply(self._build_weekly_rank_text(week_key, rows, results))
+        results = self._build_weekly_results(group_id, rows)
+        name_map = self._build_group_name_map(group_id, rows, results)
+        return PlainReply(self._build_weekly_rank_text(week_key, rows, results, name_map))
 
     def handle_my_weekly_stats(self, group_id: int, user_id: int) -> PlainReply:
         week_key = get_current_week_key()
@@ -107,29 +110,42 @@ class ImpactServiceWeeklyMixin:
         honor_weeks = self._store.get_recent_honor_weeks(group_id, self._config.honor_wall_weeks)
         if not honor_weeks:
             return PlainReply("本群目前还没有可展示的荣誉墙喵")
+        all_user_ids = sorted({int(row["user_id"]) for _, rows in honor_weeks for row in rows})
+        name_map = self._store.get_group_display_names(group_id, all_user_ids)
         lines = ["【群荣誉墙】"]
         for week_key, rows in honor_weeks:
             result_map = {(str(row["category"]), int(row["rank_no"])): row for row in rows}
             lines.append(
-                f"{week_key} | 牛王 {self._format_honor_user(result_map.get(('length_top', 1)))} | "
-                f"成长 {self._format_honor_user(result_map.get(('growth_top', 1)))} | "
-                f"恶霸 {self._format_honor_user(result_map.get(('pk_top', 1)))} | "
-                f"受害 {self._format_honor_user(result_map.get(('inject_in_top', 1)))}"
+                f"{week_key} | 牛王 {self._format_honor_user(result_map.get(('length_top', 1)), name_map)} | "
+                f"成长 {self._format_honor_user(result_map.get(('growth_top', 1)), name_map)} | "
+                f"恶霸 {self._format_honor_user(result_map.get(('pk_top', 1)), name_map)} | "
+                f"受害 {self._format_honor_user(result_map.get(('inject_in_top', 1)), name_map)}"
             )
         return PlainReply("\n".join(lines))
 
-    def _build_weekly_results(self, rows: list[object]) -> list[WeeklyResultEntry]:
+    def _build_group_name_map(self, group_id: int, rows: list[object], results: list[WeeklyResultEntry]) -> dict[int, str]:
+        user_ids = {int(row["user_id"]) for row in rows}
+        user_ids.update(result.user_id for result in results)
+        return self._store.get_group_display_names(group_id, sorted(user_ids))
+
+    @staticmethod
+    def _display_name(name_map: dict[int, str], user_id: int) -> str:
+        return name_map.get(user_id, str(user_id))
+
+    def _build_weekly_results(self, group_id: int, rows: list[object]) -> list[WeeklyResultEntry]:
         top_n = self._config.weekly_top_n
+        user_ids = sorted({int(row["user_id"]) for row in rows})
+        name_map = self._store.get_group_display_names(group_id, user_ids)
         return [
-            *self._pick_weekly_results("length_top", rows, lambda row: True, lambda row: (-float(row["current_length_snapshot"]), int(row["user_id"])), top_n, "current_length_snapshot"),
-            *self._pick_weekly_results("growth_top", rows, lambda row: float(row["week_growth_total"]) > 0, lambda row: (-float(row["week_growth_total"]), int(row["user_id"])), top_n, "week_growth_total"),
-            *self._pick_weekly_results("pk_top", rows, lambda row: int(row["pk_win_count"]) > 0, lambda row: (-int(row["pk_win_count"]), -int(row["pk_count"]), int(row["user_id"])), top_n, "pk_win_count"),
-            *self._pick_weekly_results("inject_out_top", rows, lambda row: float(row["inject_out_ml"]) > 0, lambda row: (-float(row["inject_out_ml"]), int(row["user_id"])), top_n, "inject_out_ml"),
-            *self._pick_weekly_results("inject_in_top", rows, lambda row: float(row["inject_in_ml"]) > 0, lambda row: (-float(row["inject_in_ml"]), int(row["user_id"])), top_n, "inject_in_ml"),
-            *self._pick_weekly_results("worst_shrink", rows, lambda row: float(row["week_growth_total"]) < 0, lambda row: (float(row["week_growth_total"]), int(row["user_id"])), 1, "week_growth_total"),
+            *self._pick_weekly_results("length_top", rows, lambda row: True, lambda row: (-float(row["current_length_snapshot"]), int(row["user_id"])), top_n, "current_length_snapshot", name_map),
+            *self._pick_weekly_results("growth_top", rows, lambda row: float(row["week_growth_total"]) > 0, lambda row: (-float(row["week_growth_total"]), int(row["user_id"])), top_n, "week_growth_total", name_map),
+            *self._pick_weekly_results("pk_top", rows, lambda row: int(row["pk_win_count"]) > 0, lambda row: (-int(row["pk_win_count"]), -int(row["pk_count"]), int(row["user_id"])), top_n, "pk_win_count", name_map),
+            *self._pick_weekly_results("inject_out_top", rows, lambda row: float(row["inject_out_ml"]) > 0, lambda row: (-float(row["inject_out_ml"]), int(row["user_id"])), top_n, "inject_out_ml", name_map),
+            *self._pick_weekly_results("inject_in_top", rows, lambda row: float(row["inject_in_ml"]) > 0, lambda row: (-float(row["inject_in_ml"]), int(row["user_id"])), top_n, "inject_in_ml", name_map),
+            *self._pick_weekly_results("worst_shrink", rows, lambda row: float(row["week_growth_total"]) < 0, lambda row: (float(row["week_growth_total"]), int(row["user_id"])), 1, "week_growth_total", name_map),
         ]
 
-    def _pick_weekly_results(self, category: str, rows: list[object], predicate, sort_key, limit: int, metric_field: str) -> list[WeeklyResultEntry]:
+    def _pick_weekly_results(self, category: str, rows: list[object], predicate, sort_key, limit: int, metric_field: str, name_map: dict[int, str]) -> list[WeeklyResultEntry]:
         filtered_rows = sorted((row for row in rows if predicate(row)), key=sort_key)[:limit]
         return [
             WeeklyResultEntry(
@@ -138,23 +154,24 @@ class ImpactServiceWeeklyMixin:
                 user_id=int(row["user_id"]),
                 metric_value=float(row[metric_field]),
                 title_text=self._weekly_title_map.get(category, {}).get(index),
+                display_name_snapshot=self._display_name(name_map, int(row["user_id"])),
             )
             for index, row in enumerate(filtered_rows, start=1)
         ]
 
-    def _build_weekly_rank_text(self, week_key: str, rows: list[object], results: list[WeeklyResultEntry]) -> str:
+    def _build_weekly_rank_text(self, week_key: str, rows: list[object], results: list[WeeklyResultEntry], name_map: dict[int, str]) -> str:
         rows_by_user = {int(row["user_id"]): row for row in rows}
         lines = [f"【本群 {week_key} 周榜】"]
-        lines.append(self._format_weekly_result_line("本周牛王", self._find_result(results, "length_top", 1), rows_by_user, "cm"))
-        lines.append(self._format_weekly_result_line("本周成长之星", self._find_result(results, "growth_top", 1), rows_by_user, "cm", signed=True, empty_text="暂无成长之星"))
-        lines.append(self._format_weekly_result_line("本周决斗恶霸", self._find_result(results, "pk_top", 1), rows_by_user, "胜", pk_mode=True, empty_text="本周没人约架"))
-        lines.append(self._format_weekly_result_line("本周注入王", self._find_result(results, "inject_out_top", 1), rows_by_user, "ml", empty_text="本周无人输出"))
-        lines.append(self._format_weekly_result_line("本周头号受害者", self._find_result(results, "inject_in_top", 1), rows_by_user, "ml", empty_text="本周无人受害"))
-        lines.append(self._format_weekly_result_line("本周最惨选手", self._find_result(results, "worst_shrink", 1), rows_by_user, "cm", signed=True, empty_text="本周无人缩水"))
+        lines.append(self._format_weekly_result_line("本周牛王", self._find_result(results, "length_top", 1), rows_by_user, "cm", name_map=name_map))
+        lines.append(self._format_weekly_result_line("本周成长之星", self._find_result(results, "growth_top", 1), rows_by_user, "cm", signed=True, empty_text="暂无成长之星", name_map=name_map))
+        lines.append(self._format_weekly_result_line("本周决斗恶霸", self._find_result(results, "pk_top", 1), rows_by_user, "胜", pk_mode=True, empty_text="本周没人约架", name_map=name_map))
+        lines.append(self._format_weekly_result_line("本周注入王", self._find_result(results, "inject_out_top", 1), rows_by_user, "ml", empty_text="本周无人输出", name_map=name_map))
+        lines.append(self._format_weekly_result_line("本周头号受害者", self._find_result(results, "inject_in_top", 1), rows_by_user, "ml", empty_text="本周无人受害", name_map=name_map))
+        lines.append(self._format_weekly_result_line("本周最惨选手", self._find_result(results, "worst_shrink", 1), rows_by_user, "cm", signed=True, empty_text="本周无人缩水", name_map=name_map))
         return "\n".join(lines)
 
-    def _build_weekly_report(self, week_key: str, rows: list[object], results: list[WeeklyResultEntry]) -> str:
-        return self._build_weekly_rank_text(week_key, rows, results).replace("周榜", "周报", 1)
+    def _build_weekly_report(self, week_key: str, rows: list[object], results: list[WeeklyResultEntry], name_map: dict[int, str]) -> str:
+        return self._build_weekly_rank_text(week_key, rows, results, name_map).replace("周榜", "周报", 1)
 
     def _format_weekly_result_line(
         self,
@@ -165,15 +182,17 @@ class ImpactServiceWeeklyMixin:
         signed: bool = False,
         pk_mode: bool = False,
         empty_text: str = "暂无数据",
+        name_map: dict[int, str] | None = None,
     ) -> str:
         if result is None:
             return f"{label}：{empty_text}"
+        display = self._display_name(name_map or {}, result.user_id)
         if pk_mode:
             row = rows_by_user[result.user_id]
-            return f"{label}：{result.user_id}（{int(row['pk_win_count'])}胜{int(row['pk_lose_count'])}负）"
+            return f"{label}：{display}（{int(row['pk_win_count'])}胜{int(row['pk_lose_count'])}负）"
         metric_value = round(result.metric_value, 3)
         metric_text = f"{metric_value:+g}{unit}" if signed else f"{metric_value:g}{unit}"
-        return f"{label}：{result.user_id}（{metric_text}）"
+        return f"{label}：{display}（{metric_text}）"
 
     @staticmethod
     def _find_result(results: list[WeeklyResultEntry], category: str, rank_no: int) -> WeeklyResultEntry | None:
@@ -183,7 +202,10 @@ class ImpactServiceWeeklyMixin:
         return None
 
     @staticmethod
-    def _format_honor_user(row: object | None) -> str:
+    def _format_honor_user(row: object | None, name_map: dict[int, str] | None = None) -> str:
         if row is None:
             return "暂无"
-        return str(int(row["user_id"]))
+        user_id = int(row["user_id"])
+        if name_map and user_id in name_map:
+            return name_map[user_id]
+        return str(user_id)
