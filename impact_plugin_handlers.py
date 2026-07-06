@@ -248,7 +248,9 @@ class ImpactPluginHandlersMixin:
     async def _handle_fuck_wife(self, group_enabled: bool, group_id: int, sender_id: int, normalized: str, at_id: str | None, event: AstrMessageEvent) -> PlainReply:
         owner, index = self._resolve_wife_target(normalized, at_id, sender_id)
         target_uid = owner if owner != str(sender_id) else None
-        res = self._service.handle_fuck_wife(group_enabled, str(group_id), str(sender_id), target_uid, normalized, index=index)
+        res = await self._service.handle_fuck_wife(
+            group_enabled, str(group_id), str(sender_id), target_uid, normalized, index=index,
+        )
         text = self._format_fuck_wife_result(res, sender_id)
         if res.is_ntr and res.success and self._impact_config.fuck_wife_ntr_notify:
             await self._notify_cuckold(group_id, owner, sender_id, res)

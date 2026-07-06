@@ -173,7 +173,7 @@ class ImpactServiceGameplayMixin(ImpactServiceGameplaySupportMixin):
     def get_today_injection(self, target_id: int) -> float:
         return self._store.get_today_injection(target_id)
 
-    def handle_fuck_wife(
+    async def handle_fuck_wife(
         self,
         group_enabled: bool,
         group_id: str,
@@ -207,10 +207,7 @@ class ImpactServiceGameplayMixin(ImpactServiceGameplaySupportMixin):
 
         if not is_ntr:
             # Own wife path — always success
-            import asyncio
-
-            peek_coro = interop.peek_wife(group_id, sender_uid, index=index)
-            peek_result: dict = asyncio.run(peek_coro)
+            peek_result: dict = await interop.peek_wife(group_id, sender_uid, index=index)
             if not peek_result:
                 return FuckWifeResult(ok=False, reason="no_wife")
 
@@ -218,8 +215,9 @@ class ImpactServiceGameplayMixin(ImpactServiceGameplaySupportMixin):
             wife_name = peek_result.get("name", "")
             intimacy_gain = self._config.fuck_wife_intimacy_gain_self
 
-            record_coro = interop.record_sex_act(group_id, wid, sender_uid, False, intimacy_gain)
-            record_result: dict = asyncio.run(record_coro)
+            record_result: dict = await interop.record_sex_act(
+                group_id, wid, sender_uid, False, intimacy_gain,
+            )
             if not record_result.get("ok"):
                 return FuckWifeResult(ok=False, reason="record_failed")
 
@@ -243,18 +241,14 @@ class ImpactServiceGameplayMixin(ImpactServiceGameplaySupportMixin):
             )
 
         # NTR path
-        import asyncio
-
-        peek_coro = interop.peek_wife(group_id, target_uid, index=index)
-        peek_result: dict = asyncio.run(peek_coro)
+        peek_result: dict = await interop.peek_wife(group_id, target_uid, index=index)
         if not peek_result:
             return FuckWifeResult(ok=False, reason="target_no_wife")
 
         wid = peek_result["wid"]
         wife_name = peek_result.get("name", "")
 
-        resistance_coro = interop.compute_ntr_resistance(group_id, wid)
-        resistance_result: dict = asyncio.run(resistance_coro)
+        resistance_result: dict = await interop.compute_ntr_resistance(group_id, wid)
         if not resistance_result:
             return FuckWifeResult(ok=False, reason="target_no_wife")
 
@@ -295,8 +289,9 @@ class ImpactServiceGameplayMixin(ImpactServiceGameplaySupportMixin):
         new_intimacy = 0
 
         if success:
-            record_coro = interop.record_sex_act(group_id, wid, sender_uid, True, intimacy_gain)
-            record_result: dict = asyncio.run(record_coro)
+            record_result: dict = await interop.record_sex_act(
+                group_id, wid, sender_uid, True, intimacy_gain,
+            )
             if not record_result.get("ok"):
                 return FuckWifeResult(ok=False, reason="record_failed", resistance_flags=resistance_result)
             new_intimacy = record_result.get("new_intimacy", 0)

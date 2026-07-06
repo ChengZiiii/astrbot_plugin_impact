@@ -72,7 +72,8 @@ def _make_service(config=None, store=None):
 # ── Tests ──────────────────────────────────────────────────
 
 class TestOwnWifeAlwaysSuccess:
-    def test_own_wife_always_success(self):
+    @pytest.mark.asyncio
+    async def test_own_wife_always_success(self):
         peek_result = {
             "wid": "w1", "name": "TestWife", "source": "Test",
             "intimacy": 50, "level": 3, "level_name": "亲密",
@@ -85,7 +86,7 @@ class TestOwnWifeAlwaysSuccess:
 
         with _patch_interop(mock_interop):
             svc = _make_service()
-            res = svc.handle_fuck_wife(True, "g1", "u1", target_uid=None, normalized="日老婆")
+            res = await svc.handle_fuck_wife(True, "g1", "u1", target_uid=None, normalized="日老婆")
 
         assert res.ok is True
         assert res.success is True
@@ -97,7 +98,8 @@ class TestOwnWifeAlwaysSuccess:
 
 
 class TestNtrLockedAutofails:
-    def test_ntr_locked_autofails(self):
+    @pytest.mark.asyncio
+    async def test_ntr_locked_autofails(self):
         peek_result = {
             "wid": "w2", "name": "LockedWife", "source": "Test",
             "intimacy": 100, "level": 5, "level_name": "深爱",
@@ -116,14 +118,15 @@ class TestNtrLockedAutofails:
 
         with _patch_interop(mock_interop):
             svc = _make_service()
-            res = svc.handle_fuck_wife(True, "g1", "u_att", target_uid="u_vic", normalized="日老婆 @u_vic")
+            res = await svc.handle_fuck_wife(True, "g1", "u_att", target_uid="u_vic", normalized="日老婆 @u_vic")
 
         assert res.ok is False
         assert res.reason == "target_locked"
 
 
 class TestNtrSuccessAtHighRoll:
-    def test_ntr_success_at_high_roll(self):
+    @pytest.mark.asyncio
+    async def test_ntr_success_at_high_roll(self):
         peek_result = {
             "wid": "w3", "name": "TargetWife", "source": "Test",
             "intimacy": 30, "level": 2, "level_name": "友好",
@@ -144,7 +147,7 @@ class TestNtrSuccessAtHighRoll:
         with _patch_interop(mock_interop):
             svc = _make_service()
             # base=0.25, resistance=1.0, roll_seed=0.0 → success (0.0 < 0.25)
-            res = svc.handle_fuck_wife(
+            res = await svc.handle_fuck_wife(
                 True, "g1", "u_att", target_uid="u_vic",
                 normalized="日老婆 @u_vic", roll_seed=0.0,
             )
@@ -155,7 +158,8 @@ class TestNtrSuccessAtHighRoll:
 
 
 class TestNtrFailAtLowRoll:
-    def test_ntr_fail_at_low_roll(self):
+    @pytest.mark.asyncio
+    async def test_ntr_fail_at_low_roll(self):
         peek_result = {
             "wid": "w3", "name": "TargetWife", "source": "Test",
             "intimacy": 30, "level": 2, "level_name": "友好",
@@ -175,7 +179,7 @@ class TestNtrFailAtLowRoll:
         with _patch_interop(mock_interop):
             svc = _make_service()
             # base=0.25, resistance=1.0, roll_seed=0.99 → fail (0.99 >= 0.25)
-            res = svc.handle_fuck_wife(
+            res = await svc.handle_fuck_wife(
                 True, "g1", "u_att", target_uid="u_vic",
                 normalized="日老婆 @u_vic", roll_seed=0.99,
             )
@@ -186,48 +190,52 @@ class TestNtrFailAtLowRoll:
 
 
 class TestCooldownBlocks:
-    def test_cooldown_blocks(self):
+    @pytest.mark.asyncio
+    async def test_cooldown_blocks(self):
         mock_interop = _make_mock_interop()
 
         with _patch_interop(mock_interop):
             svc = _make_service()
             # Set cooldown — sender just used it
             svc._fuck_wife_cd_data["u1"] = time.time()
-            res = svc.handle_fuck_wife(True, "g1", "u1", target_uid=None, normalized="日老婆")
+            res = await svc.handle_fuck_wife(True, "g1", "u1", target_uid=None, normalized="日老婆")
 
         assert res.ok is False
         assert res.reason == "cooldown"
 
 
 class TestDailyLimitBlocks:
-    def test_daily_limit_blocks(self):
+    @pytest.mark.asyncio
+    async def test_daily_limit_blocks(self):
         mock_interop = _make_mock_interop()
 
         with _patch_interop(mock_interop):
             svc = _make_service(config=_make_config(daily_limit=1))
             # Exhaust daily limit
             svc._store.incr_daily_fuck_wife_count("u1")
-            res = svc.handle_fuck_wife(True, "g1", "u1", target_uid=None, normalized="日老婆")
+            res = await svc.handle_fuck_wife(True, "g1", "u1", target_uid=None, normalized="日老婆")
 
         assert res.ok is False
         assert res.reason == "daily_limit"
 
 
 class TestNotEnabled:
-    def test_not_enabled(self):
+    @pytest.mark.asyncio
+    async def test_not_enabled(self):
         svc = _make_service()
-        res = svc.handle_fuck_wife(False, "g1", "u1", target_uid=None, normalized="日老婆")
+        res = await svc.handle_fuck_wife(False, "g1", "u1", target_uid=None, normalized="日老婆")
         assert res.ok is False
         assert res.reason == "not_enabled"
 
 
 class TestNoWife:
-    def test_own_wife_no_wife(self):
+    @pytest.mark.asyncio
+    async def test_own_wife_no_wife(self):
         mock_interop = _make_mock_interop(peek_result={})
 
         with _patch_interop(mock_interop):
             svc = _make_service()
-            res = svc.handle_fuck_wife(True, "g1", "u1", target_uid=None, normalized="日老婆")
+            res = await svc.handle_fuck_wife(True, "g1", "u1", target_uid=None, normalized="日老婆")
 
         assert res.ok is False
         assert res.reason == "no_wife"
