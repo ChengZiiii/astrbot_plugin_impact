@@ -118,3 +118,30 @@ class ImpactStoreWifeMixin:
                 "ON CONFLICT(user_id, date_text) DO UPDATE SET count = count + 1",
                 (uid, today),
             )
+
+    def was_ntrd_by(self, sender_uid: str, target_owner_uid: str) -> bool:
+        """Check if target_owner has previously NTR'd sender (i.e. sender was a victim)."""
+        with self._connect() as connection:
+            row = connection.execute(
+                "SELECT 1 FROM wife_sex_records "
+                "WHERE sender_uid = ? AND target_owner_uid = ? AND is_ntr = 1 AND success = 1 "
+                "LIMIT 1",
+                (target_owner_uid, sender_uid),
+            ).fetchone()
+        return row is not None
+
+    def get_same_target_fuck_streak(self, sender_uid: str, target_owner_uid: str) -> int:
+        """Count consecutive most recent attempts against the same target owner (any outcome)."""
+        with self._connect() as connection:
+            rows = connection.execute(
+                "SELECT target_owner_uid FROM wife_sex_records "
+                "WHERE sender_uid = ? ORDER BY ts DESC",
+                (sender_uid,),
+            ).fetchall()
+        streak = 0
+        for row in rows:
+            if row["target_owner_uid"] == target_owner_uid:
+                streak += 1
+            else:
+                break
+        return streak

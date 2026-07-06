@@ -5,6 +5,7 @@ import time
 
 from .impact_copy_bank import (
     COOLDOWN_DAJIAO,
+    COOLDOWN_FUCK_WIFE,
     COOLDOWN_PK,
     COOLDOWN_SUO,
     COOLDOWN_YINPA,
@@ -29,7 +30,7 @@ from .impact_copy_bank import (
 
 from astrbot.api.event import AstrMessageEvent
 
-from .impact_models import PlainReply
+from .impact_models import FuckWifeResult, PlainReply
 from .impact_service_gameplay_support import ImpactServiceGameplaySupportMixin
 from .impact_time import get_current_week_key
 
@@ -171,3 +172,150 @@ class ImpactServiceGameplayMixin(ImpactServiceGameplaySupportMixin):
 
     def get_today_injection(self, target_id: int) -> float:
         return self._store.get_today_injection(target_id)
+
+    def handle_fuck_wife(
+        self,
+        group_enabled: bool,
+        group_id: str,
+        sender_uid: str,
+        target_uid: str | None,
+        normalized: str,
+        roll_seed: float | None = None,
+    ) -> FuckWifeResult:
+        if not group_enabled:
+            return FuckWifeResult(ok=False, reason="not_enabled")
+
+        # Lazy import animewifexI facade
+        from data.plugins.astrbot_plugin_animewifexI.app.interop import get_wife_interop
+
+        interop = get_wife_interop()
+
+        # Cooldown check
+        wait_text = self._cooldown_text(
+            self._fuck_wife_cd_data, sender_uid, self._config.fuck_wife_cd_time, COOLDOWN_FUCK_WIFE
+        )
+        if wait_text is not None:
+            return FuckWifeResult(ok=False, reason="cooldown")
+
+        # Daily limit check
+        daily_count = self._store.get_daily_fuck_wife_count(sender_uid)
+        if daily_count >= self._config.fuck_wife_daily_limit:
+            return FuckWifeResult(ok=False, reason="daily_limit")
+
+        is_ntr = target_uid is not None and target_uid != sender_uid
+
+        if not is_ntr:
+            # Own wife path — always success
+            import asyncio
+
+            peek_coro = interop.peek_wife(group_id, sender_uid)
+            peek_result: dict = asyncio.run(peek_coro)
+            if not peek_result:
+                return FuckWifeResult(ok=False, reason="no_wife")
+
+            wid = peek_result["wid"]
+            wife_name = peek_result.get("name", "")
+            intimacy_gain = self._config.fuck_wife_intimacy_gain_self
+
+            record_coro = interop.record_sex_act(group_id, wid, sender_uid, False, intimacy_gain)
+            record_result: dict = asyncio.run(record_coro)
+            if not record_result.get("ok"):
+                return FuckWifeResult(ok=False, reason="record_failed")
+
+            volume_ml = round(random.uniform(self._config.fuck_wife_volume_min, self._config.fuck_wife_volume_max), 3)
+
+            self._fuck_wife_cd_data[sender_uid] = time.time()
+            self._store.incr_daily_fuck_wife_count(sender_uid)
+            self._store.record_wife_sex(
+                sender_uid, group_id, wid, sender_uid,
+                is_ntr=False, success=True,
+                volume_ml=volume_ml, satisfaction=100,
+            )
+
+            return FuckWifeResult(
+                ok=True, success=True, is_ntr=False,
+                wife_wid=wid, wife_name=wife_name,
+                intimacy_gain=intimacy_gain,
+                new_intimacy=record_result.get("new_intimacy", 0),
+                volume_ml=volume_ml,
+                satisfaction=100,
+            )
+
+        # NTR path
+        import asyncio
+
+        peek_coro = interop.peek_wife(group_id, target_uid)
+        peek_result: dict = asyncio.run(peek_coro)
+        if not peek_result:
+            return FuckWifeResult(ok=False, reason="target_no_wife")
+
+        wid = peek_result["wid"]
+        wife_name = peek_result.get("name", "")
+
+        resistance_coro = interop.compute_ntr_resistance(group_id, wid)
+        resistance_result: dict = asyncio.run(resistance_coro)
+        if not resistance_result:
+            return FuckWifeResult(ok=False, reason="target_no_wife")
+
+        if resistance_result.get("locked"):
+            return FuckWifeResult(ok=False, reason="target_locked", resistance_flags=resistance_result)
+
+        # Probability pipeline
+        base = self._config.fuck_wife_base_possibility
+
+        # Charm factor: jj_length tiers
+        try:
+            sender_length = self._store.get_length(int(sender_uid))
+        except (ValueError, TypeError):
+            sender_length = 0.0
+        thresholds = self._config.fuck_wife_charm_thresholds
+        charm = 1.0
+        if len(thresholds) >= 3 and sender_length >= thresholds[2]:
+            charm = 1.5
+        elif len(thresholds) >= 2 and sender_length >= thresholds[1]:
+            charm = 1.25
+        elif len(thresholds) >= 1 and sender_length >= thresholds[0]:
+            charm = 1.1
+
+        # Revenge factor: was NTR'd by target owner before
+        revenge = self._config.fuck_wife_revenge_multiplier if self._store.was_ntrd_by(sender_uid, target_uid) else 1.0
+
+        # Streak factor: same-target decay 0.7^streak
+        streak_count = self._store.get_same_target_fuck_streak(sender_uid, target_uid)
+        streak = 0.7 ** streak_count if streak_count > 0 else 1.0
+
+        resistance = resistance_result.get("resistance", 1.0)
+        prob = min(1.0, base * charm * revenge * streak * resistance)
+
+        roll = roll_seed if roll_seed is not None else random.random()
+        success = roll < prob
+
+        intimacy_gain = self._config.fuck_wife_intimacy_gain_ntr if success else 0
+        new_intimacy = 0
+
+        if success:
+            record_coro = interop.record_sex_act(group_id, wid, sender_uid, True, intimacy_gain)
+            record_result: dict = asyncio.run(record_coro)
+            if not record_result.get("ok"):
+                return FuckWifeResult(ok=False, reason="record_failed", resistance_flags=resistance_result)
+            new_intimacy = record_result.get("new_intimacy", 0)
+
+        volume_ml = round(random.uniform(self._config.fuck_wife_volume_min, self._config.fuck_wife_volume_max), 3) if success else 0.0
+
+        self._fuck_wife_cd_data[sender_uid] = time.time()
+        self._store.incr_daily_fuck_wife_count(sender_uid)
+        self._store.record_wife_sex(
+            sender_uid, group_id, wid, target_uid,
+            is_ntr=True, success=success,
+            volume_ml=volume_ml, satisfaction=80 if success else 0,
+        )
+
+        return FuckWifeResult(
+            ok=True, success=success, is_ntr=True,
+            wife_wid=wid, wife_name=wife_name,
+            intimacy_gain=intimacy_gain,
+            new_intimacy=new_intimacy,
+            volume_ml=volume_ml,
+            satisfaction=80 if success else 0,
+            resistance_flags=resistance_result,
+        )
