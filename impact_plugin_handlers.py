@@ -333,11 +333,11 @@ class ImpactPluginHandlersMixin:
         if not res.is_ntr and res.success:
             pool = FUCK_WIFE_SELF.get(res.charm_tier) or FUCK_WIFE_SELF[2]
             text = pick(pool).format(**fmt)
-            return text + f"（{fmt['length']}cm，亲密度{res.intimacy_gain:+d}）"
+            return text + f"（亲密度{res.intimacy_gain:+d}）"
         if res.is_ntr and res.success:
             pool = FUCK_WIFE_NTR.get(res.charm_tier) or FUCK_WIFE_NTR[2]
             text = pick(pool).format(cuckold="对方", **fmt)
-            return text + f"（{fmt['length']}cm，亲密度{res.intimacy_gain:+d}）"
+            return text + f"（亲密度{res.intimacy_gain:+d}）"
         if res.is_ntr and not res.success:
             return pick(FUCK_WIFE_NTR_FAIL).format(name=res.wife_name)
         return "日老婆发生未知情况。"
