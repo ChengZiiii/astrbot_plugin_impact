@@ -126,11 +126,11 @@ class ImpactServiceGameplayMixin(ImpactServiceGameplaySupportMixin):
             sender_length = self._store.change_length(sender_id, winner_delta)
             target_length = self._store.change_length(target_id, loser_delta)
             self._record_group_pk(group_id, sender_id, target_id, winner_delta, loser_delta, sender_length, target_length)
-            return PlainReply(self._format_pk_result(True, delta_cm, winner_delta, loser_delta, is_critical), media_request=self._build_media_request("pk", self._config.pk_media_mode, delta_cm < 0, sender_id, target_id))
+            return PlainReply(self._format_pk_result(True, delta_cm, winner_delta, loser_delta, is_critical, sender_length, target_length), media_request=self._build_media_request("pk", self._config.pk_media_mode, delta_cm < 0, sender_id, target_id))
         sender_length = self._store.change_length(sender_id, loser_delta)
         target_length = self._store.change_length(target_id, winner_delta)
         self._record_group_pk(group_id, target_id, sender_id, winner_delta, loser_delta, target_length, sender_length)
-        return PlainReply(self._format_pk_result(False, delta_cm, loser_delta, winner_delta, is_critical), media_request=self._build_media_request("pk", self._config.pk_media_mode, delta_cm < 0, sender_id, target_id))
+        return PlainReply(self._format_pk_result(False, delta_cm, loser_delta, winner_delta, is_critical, sender_length, target_length), media_request=self._build_media_request("pk", self._config.pk_media_mode, delta_cm < 0, sender_id, target_id))
 
     def handle_toggle(self, group_id: int, normalized: str, event: AstrMessageEvent) -> PlainReply:
         if not self.is_sender_admin(event):

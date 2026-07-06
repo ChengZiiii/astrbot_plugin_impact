@@ -81,19 +81,20 @@ class ImpactServiceGameplaySupportMixin:
         critical_prefix = "暴击。" if is_critical else ""
         jj = self._jj_name()
         if delta_cm >= 0:
-            return critical_prefix + pick(growth_pool).format(delta=round(delta_cm, 3), jj=jj)
-        result = critical_prefix + pick(shrink_pool).format(delta=round(abs(delta_cm), 3), jj=jj)
-        result += f"现在是{current_length}cm。"
-        return result
+            return critical_prefix + pick(growth_pool).format(delta=round(delta_cm, 3), jj=jj) + f"现在是{current_length}cm。"
+        return critical_prefix + pick(shrink_pool).format(delta=round(abs(delta_cm), 3), jj=jj) + f"现在是{current_length}cm。"
 
-    def _format_pk_result(self, is_sender_winner: bool, base_delta_cm: float, sender_delta_cm: float, target_delta_cm: float, is_critical: bool) -> str:
+    def _format_pk_result(self, is_sender_winner: bool, base_delta_cm: float, sender_delta_cm: float, target_delta_cm: float, is_critical: bool, sender_length: float = 0.0, target_length: float = 0.0) -> str:
         critical_prefix = "暴击。" if is_critical else ""
         jj = self._jj_name()
         if base_delta_cm >= 0:
             pool = PK_WIN_POSITIVE if is_sender_winner else PK_LOSE_NEGATIVE
         else:
             pool = PK_WIN_NEGATIVE if is_sender_winner else PK_LOSE_BOTH
-        return critical_prefix + pick(pool).format(delta=round(abs(sender_delta_cm), 3), jj=jj)
+        result = critical_prefix + pick(pool).format(delta=round(abs(sender_delta_cm), 3), jj=jj)
+        if sender_length > 0 and target_length > 0:
+            result += f"你{sender_length}cm，对方{target_length}cm。"
+        return result
 
     def _format_pk_creation_reply(self, sender_created: bool, target_created: bool) -> str:
         if sender_created and target_created:
