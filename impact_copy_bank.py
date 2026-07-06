@@ -83,41 +83,62 @@ YINPA_RESULT = (
 
 # ── 查询分级 ──────────────────────────────────────────────
 
-QUERY_SELF_LOW = (
-    "你才{length}cm？建议先去挂个号。",
-    "{length}cm……这数据说出来有点丢人。",
-    "{length}cm。别急，垫底也是一种体验。",
-)
-
-QUERY_SELF_MID = (
-    "{length}cm，及格线附近徘徊。继续努力。",
-    "{length}cm，不上不下，属于中庸之道。",
-    "{length}cm。一般般，不好不坏，看你后面能不能冲。",
-)
-
-QUERY_SELF_HIGH = (
-    "{length}cm。难怪这么招摇，确实有资本。",
-    "{length}cm……这已经不是正常范围了吧？",
-    "{length}cm。牛。这数据摆出来，谁看了不嫉妒。",
-)
-
-QUERY_TARGET_LOW = (
-    "TA才{length}cm。你查这个干嘛，没什么好看的。",
-    "TA {length}cm。还在起步阶段，别对TA期望太高。",
-    "TA {length}cm……你确定要和这个比？",
-)
-
-QUERY_TARGET_MID = (
-    "TA {length}cm，中规中矩，没什么好炫耀的。",
-    "TA {length}cm，还行吧，不算丢人。",
-    "TA {length}cm。不上不下，和你半斤八两。",
-)
-
-QUERY_TARGET_HIGH = (
-    "TA {length}cm。难怪你专门来查，确实有点东西。",
-    "TA {length}cm……这数据，说实话有点离谱。",
-    "TA {length}cm。你确定要和这个比？勇气可嘉。",
-)
+# ── 查长度结果 ──────────────────────────────────────
+# charm_tier: 1=嫌短, 2=还行, 3=不错, 4=很大, 5=怪物
+QUERY_SELF_T = {
+    1: (
+        "你才{length}cm？还没发育好吧，赶紧去补补。",
+        "{length}cm。你这也太短了，让人笑话。",
+        "{length}cm……这么小你也好意思查？",
+    ),
+    2: (
+        "你才{length}cm？建议先去挂个号。",
+        "{length}cm……这数据说出来有点丢人。",
+        "{length}cm。别急，垫底也是一种体验。",
+    ),
+    3: (
+        "{length}cm，及格线附近徘徊。继续努力。",
+        "{length}cm，不上不下，属于中庸之道。",
+        "{length}cm。一般般，不好不坏，看你后面能不能冲。",
+    ),
+    4: (
+        "{length}cm。难怪这么招摇，确实有资本。",
+        "{length}cm……这已经不是正常范围了吧？",
+        "{length}cm。牛。这数据摆出来，谁看了不嫉妒。",
+    ),
+    5: (
+        "{length}cm？你是人类吗？这已经不是正常范畴了。",
+        "{length}cm——建议你不要随便让别人知道，会被当怪物。",
+        "{length}cm。你老婆还好吗？",
+    ),
+}
+QUERY_TARGET_T = {
+    1: (
+        "TA才{length}cm。还没发育好，建议捐款。",
+        "TA {length}cm。这么小，你查来干嘛？",
+        "TA {length}cm……这么短，不忍直视。",
+    ),
+    2: (
+        "TA才{length}cm。你查这个干嘛，没什么好看的。",
+        "TA {length}cm。还在起步阶段，别对TA期望太高。",
+        "TA {length}cm……你确定要和这个比？",
+    ),
+    3: (
+        "TA {length}cm，中规中矩，没什么好炫耀的。",
+        "TA {length}cm，还行吧，不算丢人。",
+        "TA {length}cm。不上不下，和你半斤八两。",
+    ),
+    4: (
+        "TA {length}cm。难怪你专门来查，确实有点东西。",
+        "TA {length}cm……这数据，说实话有点离谱。",
+        "TA {length}cm。你确定要和这个比？勇气可嘉。",
+    ),
+    5: (
+        "TA {length}cm。这已经不是人类范畴了，你在查什么怪物。",
+        "TA {length}cm。建议不要和TA比，你会自闭的。",
+        "TA {length}cm……这是什么神仙数据？你认真的？",
+    ),
+}
 
 # ── 周报开头 ──────────────────────────────────────────────
 

@@ -16,12 +16,9 @@ from .impact_copy_bank import (
     NEW_USER_REPLY,
     PK_NO_TARGET,
     PK_SELF_TARGET,
-    QUERY_SELF_HIGH,
-    QUERY_SELF_LOW,
-    QUERY_SELF_MID,
-    QUERY_TARGET_HIGH,
-    QUERY_TARGET_LOW,
-    QUERY_TARGET_MID,
+    QUERY_SELF_T,
+
+    QUERY_TARGET_T,
     SUO_GROWTH,
     SUO_SHRINK,
     TOGGLE_ADMIN_ONLY,
@@ -85,12 +82,19 @@ class ImpactServiceGameplayMixin(ImpactServiceGameplaySupportMixin):
         self._record_group_query(group_id, sender_id)
         current_length = self._store.get_length(target_id)
         is_self = target_id == sender_id
-        if current_length < 12:
-            query_text = pick(QUERY_SELF_LOW if is_self else QUERY_TARGET_LOW)
-        elif current_length < 18:
-            query_text = pick(QUERY_SELF_MID if is_self else QUERY_TARGET_MID)
-        else:
-            query_text = pick(QUERY_SELF_HIGH if is_self else QUERY_TARGET_HIGH)
+        # Use same 5-tier thresholds as 日老婆 charm_tier
+        _thr = self._config.fuck_wife_charm_thresholds
+        _tier = 1
+        if len(_thr) >= 3 and current_length >= (_thr[2] * 2):
+            _tier = 5
+        elif len(_thr) >= 3 and current_length >= _thr[2]:
+            _tier = 4
+        elif len(_thr) >= 2 and current_length >= _thr[1]:
+            _tier = 3
+        elif len(_thr) >= 1 and current_length >= _thr[0]:
+            _tier = 2
+        pool = QUERY_SELF_T if is_self else QUERY_TARGET_T
+        query_text = pick(pool.get(_tier, pool[2]))
         display_text = query_text.format(length=current_length)
         mention_sender = is_self
         return PlainReply(display_text, mention_sender=mention_sender)
