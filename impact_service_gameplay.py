@@ -312,7 +312,10 @@ class ImpactServiceGameplayMixin(ImpactServiceGameplaySupportMixin):
         roll = roll_seed if roll_seed is not None else random.random()
         success = roll < prob
 
-        intimacy_gain = 0 if success else 0
+        # NTR intimacy = -自妻同档涨幅（短→B涨，长→B跌）
+        tiers = self._config.fuck_wife_intimacy_gain_tiers
+        idx = min(charm_tier - 1, len(tiers) - 1)
+        intimacy_gain = -(tiers[idx]) if success else 0
         new_intimacy = 0
 
         if success:

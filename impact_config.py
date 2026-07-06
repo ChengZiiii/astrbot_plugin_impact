@@ -257,7 +257,7 @@ class ImpactConfig:
             fuck_wife_enabled=_to_bool(config.get("fuck_wife_enabled"), True),
             fuck_wife_base_possibility=_to_float(config.get("fuck_wife_base_possibility"), 0.25),
             fuck_wife_intimacy_gain_tiers=_parse_int_tuple(
-                config.get("fuck_wife_intimacy_gain_tiers"), (0, 1, 2, 3, 5)
+                config.get("fuck_wife_intimacy_gain_tiers"), (-1, 1, 2, 3, 5)
             ),
             fuck_wife_cd_time=_to_int(config.get("fuck_wife_cd_time"), 600),
             fuck_wife_daily_limit=_to_int(config.get("fuck_wife_daily_limit"), 5),
