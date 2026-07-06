@@ -324,12 +324,12 @@ INJECTION_HISTORY = (
 )
 
 # ── 日老婆结果 ──────────────────────────────────────────────
-# charm_tier: 1=嫌短, 2=舒服, 3=要死了, 4=失神, 5=怪物
+# charm_tier: 1=小牙签, 2=普通, 3=凶器, 4=巨炮, 5=怪物
 FUCK_WIFE_SELF = {
     1: [
-        "{name}低头看了看你{length}cm的小家伙，叹了口气：'就这？'你委屈地塞了{vol}ml。今日她已被注入{dvol}ml（{dcnt}次）。",
-        "你趴在{name}身上忙活半天，她打了个哈欠：'你那{length}cm就完了？'{vol}ml，也就这样了。今日她已被注入{dvol}ml（{dcnt}次）。",
-        "{name}皱了皱眉：'你{length}cm是不是没吃饭……'{vol}ml，她一脸嫌弃。今日她已被注入{dvol}ml（{dcnt}次）。",
+        "{name}低头看了看你{length}cm的小牙签，叹了口气：'就这？'你委屈地塞了{vol}ml。今日她已被注入{dvol}ml（{dcnt}次）。",
+        "你趴在{name}身上忙活半天，她打了个哈欠：'你那{length}cm小牙签就完了？'{vol}ml，也就这样了。今日她已被注入{dvol}ml（{dcnt}次）。",
+        "{name}皱了皱眉：'你{length}cm的小牙签是不是没吃饭……'{vol}ml，她一脸嫌弃。今日她已被注入{dvol}ml（{dcnt}次）。",
     ],
     2: [
         "你把{name}按在身下，{length}cm顶了进去……她脸红着小声说'主人……轻点……'这次塞进了{vol}ml。今日她已被注入{dvol}ml（{dcnt}次）。",
@@ -337,26 +337,26 @@ FUCK_WIFE_SELF = {
         "{name}被你{length}cm压在墙上，{vol}ml一股脑全灌进去了，她腿都软了。今日她已被注入{dvol}ml（{dcnt}次）。",
     ],
     3: [
-        "{name}被你{length}cm弄得浑身发抖，带着哭腔喊'不行了不行了……'你一股脑灌了{vol}ml进去。今日她已被注入{dvol}ml（{dcnt}次）。",
-        "你按住{name}的腰用{length}cm狠狠冲刺，她尖叫着瘫软在床上，{vol}ml全收下了。今日她已被注入{dvol}ml（{dcnt}次）。",
-        "{name}被你{length}cm干得翻着白眼，断断续续地说'要……要死了……'{vol}ml全灌进去了。今日她已被注入{dvol}ml（{dcnt}次）。",
+        "{name}被你{length}cm的大炮弄得浑身发抖，带着哭腔喊'不行了不行了……'你一股脑灌了{vol}ml进去。今日她已被注入{dvol}ml（{dcnt}次）。",
+        "你按住{name}的腰用{length}cm凶器狠狠冲刺，她尖叫着瘫软在床上，{vol}ml全收下了。今日她已被注入{dvol}ml（{dcnt}次）。",
+        "{name}被你{length}cm大炮干得翻着白眼，断断续续地说'要……要死了……'{vol}ml全灌进去了。今日她已被注入{dvol}ml（{dcnt}次）。",
     ],
     4: [
-        "{name}被你{length}cm干到眼神失焦，嘴角流着口水喃喃'坏掉了……'{vol}ml灌满了她。今日她已被注入{dvol}ml（{dcnt}次）。",
-        "你粗暴地用{length}cm贯穿{name}，她抽搐着高潮了一次又一次，{vol}ml全射了进去。今日她已被注入{dvol}ml（{dcnt}次）。",
-        "{name}已经说不出话，{length}cm还在往里顶，{vol}ml把她灌得小腹微隆。今日她已被注入{dvol}ml（{dcnt}次）。",
+        "{name}被你{length}cm的巨炮干到眼神失焦，嘴角流着口水喃喃'坏掉了……'{vol}ml灌满了她。今日她已被注入{dvol}ml（{dcnt}次）。",
+        "你粗暴地用{length}cm巨物贯穿{name}，她抽搐着高潮了一次又一次，{vol}ml全射了进去。今日她已被注入{dvol}ml（{dcnt}次）。",
+        "{name}已经说不出话，{length}cm巨炮还在往里顶，{vol}ml把她灌得小腹微隆。今日她已被注入{dvol}ml（{dcnt}次）。",
     ],
     5: [
-        "{name}被你{length}cm干晕了过去，你还在继续……她醒来时发现自己已经被灌了{vol}ml。今日她已被注入{dvol}ml（{dcnt}次）。",
-        "你{length}cm过于庞大，{name}直接昏死过去，你只好自己动……{vol}ml一滴不漏。今日她已被注入{dvol}ml（{dcnt}次）。",
-        "{name}被你{length}cm干得翻着白眼吐着舌头，意识已经飞走，{vol}ml全灌了进去。今日她已被注入{dvol}ml（{dcnt}次）。",
+        "{name}被你{length}cm的怪物级凶器干晕了过去，你还在继续……她醒来时发现自己已经被灌了{vol}ml。今日她已被注入{dvol}ml（{dcnt}次）。",
+        "你{length}cm的神兵过于庞大，{name}直接昏死过去，你只好自己动……{vol}ml一滴不漏。今日她已被注入{dvol}ml（{dcnt}次）。",
+        "{name}被你{length}cm擎天柱干得翻着白眼吐着舌头，意识已经飞走，{vol}ml全灌了进去。今日她已被注入{dvol}ml（{dcnt}次）。",
     ],
 }
 FUCK_WIFE_NTR = {
     1: [
-        "你掏出{length}cm的小家伙，{name}就笑出了声：'就这尺寸也敢来？'你脸一红射了{vol}ml。今日她已被注入{dvol}ml（{dcnt}次）。",
-        "{name}看了一眼你{length}cm，嫌弃地说'还不如我老公'，勉强让你塞了{vol}ml。今日她已被注入{dvol}ml（{dcnt}次）。",
-        "你忙活半天{name}毫无波澜——你那{length}cm她根本没感觉，她甚至在看手机：'完了？那我走了。'{vol}ml，太丢人了。今日她已被注入{dvol}ml（{dcnt}次）。",
+        "你掏出{length}cm的小牙签，{name}就笑出了声：'就这尺寸也敢来？'你脸一红射了{vol}ml。今日她已被注入{dvol}ml（{dcnt}次）。",
+        "{name}看了一眼你{length}cm的小牙签，嫌弃地说'还不如我老公'，勉强让你塞了{vol}ml。今日她已被注入{dvol}ml（{dcnt}次）。",
+        "你忙活半天{name}毫无波澜——你那{length}cm小牙签她根本没感觉，她甚至在看手机：'完了？那我走了。'{vol}ml，太丢人了。今日她已被注入{dvol}ml（{dcnt}次）。",
     ],
     2: [
         "{name}本来是{cuckold}的老婆，现在被你的{length}cm干得在你身下求饶……{vol}ml 全给了她。今日她已被注入{dvol}ml（{dcnt}次）。",
@@ -364,19 +364,19 @@ FUCK_WIFE_NTR = {
         "{name}的老公{cuckold}还不知道，你正用{length}cm灌她，{vol}ml已经进去了……今日她已被注入{dvol}ml（{dcnt}次）。",
     ],
     3: [
-        "你{length}cm把{name}干得语无伦次，她一边喊{cuckold}的名字一边夹紧你……{vol}ml一滴不漏。今日她已被注入{dvol}ml（{dcnt}次）。",
-        "{name}被你{length}cm吓到了，咬着被子不敢叫出声，被你灌了{vol}ml后瘫在床上起不来。今日她已被注入{dvol}ml（{dcnt}次）。",
-        "{name}翻着白眼，你{length}cm还在往里送，她断断续续地说'要被你日死了……'{vol}ml全灌满了她。今日她已被注入{dvol}ml（{dcnt}次）。",
+        "你{length}cm的大炮把{name}干得语无伦次，她一边喊{cuckold}的名字一边夹紧你……{vol}ml一滴不漏。今日她已被注入{dvol}ml（{dcnt}次）。",
+        "{name}被你{length}cm凶器吓到了，咬着被子不敢叫出声，被你灌了{vol}ml后瘫在床上起不来。今日她已被注入{dvol}ml（{dcnt}次）。",
+        "{name}翻着白眼，你{length}cm大炮还在往里送，她断断续续地说'要被你日死了……'{vol}ml全灌满了她。今日她已被注入{dvol}ml（{dcnt}次）。",
     ],
     4: [
-        "你干得{cuckold}的老婆{name}两眼翻白，{length}cm全根没入，她痉挛着夹紧你，{vol}ml全灌了进去。今日她已被注入{dvol}ml（{dcnt}次）。",
-        "趁{cuckold}不在你把{name}按在床上，{length}cm干到失禁，她咬着拳头不敢出声，{vol}ml一滴没漏。今日她已被注入{dvol}ml（{dcnt}次）。",
-        "{name}在你{length}cm下抽搐着高潮，{cuckold}的绿帽已经戴稳了……{vol}ml全给了她。今日她已被注入{dvol}ml（{dcnt}次）。",
+        "你干得{cuckold}的老婆{name}两眼翻白，{length}cm巨炮全根没入，她痉挛着夹紧你，{vol}ml全灌了进去。今日她已被注入{dvol}ml（{dcnt}次）。",
+        "趁{cuckold}不在你把{name}按在床上，{length}cm巨物干到失禁，她咬着拳头不敢出声，{vol}ml一滴没漏。今日她已被注入{dvol}ml（{dcnt}次）。",
+        "{name}在你{length}cm巨炮下抽搐着高潮，{cuckold}的绿帽已经戴稳了……{vol}ml全给了她。今日她已被注入{dvol}ml（{dcnt}次）。",
     ],
     5: [
-        "{name}被你{length}cm干到翻白眼吐舌头，{cuckold}的老婆现在像只破布娃娃，{vol}ml灌满了她。今日她已被注入{dvol}ml（{dcnt}次）。",
-        "你{length}cm一插进去{name}就昏了，{cuckold}的老婆被你干到晕厥，{vol}ml全灌了进去。今日她已被注入{dvol}ml（{dcnt}次）。",
-        "你把{cuckold}的老婆{name}用{length}cm干得失禁，她醒来后哭着求你不要告诉别人，{vol}ml早就灌满了。今日她已被注入{dvol}ml（{dcnt}次）。",
+        "{name}被你{length}cm怪物级凶器干到翻白眼吐舌头，{cuckold}的老婆现在像只破布娃娃，{vol}ml灌满了她。今日她已被注入{dvol}ml（{dcnt}次）。",
+        "你{length}cm神兵一插进去{name}就昏了，{cuckold}的老婆被你干到晕厥，{vol}ml全灌了进去。今日她已被注入{dvol}ml（{dcnt}次）。",
+        "你把{cuckold}的老婆{name}用{length}cm擎天柱干得失禁，她醒来后哭着求你不要告诉别人，{vol}ml早就灌满了。今日她已被注入{dvol}ml（{dcnt}次）。",
     ],
 }
 FUCK_WIFE_NTR_FAIL = [
