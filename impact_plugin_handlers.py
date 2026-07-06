@@ -274,3 +274,37 @@ class ImpactPluginHandlersMixin:
             if self._matches_command(normalized, commands):
                 return command_key
         return None
+
+    def _format_fuck_wife_result(self, res, sender_id):
+        from .impact_copy_bank import pick, FUCK_WIFE_SELF_SUCCESS, FUCK_WIFE_NTR_SUCCESS, FUCK_WIFE_NTR_FAIL, \
+            FUCK_WIFE_LOCKED, FUCK_WIFE_NO_WIFE_SELF, FUCK_WIFE_NO_WIFE_TARGET
+        if res.reason == "animewifexi_unavailable":
+            return "animewifexI 未就绪，无法日老婆。"
+        if res.reason == "no_wife":
+            return FUCK_WIFE_NO_WIFE_TARGET if res.is_ntr else FUCK_WIFE_NO_WIFE_SELF
+        if res.reason == "cooldown":
+            return "你刚日过，歇会儿……（冷却中）"
+        if res.reason == "daily_limit":
+            return "今天日够多了，明日再战。"
+        if res.reason == "target_locked":
+            return FUCK_WIFE_LOCKED
+        fmt = dict(name=res.wife_name, vol=f"{res.volume_ml:.1f}", sat=res.satisfaction,
+                   dvol=f"{res.daily_injection_ml:.1f}", dcnt=res.daily_injection_count,
+                   intimacy_gain=res.intimacy_gain, new_intimacy=res.new_intimacy)
+        if not res.is_ntr and res.success:
+            return pick(FUCK_WIFE_SELF_SUCCESS).format(**fmt)
+        if res.is_ntr and res.success:
+            return pick(FUCK_WIFE_NTR_SUCCESS).format(cuckold="对方", **fmt)
+        if res.is_ntr and not res.success:
+            return pick(FUCK_WIFE_NTR_FAIL).format(name=res.wife_name)
+        return "日老婆发生未知情况。"
+
+    async def _notify_cuckold(self, group_id, owner_uid, attacker_uid, res):
+        umo = self._store.get_group_session(group_id)
+        if not umo:
+            return
+        from .impact_copy_bank import FUCK_WIFE_NOTIFY
+        attacker_name = self._store.get_group_display_name(group_id, int(attacker_uid)) or "某群友"
+        text = FUCK_WIFE_NOTIFY.format(name=res.wife_name, attacker=attacker_name,
+                                        dvol=f"{res.daily_injection_ml:.1f}", dcnt=res.daily_injection_count)
+        await self.context.send_message(umo, [Comp.Plain(text)])

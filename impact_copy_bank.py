@@ -279,3 +279,25 @@ INJECTION_HISTORY = (
     "{object}历史总被注射量为{volume}ml。",
     "{object}累计被注入{volume}ml，铁打的身子。",
 )
+
+# ── 日老婆结果 ──────────────────────────────────────────────
+
+FUCK_WIFE_SELF_SUCCESS = [
+    "你把{name}按在身下……她脸红着小声说'主人……轻点……'这次塞进了{vol}ml。今日她已被注入{dvol}ml（{dcnt}次）。",
+    "你搂住{name}的腰，她喘息着说'嗯……好舒服……'射了{vol}ml进去。今日她已被注入{dvol}ml（{dcnt}次）。",
+    "{name}被你压在墙上，{vol}ml一股脑全灌进去了，她腿都软了。今日她已被注入{dvol}ml（{dcnt}次）。",
+]
+FUCK_WIFE_NTR_SUCCESS = [
+    "{name}本来是{cuckold}的老婆，现在却在你身下求饶……{vol}ml 全给了她。今日她已被注入{dvol}ml（{dcnt}次）。",
+    "你趁{cuckold}不在，把{name}按在沙发上……{vol}ml 注入完毕，她咬着嘴唇说不出话。今日她已被注入{dvol}ml（{dcnt}次）。",
+    "{name}的老公{cuckold}还不知道，她已经被你灌了{vol}ml……今日她已被注入{dvol}ml（{dcnt}次）。",
+]
+FUCK_WIFE_NTR_FAIL = [
+    "你想对{name}下手，但她狠狠蹬开了你——好感度太高，护得死死的。",
+    "{name}对你翻了个白眼：'就你？做梦吧。'失败了。",
+    "你刚靠近{name}，她就大喊救命，你只好灰溜溜跑了。",
+]
+FUCK_WIFE_LOCKED = "对方老婆被锁定，你无从下手。"
+FUCK_WIFE_NO_WIFE_SELF = "你还没有老婆，先去 animewifexI 抽一个吧。"
+FUCK_WIFE_NO_WIFE_TARGET = "对方还没有老婆，换个目标吧。"
+FUCK_WIFE_NOTIFY = "⚠️ 你的老婆{name}刚刚被{attacker}日了……她今日已被注入{dvol}ml（{dcnt}次）。"
