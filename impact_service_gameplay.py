@@ -216,7 +216,7 @@ class ImpactServiceGameplayMixin(ImpactServiceGameplaySupportMixin):
             _sl = 0.0
         _thr = self._config.fuck_wife_charm_thresholds
         charm_tier = 1
-        if len(_thr) >= 3 and _sl >= (_thr[2] * 2):
+        if len(_thr) >= 4 and _sl >= _thr[3]:
             charm_tier = 5
         elif len(_thr) >= 3 and _sl >= _thr[2]:
             charm_tier = 4
@@ -293,8 +293,10 @@ class ImpactServiceGameplayMixin(ImpactServiceGameplaySupportMixin):
             sender_length = 0.0
         thresholds = self._config.fuck_wife_charm_thresholds
         charm = 1.0
-        if len(thresholds) >= 3 and sender_length >= thresholds[2]:
+        if len(thresholds) >= 4 and sender_length >= thresholds[3]:
             charm = 1.5
+        elif len(thresholds) >= 3 and sender_length >= thresholds[2]:
+            charm = 1.35
         elif len(thresholds) >= 2 and sender_length >= thresholds[1]:
             charm = 1.25
         elif len(thresholds) >= 1 and sender_length >= thresholds[0]:

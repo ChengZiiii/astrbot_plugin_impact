@@ -46,7 +46,7 @@ def _make_config(**overrides):
     cfg.fuck_wife_daily_limit = overrides.get("daily_limit", 5)
     cfg.fuck_wife_volume_min = 1.0
     cfg.fuck_wife_volume_max = 5.0
-    cfg.fuck_wife_charm_thresholds = (6.0, 12.0, 18.0)
+    cfg.fuck_wife_charm_thresholds = (6.0, 12.0, 18.0, 36.0)
     cfg.fuck_wife_revenge_multiplier = 1.5
     cfg.fuck_wife_intimacy_gain_tiers = (-1, 1, 2, 3, 5)
     cfg.fuck_wife_ntr_notify = True

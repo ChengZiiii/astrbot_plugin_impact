@@ -264,7 +264,7 @@ class ImpactConfig:
             fuck_wife_volume_min=_to_float(config.get("fuck_wife_volume_min"), 1.0),
             fuck_wife_volume_max=_to_float(config.get("fuck_wife_volume_max"), 5.0),
             fuck_wife_charm_thresholds=_parse_float_tuple(
-                config.get("fuck_wife_charm_thresholds"), (6.0, 12.0, 18.0)
+                config.get("fuck_wife_charm_thresholds"), (6.0, 12.0, 18.0, 36.0)
             ),
             fuck_wife_revenge_multiplier=_to_float(config.get("fuck_wife_revenge_multiplier"), 1.5),
             fuck_wife_ntr_notify=_to_bool(config.get("fuck_wife_ntr_notify"), True),

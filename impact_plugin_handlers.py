@@ -176,7 +176,7 @@ class ImpactPluginHandlersMixin:
             yinpa_len = 0.0
         yinpa_thr = self._impact_config.fuck_wife_charm_thresholds
         yinpa_tier = 1
-        if len(yinpa_thr) >= 3 and yinpa_len >= (yinpa_thr[2] * 2):
+        if len(yinpa_thr) >= 4 and yinpa_len >= yinpa_thr[3]:
             yinpa_tier = 5
         elif len(yinpa_thr) >= 3 and yinpa_len >= yinpa_thr[2]:
             yinpa_tier = 4

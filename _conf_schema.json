@@ -360,10 +360,10 @@
     "hint": "单次注入量随机上限。"
   },
   "fuck_wife_charm_thresholds": {
-    "description": "jj_length魅力分档",
-    "type": "string",
-    "default": "6,12,18",
-    "hint": "逗号分隔的魅力分档阈值，对应 jj_length。"
+    "description": "jj_length五档分界值",
+    "type": "list",
+    "default": [6, 12, 18, 36],
+    "hint": "四个数，逗号分隔，分别对应 tier2~5 的起始长度。例：[6,12,18,36] 表示 <6=tier1, 6~12=tier2, 12~18=tier3, 18~36=tier4, ≥36=tier5。"
   },
   "fuck_wife_revenge_multiplier": {
     "description": "复仇加成倍率",
