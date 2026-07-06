@@ -98,6 +98,8 @@ class ImpactPluginHandlersMixin:
             return self._service.handle_toggle(group_id, normalized, event)
         if command_key == "yinpa" and not is_private:
             return await self._handle_yinpa(group_enabled, group_id, sender_id, normalized, at_id, event)
+        if command_key == "fuck_wife" and not is_private:
+            return await self._handle_fuck_wife(group_enabled, group_id, sender_id, normalized, at_id, event)
         if command_key == "inject":
             return await self._handle_injection(group_enabled, sender_id, normalized, at_id, None if is_private else group_id)
         if command_key == "weekly_report" and not is_private:
@@ -234,6 +236,23 @@ class ImpactPluginHandlersMixin:
             return None
         candidates = [int(member["user_id"]) for member in members if int(member.get("user_id", sender_id)) != sender_id]
         return random.choice(candidates) if candidates else None
+
+    @staticmethod
+    def _resolve_wife_target(normalized: str, at_id: str | None, sender_id: int) -> tuple[str, int | None]:
+        import re
+        m = re.search(r"\s(\d+)\s*$", normalized)
+        index = int(m.group(1)) if m else None
+        owner = str(at_id) if at_id else str(sender_id)
+        return owner, index
+
+    async def _handle_fuck_wife(self, group_enabled: bool, group_id: int, sender_id: int, normalized: str, at_id: str | None, event: AstrMessageEvent) -> PlainReply:
+        owner, index = self._resolve_wife_target(normalized, at_id, sender_id)
+        target_uid = owner if owner != str(sender_id) else None
+        res = self._service.handle_fuck_wife(group_enabled, str(group_id), str(sender_id), target_uid, normalized)
+        text = self._format_fuck_wife_result(res, sender_id)
+        if res.is_ntr and res.success and self._impact_config.fuck_wife_ntr_notify:
+            await self._notify_cuckold(group_id, owner, sender_id, res)
+        return PlainReply(text, mention_sender=True)
 
     @staticmethod
     def _extract_at_qq(event: AstrMessageEvent) -> str | None:
