@@ -331,8 +331,9 @@ class ImpactServiceGameplayMixin(ImpactServiceGameplaySupportMixin):
 
         volume_ml = round(random.uniform(self._config.fuck_wife_volume_min, self._config.fuck_wife_volume_max), 3) if success else 0.0
 
-        self._fuck_wife_cd_data[sender_uid] = time.time()
-        self._store.incr_daily_fuck_wife_count(sender_uid)
+        if success:
+            self._fuck_wife_cd_data[sender_uid] = time.time()
+            self._store.incr_daily_fuck_wife_count(sender_uid)
         self._store.record_wife_sex(
             sender_uid, group_id, wid, target_uid,
             is_ntr=True, success=success,
