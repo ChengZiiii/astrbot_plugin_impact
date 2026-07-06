@@ -329,17 +329,11 @@
     "default": 0.25,
     "hint": "NTR 基础成功概率，推荐 0~1。"
   },
-  "fuck_wife_intimacy_gain_self": {
-    "description": "日自己老婆亲密度增量",
-    "type": "int",
-    "default": 2,
-    "hint": "对自己老婆执行时增加的亲密度。"
-  },
-  "fuck_wife_intimacy_gain_ntr": {
-    "description": "NTR成功亲密度增量",
-    "type": "int",
-    "default": 1,
-    "hint": "NTR 成功时增加的亲密度。"
+  "fuck_wife_intimacy_gain_tiers": {
+    "description": "五档亲密度涨幅",
+    "type": "list",
+    "default": [0, 1, 2, 3, 5],
+    "hint": "对应 charm_tier 1~5 级的亲密度增量（顺序写，逗号分隔）。tier1 嫌短、tier2 舒服、tier3 要死了、tier4 失神、tier5 怪物。"
   },
   "fuck_wife_cd_time": {
     "description": "日老婆冷却秒数",

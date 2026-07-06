@@ -233,7 +233,9 @@ class ImpactServiceGameplayMixin(ImpactServiceGameplaySupportMixin):
 
             wid = peek_result["wid"]
             wife_name = peek_result.get("name", "")
-            intimacy_gain = self._config.fuck_wife_intimacy_gain_self
+            tiers = self._config.fuck_wife_intimacy_gain_tiers
+            idx = min(charm_tier - 1, len(tiers) - 1)
+            intimacy_gain = tiers[idx] if tiers else 0
 
             record_result: dict = await interop.record_sex_act(
                 group_id, wid, sender_uid, False, intimacy_gain,
@@ -310,7 +312,7 @@ class ImpactServiceGameplayMixin(ImpactServiceGameplaySupportMixin):
         roll = roll_seed if roll_seed is not None else random.random()
         success = roll < prob
 
-        intimacy_gain = self._config.fuck_wife_intimacy_gain_ntr if success else 0
+        intimacy_gain = 0 if success else 0
         new_intimacy = 0
 
         if success:

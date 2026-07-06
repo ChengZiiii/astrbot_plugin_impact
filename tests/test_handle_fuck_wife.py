@@ -48,8 +48,7 @@ def _make_config(**overrides):
     cfg.fuck_wife_volume_max = 5.0
     cfg.fuck_wife_charm_thresholds = (6.0, 12.0, 18.0)
     cfg.fuck_wife_revenge_multiplier = 1.5
-    cfg.fuck_wife_intimacy_gain_self = 2
-    cfg.fuck_wife_intimacy_gain_ntr = 1
+    cfg.fuck_wife_intimacy_gain_tiers = (0, 1, 2, 3, 5)
     cfg.fuck_wife_ntr_notify = True
     return cfg
 
@@ -86,14 +85,15 @@ class TestOwnWifeAlwaysSuccess:
 
         with _patch_interop(mock_interop):
             svc = _make_service()
-            res = await svc.handle_fuck_wife(True, "g1", "u1", target_uid=None, normalized="日老婆")
+            svc._store.ensure_user(1, 10.0)  # seed user with 10cm → charm_tier=2
+            res = await svc.handle_fuck_wife(True, "g1", "1", target_uid=None, normalized="日老婆")
 
         assert res.ok is True
         assert res.success is True
         assert res.is_ntr is False
         assert res.wife_wid == "w1"
         assert res.wife_name == "TestWife"
-        assert res.intimacy_gain == 2
+        assert res.intimacy_gain == 1  # tier2 → tiers[1]=1
         assert res.volume_ml > 0
 
 

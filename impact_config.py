@@ -73,6 +73,21 @@ def _parse_float_tuple(value: object, default: tuple[float, ...]) -> tuple[float
     return default
 
 
+def _parse_int_tuple(value: object, default: tuple[int, ...]) -> tuple[int, ...]:
+    if isinstance(value, str):
+        parts = [p.strip() for p in value.replace("\n", ",").split(",") if p.strip()]
+        try:
+            return tuple(int(p) for p in parts)
+        except ValueError:
+            return default
+    if isinstance(value, (list, tuple)):
+        try:
+            return tuple(int(v) for v in value)
+        except (TypeError, ValueError):
+            return default
+    return default
+
+
 def _normalize_avatar_gif_templates(values: list[str], default: list[str]) -> list[str]:
     normalized: list[str] = []
     for item in values:
@@ -146,8 +161,7 @@ class ImpactConfig:
     yinpa_avatar_gif_styles: list[str]
     fuck_wife_enabled: bool
     fuck_wife_base_possibility: float
-    fuck_wife_intimacy_gain_self: int
-    fuck_wife_intimacy_gain_ntr: int
+    fuck_wife_intimacy_gain_tiers: tuple[int, ...]
     fuck_wife_cd_time: int
     fuck_wife_daily_limit: int
     fuck_wife_volume_min: float
@@ -242,8 +256,9 @@ class ImpactConfig:
             yinpa_avatar_gif_styles=yinpa_avatar_gif_styles,
             fuck_wife_enabled=_to_bool(config.get("fuck_wife_enabled"), True),
             fuck_wife_base_possibility=_to_float(config.get("fuck_wife_base_possibility"), 0.25),
-            fuck_wife_intimacy_gain_self=_to_int(config.get("fuck_wife_intimacy_gain_self"), 2),
-            fuck_wife_intimacy_gain_ntr=_to_int(config.get("fuck_wife_intimacy_gain_ntr"), 1),
+            fuck_wife_intimacy_gain_tiers=_parse_int_tuple(
+                config.get("fuck_wife_intimacy_gain_tiers"), (0, 1, 2, 3, 5)
+            ),
             fuck_wife_cd_time=_to_int(config.get("fuck_wife_cd_time"), 600),
             fuck_wife_daily_limit=_to_int(config.get("fuck_wife_daily_limit"), 5),
             fuck_wife_volume_min=_to_float(config.get("fuck_wife_volume_min"), 1.0),
