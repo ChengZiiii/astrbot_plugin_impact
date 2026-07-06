@@ -8,6 +8,7 @@ from .impact_store_basic import BASIC_SCHEMA_SQL, ImpactStoreBasicMixin, Injecti
 from .impact_store_display_names import DISPLAY_NAME_SCHEMA_SQL, ImpactStoreDisplayNamesMixin
 from .impact_store_rivalry import ImpactStoreRivalryMixin, RIVALRY_SCHEMA_SQL
 from .impact_store_weekly import ImpactStoreWeeklyReportsMixin, ImpactStoreWeeklyStatsMixin, WEEKLY_SCHEMA_SQL
+from .impact_store_wife import ImpactStoreWifeMixin, WIFE_SCHEMA_SQL
 
 
 class ImpactStore(
@@ -15,6 +16,7 @@ class ImpactStore(
     ImpactStoreWeeklyReportsMixin,
     ImpactStoreWeeklyStatsMixin,
     ImpactStoreRivalryMixin,
+    ImpactStoreWifeMixin,
     ImpactStoreBasicMixin,
 ):
     def __init__(self, data_dir: Path) -> None:
@@ -30,7 +32,7 @@ class ImpactStore(
 
     def _init_db(self) -> None:
         with self._connect() as connection:
-            connection.executescript(BASIC_SCHEMA_SQL + WEEKLY_SCHEMA_SQL + DISPLAY_NAME_SCHEMA_SQL + RIVALRY_SCHEMA_SQL)
+            connection.executescript(BASIC_SCHEMA_SQL + WEEKLY_SCHEMA_SQL + DISPLAY_NAME_SCHEMA_SQL + RIVALRY_SCHEMA_SQL + WIFE_SCHEMA_SQL)
             self._run_migrations(connection)
 
     def _run_migrations(self, connection: sqlite3.Connection) -> None:
