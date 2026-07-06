@@ -22,6 +22,7 @@ DEFAULT_COMMANDS = [
     "weekly_stats",
     "rival",
     "honor",
+    "fuck_wife",
 ]
 
 
@@ -55,6 +56,21 @@ def _to_str_list(value: object, default: list[str]) -> list[str]:
     if isinstance(value, str):
         return [item.strip() for item in value.replace("\n", ",").split(",") if item.strip()]
     return default.copy()
+
+
+def _parse_float_tuple(value: object, default: tuple[float, ...]) -> tuple[float, ...]:
+    if isinstance(value, str):
+        parts = [p.strip() for p in value.replace("\n", ",").split(",") if p.strip()]
+        try:
+            return tuple(float(p) for p in parts)
+        except ValueError:
+            return default
+    if isinstance(value, (list, tuple)):
+        try:
+            return tuple(float(v) for v in value)
+        except (TypeError, ValueError):
+            return default
+    return default
 
 
 def _normalize_avatar_gif_templates(values: list[str], default: list[str]) -> list[str]:
@@ -128,6 +144,17 @@ class ImpactConfig:
     yinpa_media_mode: str
     pk_avatar_gif_styles: list[str]
     yinpa_avatar_gif_styles: list[str]
+    fuck_wife_enabled: bool
+    fuck_wife_base_possibility: float
+    fuck_wife_intimacy_gain_self: int
+    fuck_wife_intimacy_gain_ntr: int
+    fuck_wife_cd_time: int
+    fuck_wife_daily_limit: int
+    fuck_wife_volume_min: float
+    fuck_wife_volume_max: float
+    fuck_wife_charm_thresholds: tuple[float, ...]
+    fuck_wife_revenge_multiplier: float
+    fuck_wife_ntr_notify: bool
 
     @staticmethod
     def from_dict(raw: dict | None) -> ImpactConfig:
@@ -213,4 +240,17 @@ class ImpactConfig:
             yinpa_media_mode=str(config.get("yinpa_media_mode", "avatar_gif")).strip() or "avatar_gif",
             pk_avatar_gif_styles=pk_avatar_gif_styles,
             yinpa_avatar_gif_styles=yinpa_avatar_gif_styles,
+            fuck_wife_enabled=_to_bool(config.get("fuck_wife_enabled"), True),
+            fuck_wife_base_possibility=_to_float(config.get("fuck_wife_base_possibility"), 0.25),
+            fuck_wife_intimacy_gain_self=_to_int(config.get("fuck_wife_intimacy_gain_self"), 2),
+            fuck_wife_intimacy_gain_ntr=_to_int(config.get("fuck_wife_intimacy_gain_ntr"), 1),
+            fuck_wife_cd_time=_to_int(config.get("fuck_wife_cd_time"), 600),
+            fuck_wife_daily_limit=_to_int(config.get("fuck_wife_daily_limit"), 5),
+            fuck_wife_volume_min=_to_float(config.get("fuck_wife_volume_min"), 1.0),
+            fuck_wife_volume_max=_to_float(config.get("fuck_wife_volume_max"), 5.0),
+            fuck_wife_charm_thresholds=_parse_float_tuple(
+                config.get("fuck_wife_charm_thresholds"), (6.0, 12.0, 18.0)
+            ),
+            fuck_wife_revenge_multiplier=_to_float(config.get("fuck_wife_revenge_multiplier"), 1.5),
+            fuck_wife_ntr_notify=_to_bool(config.get("fuck_wife_ntr_notify"), True),
         )

@@ -16,6 +16,7 @@ class ImpactService(ImpactServiceWeeklyMixin, ImpactServiceGameplayMixin):
         self._pk_cd_data: dict[str, float] = {}
         self._suo_cd_data: dict[str, float] = {}
         self._yinpa_cd_data: dict[str, float] = {}
+        self._fuck_wife_cd_data: dict[str, float] = {}
         self._last_penalty_state_key = "last_inactive_penalty_day"
         self._weekly_title_map = {
             "length_top": {1: "长度第一"},

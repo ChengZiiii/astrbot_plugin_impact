@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 
 @dataclass(frozen=True, slots=True)
@@ -36,3 +36,21 @@ class WeeklyResultEntry:
     metric_value: float
     title_text: str | None = None
     display_name_snapshot: str | None = None
+
+
+@dataclass
+class FuckWifeResult:
+    ok: bool
+    success: bool = False
+    is_ntr: bool = False
+    reason: str = ""
+    wife_wid: str = ""
+    wife_name: str = ""
+    intimacy_gain: int = 0
+    new_intimacy: int = 0
+    volume_ml: float = 0.0
+    satisfaction: int = 0
+    daily_injection_ml: float = 0.0
+    daily_injection_count: int = 0
+    lewdness_level: int = 0
+    resistance_flags: dict | None = field(default=None)

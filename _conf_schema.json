@@ -200,8 +200,8 @@
   "commands_enabled": {
     "description": "启用的命令组",
     "type": "list",
-    "default": ["dajiao", "suo", "query", "pk", "rank", "toggle", "yinpa", "inject", "help", "weekly_report", "last_weekly_report", "weekly_stats", "rival", "honor"],
-    "hint": "可选键：dajiao,suo,query,pk,rank,toggle,yinpa,inject,help,weekly_report,last_weekly_report,weekly_stats,rival,honor。删除某项即可禁用对应命令组。"
+    "default": ["dajiao", "suo", "query", "pk", "rank", "toggle", "yinpa", "inject", "help", "weekly_report", "last_weekly_report", "weekly_stats", "rival", "honor", "fuck_wife"],
+    "hint": "可选键：dajiao,suo,query,pk,rank,toggle,yinpa,inject,help,weekly_report,last_weekly_report,weekly_stats,rival,honor,fuck_wife。删除某项即可禁用对应命令组。"
   },
   "weekly_rival_threshold": {
     "description": "宿敌触发阈值",
@@ -316,5 +316,71 @@
     "type": "list",
     "default": ["do"],
     "hint": "可填 do / lash，也兼容 do_frames / lash_frames；插件会从列表中随机选一种模板合成。"
+  },
+  "fuck_wife_enabled": {
+    "description": "日老婆命令总开关",
+    "type": "bool",
+    "default": true,
+    "hint": "关闭后，日老婆/透老婆 命令不可用。"
+  },
+  "fuck_wife_base_possibility": {
+    "description": "NTR基础成功率",
+    "type": "float",
+    "default": 0.25,
+    "hint": "NTR 基础成功概率，推荐 0~1。"
+  },
+  "fuck_wife_intimacy_gain_self": {
+    "description": "日自己老婆亲密度增量",
+    "type": "int",
+    "default": 2,
+    "hint": "对自己老婆执行时增加的亲密度。"
+  },
+  "fuck_wife_intimacy_gain_ntr": {
+    "description": "NTR成功亲密度增量",
+    "type": "int",
+    "default": 1,
+    "hint": "NTR 成功时增加的亲密度。"
+  },
+  "fuck_wife_cd_time": {
+    "description": "日老婆冷却秒数",
+    "type": "int",
+    "default": 600,
+    "hint": "用户执行 日老婆/透老婆 的冷却时间。"
+  },
+  "fuck_wife_daily_limit": {
+    "description": "每日次数上限",
+    "type": "int",
+    "default": 5,
+    "hint": "每天最多执行日老婆的次数。"
+  },
+  "fuck_wife_volume_min": {
+    "description": "注入量下限",
+    "type": "float",
+    "default": 1.0,
+    "hint": "单次注入量随机下限。"
+  },
+  "fuck_wife_volume_max": {
+    "description": "注入量上限",
+    "type": "float",
+    "default": 5.0,
+    "hint": "单次注入量随机上限。"
+  },
+  "fuck_wife_charm_thresholds": {
+    "description": "jj_length魅力分档",
+    "type": "string",
+    "default": "6,12,18",
+    "hint": "逗号分隔的魅力分档阈值，对应 jj_length。"
+  },
+  "fuck_wife_revenge_multiplier": {
+    "description": "复仇加成倍率",
+    "type": "float",
+    "default": 1.5,
+    "hint": "复仇状态下的成功率倍率。"
+  },
+  "fuck_wife_ntr_notify": {
+    "description": "NTR成功通知被绿者",
+    "type": "bool",
+    "default": true,
+    "hint": "开启后，NTR 成功时通知被绿的用户。"
   }
 }
