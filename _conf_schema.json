@@ -333,7 +333,7 @@
     "description": "五档亲密度涨幅",
     "type": "list",
     "default": [-1, 1, 2, 3, 5],
-    "hint": "对应 charm_tier 1~5 级的亲密度增量（顺序写，逗号分隔）。正数=增加，负数=减少。tier1 嫌短、tier2 舒服、tier3 要死了、tier4 失神、tier5 怪物。NTR 对面老婆涨幅 = -此值。"
+    "hint": "对应 charm_tier 1~5 级的亲密度增量（五个整数，位置对应档位）。正数=增加，负数=减少。tier1 嫌短、tier2 舒服、tier3 要死了、tier4 失神、tier5 怪物。NTR 对面老婆涨幅 = -此值。"
   },
   "fuck_wife_cd_time": {
     "description": "日老婆冷却秒数",
@@ -363,7 +363,7 @@
     "description": "jj_length五档分界值",
     "type": "list",
     "default": [6, 12, 18, 36],
-    "hint": "四个数，逗号分隔，分别对应 tier2~5 的起始长度。例：[6,12,18,36] 表示 <6=tier1, 6~12=tier2, 12~18=tier3, 18~36=tier4, ≥36=tier5。"
+    "hint": "四个整数，分别对应 tier2~5 的起始长度。例：[6,12,18,36] 表示 <6=tier1, 6~12=tier2, 12~18=tier3, 18~36=tier4, ≥36=tier5。"
   },
   "fuck_wife_revenge_multiplier": {
     "description": "复仇加成倍率",
