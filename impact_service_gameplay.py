@@ -181,6 +181,7 @@ class ImpactServiceGameplayMixin(ImpactServiceGameplaySupportMixin):
         target_uid: str | None,
         normalized: str,
         roll_seed: float | None = None,
+        index: int | None = None,
     ) -> FuckWifeResult:
         if not group_enabled:
             return FuckWifeResult(ok=False, reason="not_enabled")
@@ -208,7 +209,7 @@ class ImpactServiceGameplayMixin(ImpactServiceGameplaySupportMixin):
             # Own wife path — always success
             import asyncio
 
-            peek_coro = interop.peek_wife(group_id, sender_uid)
+            peek_coro = interop.peek_wife(group_id, sender_uid, index=index)
             peek_result: dict = asyncio.run(peek_coro)
             if not peek_result:
                 return FuckWifeResult(ok=False, reason="no_wife")
@@ -244,7 +245,7 @@ class ImpactServiceGameplayMixin(ImpactServiceGameplaySupportMixin):
         # NTR path
         import asyncio
 
-        peek_coro = interop.peek_wife(group_id, target_uid)
+        peek_coro = interop.peek_wife(group_id, target_uid, index=index)
         peek_result: dict = asyncio.run(peek_coro)
         if not peek_result:
             return FuckWifeResult(ok=False, reason="target_no_wife")
