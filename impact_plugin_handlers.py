@@ -348,7 +348,8 @@ class ImpactPluginHandlersMixin:
             return
         from .impact_copy_bank import FUCK_WIFE_NOTIFY
         from astrbot.api.event import MessageChain
+        import astrbot.api.message_components as Comp
         attacker_name = self._store.get_group_display_name(group_id, int(attacker_uid)) or "某群友"
         text = FUCK_WIFE_NOTIFY.format(name=res.wife_name, attacker=attacker_name,
                                         dvol=f"{res.daily_injection_ml:.1f}", dcnt=res.daily_injection_count)
-        await self.context.send_message(umo, MessageChain().message(text))
+        await self.context.send_message(umo, MessageChain([Comp.At(qq=owner_uid), Comp.Plain(text)]))
