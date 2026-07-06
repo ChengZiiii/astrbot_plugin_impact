@@ -297,7 +297,7 @@ class ImpactPluginHandlersMixin:
         return None
 
     def _format_fuck_wife_result(self, res, sender_id):
-        from .impact_copy_bank import pick, FUCK_WIFE_SELF_SUCCESS, FUCK_WIFE_NTR_SUCCESS, FUCK_WIFE_NTR_FAIL, \
+        from .impact_copy_bank import pick, FUCK_WIFE_SELF, FUCK_WIFE_NTR, FUCK_WIFE_NTR_FAIL, \
             FUCK_WIFE_LOCKED, FUCK_WIFE_NO_WIFE_SELF, FUCK_WIFE_NO_WIFE_TARGET
         if res.reason == "animewifexi_unavailable":
             return "animewifexI 未就绪，无法日老婆。"
@@ -313,9 +313,11 @@ class ImpactPluginHandlersMixin:
                    dvol=f"{res.daily_injection_ml:.1f}", dcnt=res.daily_injection_count,
                    intimacy_gain=res.intimacy_gain, new_intimacy=res.new_intimacy)
         if not res.is_ntr and res.success:
-            return pick(FUCK_WIFE_SELF_SUCCESS).format(**fmt)
+            pool = FUCK_WIFE_SELF.get(res.charm_tier) or FUCK_WIFE_SELF[2]
+            return pick(pool).format(**fmt)
         if res.is_ntr and res.success:
-            return pick(FUCK_WIFE_NTR_SUCCESS).format(cuckold="对方", **fmt)
+            pool = FUCK_WIFE_NTR.get(res.charm_tier) or FUCK_WIFE_NTR[2]
+            return pick(pool).format(cuckold="对方", **fmt)
         if res.is_ntr and not res.success:
             return pick(FUCK_WIFE_NTR_FAIL).format(name=res.wife_name)
         return "日老婆发生未知情况。"

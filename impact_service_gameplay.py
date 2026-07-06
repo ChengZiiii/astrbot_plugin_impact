@@ -205,6 +205,18 @@ class ImpactServiceGameplayMixin(ImpactServiceGameplaySupportMixin):
 
         is_ntr = target_uid is not None and target_uid != sender_uid
 
+        # Compute charm_tier for reply templates (both paths need it)
+        try:
+            _sl = self._store.get_length(int(sender_uid))
+        except (ValueError, TypeError):
+            _sl = 0.0
+        _thr = self._config.fuck_wife_charm_thresholds
+        charm_tier = 1
+        if len(_thr) >= 2 and _sl >= _thr[1]:
+            charm_tier = 3
+        elif len(_thr) >= 1 and _sl >= _thr[0]:
+            charm_tier = 2
+
         if not is_ntr:
             # Own wife path — always success
             peek_result: dict = await interop.peek_wife(group_id, sender_uid, index=index)
@@ -242,6 +254,7 @@ class ImpactServiceGameplayMixin(ImpactServiceGameplaySupportMixin):
                 satisfaction=100,
                 daily_injection_ml=daily_vol,
                 daily_injection_count=daily_cnt,
+                charm_tier=charm_tier,
             )
 
         # NTR path
@@ -321,5 +334,6 @@ class ImpactServiceGameplayMixin(ImpactServiceGameplaySupportMixin):
             satisfaction=80 if success else 0,
             daily_injection_ml=daily_vol,
             daily_injection_count=daily_cnt,
+            charm_tier=charm_tier,
             resistance_flags=resistance_result,
         )

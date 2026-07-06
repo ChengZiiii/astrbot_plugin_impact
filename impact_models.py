@@ -53,5 +53,6 @@ class FuckWifeResult:
     daily_injection_ml: float = 0.0
     daily_injection_count: int = 0
     lewdness_level: int = 0
+    charm_tier: int = 0
     cooldown_text: str = ""
     resistance_flags: dict | None = field(default=None)

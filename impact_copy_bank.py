@@ -281,17 +281,41 @@ INJECTION_HISTORY = (
 )
 
 # ── 日老婆结果 ──────────────────────────────────────────────
-
-FUCK_WIFE_SELF_SUCCESS = [
-    "你把{name}按在身下……她脸红着小声说'主人……轻点……'这次塞进了{vol}ml。今日她已被注入{dvol}ml（{dcnt}次）。",
-    "你搂住{name}的腰，她喘息着说'嗯……好舒服……'射了{vol}ml进去。今日她已被注入{dvol}ml（{dcnt}次）。",
-    "{name}被你压在墙上，{vol}ml一股脑全灌进去了，她腿都软了。今日她已被注入{dvol}ml（{dcnt}次）。",
-]
-FUCK_WIFE_NTR_SUCCESS = [
-    "{name}本来是{cuckold}的老婆，现在却在你身下求饶……{vol}ml 全给了她。今日她已被注入{dvol}ml（{dcnt}次）。",
-    "你趁{cuckold}不在，把{name}按在沙发上……{vol}ml 注入完毕，她咬着嘴唇说不出话。今日她已被注入{dvol}ml（{dcnt}次）。",
-    "{name}的老公{cuckold}还不知道，她已经被你灌了{vol}ml……今日她已被注入{dvol}ml（{dcnt}次）。",
-]
+# charm_tier: 1=嫌短, 2=舒服, 3=要死了
+FUCK_WIFE_SELF = {
+    1: [
+        "{name}低头看了看，叹了口气：'就这？'你委屈地塞了{vol}ml。今日她已被注入{dvol}ml（{dcnt}次）。",
+        "你趴在{name}身上忙活半天，她打了个哈欠：'完了？'{vol}ml，也就这样了。今日她已被注入{dvol}ml（{dcnt}次）。",
+        "{name}皱了皱眉：'你是不是没吃饭……'{vol}ml，她一脸嫌弃。今日她已被注入{dvol}ml（{dcnt}次）。",
+    ],
+    2: [
+        "你把{name}按在身下……她脸红着小声说'主人……轻点……'这次塞进了{vol}ml。今日她已被注入{dvol}ml（{dcnt}次）。",
+        "你搂住{name}的腰，她喘息着说'嗯……好舒服……'射了{vol}ml进去。今日她已被注入{dvol}ml（{dcnt}次）。",
+        "{name}被你压在墙上，{vol}ml一股脑全灌进去了，她腿都软了。今日她已被注入{dvol}ml（{dcnt}次）。",
+    ],
+    3: [
+        "{name}被你弄得浑身发抖，带着哭腔喊'不行了不行了……'你一股脑灌了{vol}ml进去。今日她已被注入{dvol}ml（{dcnt}次）。",
+        "你按住{name}的腰狠狠冲刺，她尖叫着瘫软在床上，{vol}ml全收下了。今日她已被注入{dvol}ml（{dcnt}次）。",
+        "{name}翻着白眼断断续续地说'要……要死了……'{vol}ml全灌进去了。今日她已被注入{dvol}ml（{dcnt}次）。",
+    ],
+}
+FUCK_WIFE_NTR = {
+    1: [
+        "你刚掏出来，{name}就笑出了声：'就这尺寸也敢来？'你脸一红射了{vol}ml。今日她已被注入{dvol}ml（{dcnt}次）。",
+        "{name}看了一眼你的下面，嫌弃地说'还不如我老公'，勉强让你塞了{vol}ml。今日她已被注入{dvol}ml（{dcnt}次）。",
+        "你忙活半天{name}毫无波澜，她甚至在看手机：'完了？那我走了。'{vol}ml，太丢人了。今日她已被注入{dvol}ml（{dcnt}次）。",
+    ],
+    2: [
+        "{name}本来是{cuckold}的老婆，现在却在你身下求饶……{vol}ml 全给了她。今日她已被注入{dvol}ml（{dcnt}次）。",
+        "你趁{cuckold}不在，把{name}按在沙发上……{vol}ml 注入完毕，她咬着嘴唇说不出话。今日她已被注入{dvol}ml（{dcnt}次）。",
+        "{name}的老公{cuckold}还不知道，她已经被你灌了{vol}ml……今日她已被注入{dvol}ml（{dcnt}次）。",
+    ],
+    3: [
+        "你把{name}干得语无伦次，她一边喊{cuckold}的名字一边夹紧你……{vol}ml一滴不漏。今日她已被注入{dvol}ml（{dcnt}次）。",
+        "{name}被你的尺寸吓到了，咬着被子不敢叫出声，被你灌了{vol}ml后瘫在床上起不来。今日她已被注入{dvol}ml（{dcnt}次）。",
+        "{name}翻着白眼断断续续地说'要被你日死了……'{vol}ml全灌满了她。今日她已被注入{dvol}ml（{dcnt}次）。",
+    ],
+}
 FUCK_WIFE_NTR_FAIL = [
     "你想对{name}下手，但她狠狠蹬开了你——好感度太高，护得死死的。",
     "{name}对你翻了个白眼：'就你？做梦吧。'失败了。",
