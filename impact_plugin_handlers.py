@@ -304,7 +304,7 @@ class ImpactPluginHandlersMixin:
         if res.reason == "no_wife":
             return FUCK_WIFE_NO_WIFE_TARGET if res.is_ntr else FUCK_WIFE_NO_WIFE_SELF
         if res.reason == "cooldown":
-            return "你刚日过，歇会儿……（冷却中）"
+            return res.cooldown_text if res.cooldown_text else "你刚日过，歇会儿……（冷却中）"
         if res.reason == "daily_limit":
             return "今天日够多了，明日再战。"
         if res.reason == "target_locked":

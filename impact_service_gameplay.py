@@ -196,7 +196,7 @@ class ImpactServiceGameplayMixin(ImpactServiceGameplaySupportMixin):
             self._fuck_wife_cd_data, sender_uid, self._config.fuck_wife_cd_time, COOLDOWN_FUCK_WIFE
         )
         if wait_text is not None:
-            return FuckWifeResult(ok=False, reason="cooldown")
+            return FuckWifeResult(ok=False, reason="cooldown", cooldown_text=wait_text)
 
         # Daily limit check
         daily_count = self._store.get_daily_fuck_wife_count(sender_uid)
@@ -231,6 +231,8 @@ class ImpactServiceGameplayMixin(ImpactServiceGameplaySupportMixin):
                 volume_ml=volume_ml, satisfaction=100,
             )
 
+            daily_vol, daily_cnt = self._store.get_wife_daily_injection(group_id, wid)
+
             return FuckWifeResult(
                 ok=True, success=True, is_ntr=False,
                 wife_wid=wid, wife_name=wife_name,
@@ -238,6 +240,8 @@ class ImpactServiceGameplayMixin(ImpactServiceGameplaySupportMixin):
                 new_intimacy=record_result.get("new_intimacy", 0),
                 volume_ml=volume_ml,
                 satisfaction=100,
+                daily_injection_ml=daily_vol,
+                daily_injection_count=daily_cnt,
             )
 
         # NTR path
@@ -306,6 +310,8 @@ class ImpactServiceGameplayMixin(ImpactServiceGameplaySupportMixin):
             volume_ml=volume_ml, satisfaction=80 if success else 0,
         )
 
+        daily_vol, daily_cnt = self._store.get_wife_daily_injection(group_id, wid) if success else (0.0, 0)
+
         return FuckWifeResult(
             ok=True, success=success, is_ntr=True,
             wife_wid=wid, wife_name=wife_name,
@@ -313,5 +319,7 @@ class ImpactServiceGameplayMixin(ImpactServiceGameplaySupportMixin):
             new_intimacy=new_intimacy,
             volume_ml=volume_ml,
             satisfaction=80 if success else 0,
+            daily_injection_ml=daily_vol,
+            daily_injection_count=daily_cnt,
             resistance_flags=resistance_result,
         )
