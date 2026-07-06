@@ -22,7 +22,7 @@ from .impact_copy_bank import (
     YINPA_NO_MEMBERS,
     YINPA_NO_TARGET,
     YINPA_PREFACE,
-    YINPA_RESULT,
+    YINPA_RESULT_T,
     YINPA_SELF_TARGET,
     pick,
 )
@@ -169,8 +169,25 @@ class ImpactPluginHandlersMixin:
         injected_volume = self._service.finish_yinpa(sender_id, target_id, group_id)
         total_volume = self._service.get_today_injection(target_id)
         duration_seconds = random.randint(1, 20)
+        # Compute charm_tier for yinpa template (same thresholds as 日老婆)
+        try:
+            yinpa_len = self._store.get_length(sender_id)
+        except (ValueError, TypeError):
+            yinpa_len = 0.0
+        yinpa_thr = self._impact_config.fuck_wife_charm_thresholds
+        yinpa_tier = 1
+        if len(yinpa_thr) >= 3 and yinpa_len >= (yinpa_thr[2] * 2):
+            yinpa_tier = 5
+        elif len(yinpa_thr) >= 3 and yinpa_len >= yinpa_thr[2]:
+            yinpa_tier = 4
+        elif len(yinpa_thr) >= 2 and yinpa_len >= yinpa_thr[1]:
+            yinpa_tier = 3
+        elif len(yinpa_thr) >= 1 and yinpa_len >= yinpa_thr[0]:
+            yinpa_tier = 2
+        yinpa_pool = YINPA_RESULT_T.get(yinpa_tier, YINPA_RESULT_T[2])
         return PlainReply(
-            pick(YINPA_RESULT).format(sender=sender_name, target=target_name, duration=duration_seconds, volume=injected_volume, total=total_volume),
+            pick(yinpa_pool).format(sender=sender_name, target=target_name, length=f"{yinpa_len:.1f}",
+                                    duration=duration_seconds, volume=injected_volume, total=total_volume),
             media_request=ActionMediaRequest(action="yinpa", mode=self._impact_config.yinpa_media_mode, sender_id=sender_id, target_id=target_id),
             preface_text=preface_text,
         )
@@ -311,15 +328,16 @@ class ImpactPluginHandlersMixin:
             return FUCK_WIFE_LOCKED
         fmt = dict(name=res.wife_name, vol=f"{res.volume_ml:.1f}", sat=res.satisfaction,
                    dvol=f"{res.daily_injection_ml:.1f}", dcnt=res.daily_injection_count,
-                   intimacy_gain=res.intimacy_gain, new_intimacy=res.new_intimacy)
+                   intimacy_gain=res.intimacy_gain, new_intimacy=res.new_intimacy,
+                   length=f"{res.sender_length:.1f}")
         if not res.is_ntr and res.success:
             pool = FUCK_WIFE_SELF.get(res.charm_tier) or FUCK_WIFE_SELF[2]
             text = pick(pool).format(**fmt)
-            return text + f"（亲密度{res.intimacy_gain:+d}）"
+            return text + f"（{fmt['length']}cm，亲密度{res.intimacy_gain:+d}）"
         if res.is_ntr and res.success:
             pool = FUCK_WIFE_NTR.get(res.charm_tier) or FUCK_WIFE_NTR[2]
             text = pick(pool).format(cuckold="对方", **fmt)
-            return text + f"（亲密度{res.intimacy_gain:+d}）"
+            return text + f"（{fmt['length']}cm，亲密度{res.intimacy_gain:+d}）"
         if res.is_ntr and not res.success:
             return pick(FUCK_WIFE_NTR_FAIL).format(name=res.wife_name)
         return "日老婆发生未知情况。"

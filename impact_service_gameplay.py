@@ -265,6 +265,7 @@ class ImpactServiceGameplayMixin(ImpactServiceGameplaySupportMixin):
                 daily_injection_ml=daily_vol,
                 daily_injection_count=daily_cnt,
                 charm_tier=charm_tier,
+                sender_length=_sl,
             )
 
         # NTR path
@@ -348,5 +349,6 @@ class ImpactServiceGameplayMixin(ImpactServiceGameplaySupportMixin):
             daily_injection_ml=daily_vol,
             daily_injection_count=daily_cnt,
             charm_tier=charm_tier,
+            sender_length=_sl,
             resistance_flags=resistance_result,
         )

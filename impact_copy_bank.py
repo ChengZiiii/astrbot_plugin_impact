@@ -75,11 +75,33 @@ YINPA_PREFACE = (
 
 # ── 银趴结果 ──────────────────────────────────────────────
 
-YINPA_RESULT = (
-    "{sender}花了{duration}秒，给{target}灌了{volume}毫升。{target}今天已经吃了{total}毫升。",
-    "{sender}磨蹭了{duration}秒，{target}收获{volume}毫升。今日累计：{total}毫升。",
-    "{sender}操作了{duration}秒，{target}被注入{volume}毫升。今日战绩：{total}毫升。",
-)
+YINPA_RESULT_T = {
+    1: [
+        "{sender}那{length}cm的小牙签忙活了{duration}秒，{target}勉强收到{volume}ml。今日{target}累计：{total}ml。",
+        "{sender}才{length}cm还想日{target}，忙活了{duration}秒挤出{volume}ml。今日战绩：{total}ml。",
+        "{sender}用仅有的{length}cm折腾了{duration}秒，{target}获得{volume}ml。今日累计：{total}ml。",
+    ],
+    2: [
+        "{sender}花了{duration}秒，给{target}灌了{volume}毫升。{target}今天已经吃了{total}毫升。",
+        "{sender}磨蹭了{duration}秒，{target}收获{volume}毫升。今日累计：{total}毫升。",
+        "{sender}操作了{duration}秒，{target}被注入{volume}毫升。今日战绩：{total}毫升。",
+    ],
+    3: [
+        "{sender}那{length}cm让{target}有点招架不住，{duration}秒后射了{volume}ml。今日战绩：{total}ml。",
+        "{sender}用{length}cm好好招待了{target}一番，{duration}秒灌了{volume}ml。今日累计：{total}ml。",
+        "{sender}{length}cm冲刺了{duration}秒，{target}被灌了{volume}ml。今日战绩：{total}ml。",
+    ],
+    4: [
+        "{sender}那{length}cm把{target}干到腿软，{duration}秒灌了{volume}ml。今日累计：{total}ml。",
+        "{sender}仗着{length}cm狠狠教训了{target}，{duration}秒注入{volume}ml。今日战绩：{total}ml。",
+        "{sender}的{length}cm让{target}欲仙欲死，{duration}秒收获{volume}ml。今日累计：{total}ml。",
+    ],
+    5: [
+        "{sender}的{length}cm怪物级凶器让{target}直接昏了过去，{duration}秒灌了{volume}ml。今日战绩：{total}ml。",
+        "{sender}用{length}cm巨物把{target}干到翻白眼，{duration}秒注入{volume}ml。今日累计：{total}ml。",
+        "{sender}那{length}cm不是{target}能承受的，{duration}秒后{target}已经说不出话了……{volume}ml。今日战绩：{total}ml。",
+    ],
+}
 
 # ── 查询分级 ──────────────────────────────────────────────
 
