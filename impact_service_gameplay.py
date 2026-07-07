@@ -342,9 +342,24 @@ class ImpactServiceGameplayMixin(ImpactServiceGameplaySupportMixin):
 
         daily_vol, daily_cnt = self._store.get_wife_daily_injection(group_id, wid) if success else (0.0, 0)
 
+        # Look up owner display name for {cuckold} template
+        owner_name_retrieved = ""
+        if target_uid is not None:
+            try:
+                gid_int = int(group_id)
+                tuid_int = int(target_uid)
+                dn = self._store.get_group_display_name(gid_int, tuid_int)
+                if dn:
+                    owner_name_retrieved = dn
+                else:
+                    owner_name_retrieved = str(target_uid) if self._config.nickname_fallback_to_user_id else "群友"
+            except (ValueError, TypeError):
+                owner_name_retrieved = str(target_uid) if self._config.nickname_fallback_to_user_id else "对方"
+
         return FuckWifeResult(
             ok=True, success=success, is_ntr=True,
             wife_wid=wid, wife_name=wife_name,
+            owner_name=owner_name_retrieved,
             intimacy_gain=intimacy_gain,
             new_intimacy=new_intimacy,
             volume_ml=volume_ml,

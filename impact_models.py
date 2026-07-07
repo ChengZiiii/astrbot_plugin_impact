@@ -46,6 +46,7 @@ class FuckWifeResult:
     reason: str = ""
     wife_wid: str = ""
     wife_name: str = ""
+    owner_name: str = ""
     intimacy_gain: int = 0
     new_intimacy: int = 0
     volume_ml: float = 0.0

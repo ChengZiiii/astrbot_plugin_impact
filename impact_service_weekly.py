@@ -114,10 +114,10 @@ class ImpactServiceWeeklyMixin:
         for week_key, rows in honor_weeks:
             result_map = {(str(row["category"]), int(row["rank_no"])): row for row in rows}
             lines.append(
-                f"{week_key} | 牛王 {self._format_honor_user(result_map.get(('length_top', 1)), name_map)} | "
-                f"成长 {self._format_honor_user(result_map.get(('growth_top', 1)), name_map)} | "
-                f"恶霸 {self._format_honor_user(result_map.get(('pk_top', 1)), name_map)} | "
-                f"受害 {self._format_honor_user(result_map.get(('inject_in_top', 1)), name_map)}"
+                f"{week_key} | 长度之王 {self._format_honor_user(result_map.get(('length_top', 1)), name_map)} | "
+                f"增长之王 {self._format_honor_user(result_map.get(('growth_top', 1)), name_map)} | "
+                f"PK之王 {self._format_honor_user(result_map.get(('pk_top', 1)), name_map)} | "
+                f"被注入最多 {self._format_honor_user(result_map.get(('inject_in_top', 1)), name_map)}"
             )
         return PlainReply("\n".join(lines))
 
@@ -161,12 +161,12 @@ class ImpactServiceWeeklyMixin:
         rows_by_user = {int(row["user_id"]): row for row in rows}
         lines = [f"【本群本周周报】（{week_key}）"]
         lines.append(pick(WEEKLY_OPENERS_CURRENT))
-        lines.append(self._format_weekly_result_line("长度第一", self._find_result(results, "length_top", 1), rows_by_user, "cm", name_map=name_map))
-        lines.append(self._format_weekly_result_line("涨得最多", self._find_result(results, "growth_top", 1), rows_by_user, "cm", signed=True, empty_text="暂无", name_map=name_map))
+        lines.append(self._format_weekly_result_line("牛子长度第一", self._find_result(results, "length_top", 1), rows_by_user, "cm", name_map=name_map))
+        lines.append(self._format_weekly_result_line("牛子涨得最多", self._find_result(results, "growth_top", 1), rows_by_user, "cm", signed=True, empty_text="暂无", name_map=name_map))
         lines.append(self._format_weekly_result_line("干得最猛", self._find_result(results, "pk_top", 1), rows_by_user, "胜", pk_mode=True, empty_text="暂无", name_map=name_map))
-        lines.append(self._format_weekly_result_line("输出最多", self._find_result(results, "inject_out_top", 1), rows_by_user, "ml", empty_text="暂无", name_map=name_map))
-        lines.append(self._format_weekly_result_line("最倒霉", self._find_result(results, "inject_in_top", 1), rows_by_user, "ml", empty_text="暂无", name_map=name_map))
-        lines.append(self._format_weekly_result_line("掉得最多", self._find_result(results, "worst_shrink", 1), rows_by_user, "cm", signed=True, empty_text="暂无", name_map=name_map))
+        lines.append(self._format_weekly_result_line("配种液输出最多", self._find_result(results, "inject_out_top", 1), rows_by_user, "ml", empty_text="暂无", name_map=name_map))
+        lines.append(self._format_weekly_result_line("被注入最多（最倒霉）", self._find_result(results, "inject_in_top", 1), rows_by_user, "ml", empty_text="暂无", name_map=name_map))
+        lines.append(self._format_weekly_result_line("牛子掉得最多", self._find_result(results, "worst_shrink", 1), rows_by_user, "cm", signed=True, empty_text="暂无", name_map=name_map))
         lines.append(pick(WEEKLY_CLOSERS))
         return "\n".join(lines)
 
@@ -174,12 +174,12 @@ class ImpactServiceWeeklyMixin:
         rows_by_user = {int(row["user_id"]): row for row in rows}
         lines = [f"【本群上周周报】（{week_key}）"]
         lines.append(pick(WEEKLY_OPENERS_SETTLED))
-        lines.append(self._format_weekly_result_line("长度第一", self._find_result(results, "length_top", 1), rows_by_user, "cm", name_map=name_map))
-        lines.append(self._format_weekly_result_line("涨得最多", self._find_result(results, "growth_top", 1), rows_by_user, "cm", signed=True, empty_text="暂无", name_map=name_map))
+        lines.append(self._format_weekly_result_line("牛子长度第一", self._find_result(results, "length_top", 1), rows_by_user, "cm", name_map=name_map))
+        lines.append(self._format_weekly_result_line("牛子涨得最多", self._find_result(results, "growth_top", 1), rows_by_user, "cm", signed=True, empty_text="暂无", name_map=name_map))
         lines.append(self._format_weekly_result_line("干得最猛", self._find_result(results, "pk_top", 1), rows_by_user, "胜", pk_mode=True, empty_text="暂无", name_map=name_map))
-        lines.append(self._format_weekly_result_line("输出最多", self._find_result(results, "inject_out_top", 1), rows_by_user, "ml", empty_text="暂无", name_map=name_map))
-        lines.append(self._format_weekly_result_line("最倒霉", self._find_result(results, "inject_in_top", 1), rows_by_user, "ml", empty_text="暂无", name_map=name_map))
-        lines.append(self._format_weekly_result_line("掉得最多", self._find_result(results, "worst_shrink", 1), rows_by_user, "cm", signed=True, empty_text="暂无", name_map=name_map))
+        lines.append(self._format_weekly_result_line("配种液输出最多", self._find_result(results, "inject_out_top", 1), rows_by_user, "ml", empty_text="暂无", name_map=name_map))
+        lines.append(self._format_weekly_result_line("被注入最多（最倒霉）", self._find_result(results, "inject_in_top", 1), rows_by_user, "ml", empty_text="暂无", name_map=name_map))
+        lines.append(self._format_weekly_result_line("牛子掉得最多", self._find_result(results, "worst_shrink", 1), rows_by_user, "cm", signed=True, empty_text="暂无", name_map=name_map))
         lines.append(pick(WEEKLY_CLOSERS))
         return "\n".join(lines)
 
