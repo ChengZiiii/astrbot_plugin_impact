@@ -371,6 +371,30 @@
     "default": 1.5,
     "hint": "复仇状态下的成功率倍率。"
   },
+  "fuck_wife_ntr_target_length_min": {
+    "description": "NTR目标长度下限",
+    "type": "float",
+    "default": -50,
+    "hint": "目标主人牛牛长度低于此值时按端点倍率计算。"
+  },
+  "fuck_wife_ntr_target_length_max": {
+    "description": "NTR目标长度上限",
+    "type": "float",
+    "default": 50,
+    "hint": "目标主人牛牛长度高于此值时按端点倍率计算。"
+  },
+  "fuck_wife_ntr_target_length_factor_min": {
+    "description": "NTR端点最大倍率",
+    "type": "float",
+    "default": 1.5,
+    "hint": "目标长度=下限时，因子取此值。1.0=禁用本功能。"
+  },
+  "fuck_wife_ntr_target_length_factor_max": {
+    "description": "NTR端点基准倍率",
+    "type": "float",
+    "default": 1.0,
+    "hint": "目标长度=上限时，因子取此值。1.0=不影响默认成功率。"
+  },
   "fuck_wife_ntr_notify": {
     "description": "NTR成功通知被绿者",
     "type": "bool",

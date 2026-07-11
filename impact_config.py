@@ -169,6 +169,10 @@ class ImpactConfig:
     fuck_wife_charm_thresholds: tuple[float, ...]
     fuck_wife_revenge_multiplier: float
     fuck_wife_ntr_notify: bool
+    fuck_wife_ntr_target_length_min: float
+    fuck_wife_ntr_target_length_max: float
+    fuck_wife_ntr_target_length_factor_min: float
+    fuck_wife_ntr_target_length_factor_max: float
 
     @staticmethod
     def from_dict(raw: dict | None) -> ImpactConfig:
@@ -268,4 +272,8 @@ class ImpactConfig:
             ),
             fuck_wife_revenge_multiplier=_to_float(config.get("fuck_wife_revenge_multiplier"), 1.5),
             fuck_wife_ntr_notify=_to_bool(config.get("fuck_wife_ntr_notify"), True),
+            fuck_wife_ntr_target_length_min=_to_float(config.get("fuck_wife_ntr_target_length_min"), -50.0),
+            fuck_wife_ntr_target_length_max=_to_float(config.get("fuck_wife_ntr_target_length_max"), 50.0),
+            fuck_wife_ntr_target_length_factor_min=_to_float(config.get("fuck_wife_ntr_target_length_factor_min"), 1.5),
+            fuck_wife_ntr_target_length_factor_max=_to_float(config.get("fuck_wife_ntr_target_length_factor_max"), 1.0),
         )
