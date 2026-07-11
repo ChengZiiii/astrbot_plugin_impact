@@ -59,6 +59,33 @@ class ImpactServiceGameplaySupportMixin:
             return
         self._store.record_weekly_query(get_current_week_key(), group_id, sender_id, self._store.get_length(sender_id))
 
+    @staticmethod
+    def _compute_target_length_factor(
+        target_length: float,
+        min_length: float,
+        max_length: float,
+        factor_min: float,
+        factor_max: float,
+    ) -> float:
+        """Linear mapping from target owner's jj_length to NTR success multiplier.
+
+        Args:
+            target_length: target owner's jj_length (cm).
+            min_length: lower bound; below this clamps to factor_min.
+            max_length: upper bound; above this clamps to factor_max.
+            factor_min: multiplier when target_length == min_length.
+            factor_max: multiplier when target_length == max_length.
+
+        Returns:
+            Multiplier in [factor_min, factor_max] (clamped). Returns factor_max
+            when min_length == max_length to avoid division-by-zero.
+        """
+        if max_length == min_length:
+            return factor_max
+        clamped = max(min_length, min(max_length, target_length))
+        ratio = (clamped - min_length) / (max_length - min_length)
+        return factor_min + (factor_max - factor_min) * ratio
+
     def _record_group_length_change(self, group_id: int | None, user_id: int, delta_cm: float, current_length: float, action_column: str | None, increment_total_action: bool) -> None:
         if group_id is None:
             return

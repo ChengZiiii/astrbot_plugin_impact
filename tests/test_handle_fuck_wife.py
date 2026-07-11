@@ -239,3 +239,76 @@ class TestNoWife:
 
         assert res.ok is False
         assert res.reason == "no_wife"
+
+
+# ── Tests for _compute_target_length_factor ──────────────────────
+
+
+class TestComputeTargetLengthFactor:
+    """Pure-function tests for the linear length → factor mapping."""
+
+    def test_min_endpoint_returns_factor_min(self):
+        from astrbot_plugin_impact.impact_service_gameplay_support import ImpactServiceGameplaySupportMixin
+        f = ImpactServiceGameplaySupportMixin._compute_target_length_factor(
+            target_length=-50.0,
+            min_length=-50.0, max_length=50.0,
+            factor_min=1.5, factor_max=1.0,
+        )
+        assert f == pytest.approx(1.5)
+
+    def test_max_endpoint_returns_factor_max(self):
+        from astrbot_plugin_impact.impact_service_gameplay_support import ImpactServiceGameplaySupportMixin
+        f = ImpactServiceGameplaySupportMixin._compute_target_length_factor(
+            target_length=50.0,
+            min_length=-50.0, max_length=50.0,
+            factor_min=1.5, factor_max=1.0,
+        )
+        assert f == pytest.approx(1.0)
+
+    def test_midpoint_returns_average(self):
+        from astrbot_plugin_impact.impact_service_gameplay_support import ImpactServiceGameplaySupportMixin
+        f = ImpactServiceGameplaySupportMixin._compute_target_length_factor(
+            target_length=0.0,
+            min_length=-50.0, max_length=50.0,
+            factor_min=1.5, factor_max=1.0,
+        )
+        assert f == pytest.approx(1.25)
+
+    def test_below_min_clamps_to_factor_min(self):
+        from astrbot_plugin_impact.impact_service_gameplay_support import ImpactServiceGameplaySupportMixin
+        f = ImpactServiceGameplaySupportMixin._compute_target_length_factor(
+            target_length=-100.0,
+            min_length=-50.0, max_length=50.0,
+            factor_min=1.5, factor_max=1.0,
+        )
+        assert f == pytest.approx(1.5)
+
+    def test_above_max_clamps_to_factor_max(self):
+        from astrbot_plugin_impact.impact_service_gameplay_support import ImpactServiceGameplaySupportMixin
+        f = ImpactServiceGameplaySupportMixin._compute_target_length_factor(
+            target_length=200.0,
+            min_length=-50.0, max_length=50.0,
+            factor_min=1.5, factor_max=1.0,
+        )
+        assert f == pytest.approx(1.0)
+
+    def test_degenerate_range_returns_factor_max(self):
+        """When min == max, avoid ZeroDivisionError by returning factor_max."""
+        from astrbot_plugin_impact.impact_service_gameplay_support import ImpactServiceGameplaySupportMixin
+        f = ImpactServiceGameplaySupportMixin._compute_target_length_factor(
+            target_length=10.0,
+            min_length=50.0, max_length=50.0,
+            factor_min=1.5, factor_max=1.0,
+        )
+        assert f == pytest.approx(1.0)
+
+    def test_linear_progression(self):
+        """Sanity: factor should drop linearly and monotonically as length increases."""
+        from astrbot_plugin_impact.impact_service_gameplay_support import ImpactServiceGameplaySupportMixin
+        f1 = ImpactServiceGameplaySupportMixin._compute_target_length_factor(-25.0, -50.0, 50.0, 1.5, 1.0)
+        f2 = ImpactServiceGameplaySupportMixin._compute_target_length_factor(0.0,   -50.0, 50.0, 1.5, 1.0)
+        f3 = ImpactServiceGameplaySupportMixin._compute_target_length_factor(25.0,  -50.0, 50.0, 1.5, 1.0)
+        assert f1 == pytest.approx(1.375)
+        assert f2 == pytest.approx(1.25)
+        assert f3 == pytest.approx(1.125)
+        assert f1 > f2 > f3  # monotonic decreasing
