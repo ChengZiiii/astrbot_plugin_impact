@@ -302,6 +302,20 @@ class ImpactServiceGameplayMixin(ImpactServiceGameplaySupportMixin):
         elif len(thresholds) >= 1 and sender_length >= thresholds[0]:
             charm = 1.1
 
+        # Target length factor: target owner's jj_length linear scaling
+        # (shorter owner → easier NTR). Clamped to configured endpoints.
+        try:
+            target_owner_length = self._store.get_length(int(target_uid))
+        except (ValueError, TypeError):
+            target_owner_length = 0.0
+        length_factor = self._compute_target_length_factor(
+            target_owner_length,
+            self._config.fuck_wife_ntr_target_length_min,
+            self._config.fuck_wife_ntr_target_length_max,
+            self._config.fuck_wife_ntr_target_length_factor_min,
+            self._config.fuck_wife_ntr_target_length_factor_max,
+        )
+
         # Revenge factor: was NTR'd by target owner before
         revenge = self._config.fuck_wife_revenge_multiplier if self._store.was_ntrd_by(sender_uid, target_uid) else 1.0
 
@@ -310,7 +324,7 @@ class ImpactServiceGameplayMixin(ImpactServiceGameplaySupportMixin):
         streak = 0.7 ** streak_count if streak_count > 0 else 1.0
 
         resistance = resistance_result.get("resistance", 1.0)
-        prob = min(1.0, base * charm * revenge * streak * resistance)
+        prob = min(1.0, base * charm * length_factor * revenge * streak * resistance)
 
         roll = roll_seed if roll_seed is not None else random.random()
         success = roll < prob

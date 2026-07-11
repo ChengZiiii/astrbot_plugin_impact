@@ -50,6 +50,10 @@ def _make_config(**overrides):
     cfg.fuck_wife_revenge_multiplier = 1.5
     cfg.fuck_wife_intimacy_gain_tiers = (-1, 1, 2, 3, 5)
     cfg.fuck_wife_ntr_notify = True
+    cfg.fuck_wife_ntr_target_length_min = -50.0
+    cfg.fuck_wife_ntr_target_length_max = 50.0
+    cfg.fuck_wife_ntr_target_length_factor_min = 1.5
+    cfg.fuck_wife_ntr_target_length_factor_max = 1.0
     return cfg
 
 
@@ -312,3 +316,88 @@ class TestComputeTargetLengthFactor:
         assert f2 == pytest.approx(1.25)
         assert f3 == pytest.approx(1.125)
         assert f1 > f2 > f3  # monotonic decreasing
+
+
+# ── Pipeline integration: target length affects NTR success ───────
+
+
+class TestNtrTargetLengthFactor:
+    """Verify target owner's length changes NTR success probability."""
+
+    def _make_cfg(self, **overrides):
+        cfg = _make_config(**overrides)
+        cfg.fuck_wife_ntr_target_length_min = overrides.get("min_l", -50.0)
+        cfg.fuck_wife_ntr_target_length_max = overrides.get("max_l", 50.0)
+        cfg.fuck_wife_ntr_target_length_factor_min = overrides.get("factor_min", 1.5)
+        cfg.fuck_wife_ntr_target_length_factor_max = overrides.get("factor_max", 1.0)
+        return cfg
+
+    def _peek_resistance(self):
+        peek = {"wid": "wN", "name": "T", "source": "T", "intimacy": 30, "level": 2,
+                "level_name": "f", "is_primary": True}
+        resistance = {"resistance": 1.0, "locked": False, "shielded": False, "working": False,
+                      "newbie_protected": False, "has_charm": False, "target_owner_uid": "u_vic",
+                      "intimacy": 30, "level": 2}
+        return peek, resistance
+
+    @pytest.mark.asyncio
+    async def test_target_at_min_boosts_prob_to_0_375(self):
+        """Target=-50 → factor=1.5 → prob=0.375. roll=0.26 → success."""
+        peek, resistance = self._peek_resistance()
+        mock = _make_mock_interop(peek_result=peek, resistance_result=resistance,
+                                  record_result={"ok": True, "new_intimacy": 31})
+        with _patch_interop(mock):
+            cfg = self._make_cfg()
+            svc = _make_service(config=cfg)
+            svc._store.ensure_user(9001, -50.0)
+            res = await svc.handle_fuck_wife(
+                True, "g1", "u_att", target_uid="9001",
+                normalized="日老婆 @9001", roll_seed=0.26,
+            )
+            assert res.success is True, "roll=0.26 < prob=0.375 should succeed"
+
+    @pytest.mark.asyncio
+    async def test_target_at_max_keeps_default_prob(self):
+        """Target=+50 → factor=1.0 → prob=0.25. roll=0.26 → fail."""
+        peek, resistance = self._peek_resistance()
+        mock = _make_mock_interop(peek_result=peek, resistance_result=resistance)
+        with _patch_interop(mock):
+            cfg = self._make_cfg()
+            svc = _make_service(config=cfg)
+            svc._store.ensure_user(9001, 50.0)
+            res = await svc.handle_fuck_wife(
+                True, "g1", "u_att", target_uid="9001",
+                normalized="日老婆 @9001", roll_seed=0.26,
+            )
+            assert res.success is False, "roll=0.26 >= prob=0.25 should fail"
+
+    @pytest.mark.asyncio
+    async def test_factor_min_one_disables_feature(self):
+        """factor_min=1.0 → length has no effect. Target=-50 with roll=0.26 → fail."""
+        peek, resistance = self._peek_resistance()
+        mock = _make_mock_interop(peek_result=peek, resistance_result=resistance)
+        with _patch_interop(mock):
+            cfg = self._make_cfg(factor_min=1.0)
+            svc = _make_service(config=cfg)
+            svc._store.ensure_user(9001, -50.0)
+            res = await svc.handle_fuck_wife(
+                True, "g1", "u_att", target_uid="9001",
+                normalized="日老婆 @9001", roll_seed=0.26,
+            )
+            assert res.success is False, "with factor_min=1.0, prob=0.25, roll=0.26 should fail"
+
+    @pytest.mark.asyncio
+    async def test_target_below_min_clamps_to_factor_min(self):
+        """Target=-100 with min=-50 → clamped → factor=1.5 → prob=0.375. roll=0.26 → success."""
+        peek, resistance = self._peek_resistance()
+        mock = _make_mock_interop(peek_result=peek, resistance_result=resistance,
+                                  record_result={"ok": True, "new_intimacy": 31})
+        with _patch_interop(mock):
+            cfg = self._make_cfg()
+            svc = _make_service(config=cfg)
+            svc._store.ensure_user(9001, -100.0)
+            res = await svc.handle_fuck_wife(
+                True, "g1", "u_att", target_uid="9001",
+                normalized="日老婆 @9001", roll_seed=0.26,
+            )
+            assert res.success is True
