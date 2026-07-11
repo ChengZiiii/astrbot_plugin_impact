@@ -361,6 +361,11 @@ class ImpactServiceGameplayMixin(ImpactServiceGameplaySupportMixin):
         intimacy_gain = -(tiers[idx]) if success else 0
         new_intimacy = 0
 
+        # Phase 6: 寿命扣减结果（NTR success 才计算；其它路径保持空 dict）
+        ls_result: dict = {"ok": True, "delta_applied": 0,
+                            "new_lifespan": -1, "death_occurred": False,
+                            "death_announce": "", "damage_announce": ""}
+
         if success:
             record_result: dict = await interop.record_sex_act(
                 group_id, wid, sender_uid, True, intimacy_gain,
@@ -368,6 +373,37 @@ class ImpactServiceGameplayMixin(ImpactServiceGameplaySupportMixin):
             if not record_result.get("ok"):
                 return FuckWifeResult(ok=False, reason="record_failed", resistance_flags=resistance_result)
             new_intimacy = record_result.get("new_intimacy", 0)
+
+            # Phase 6 / 跨插件联动：日成功后 animewifexI 老婆寿命扣减
+            # 规则（按用户原话）：
+            #   - sender_dj < 30  → delta=0（不调本方法）
+            #   - 30 <= size     → delta = clamp(int((size - 30) * 0.5), 0, 20)
+            # 注意：delta 是绝对寿命值，animewifexI 内部走概率判定死亡
+            size_delta = 0
+            if sender_length >= 30:
+                size_delta = max(0, min(20, int((sender_length - 30) * 0.5)))
+
+            if size_delta > 0:
+                # 解析 actor / owner 昵称（拼恶趣味文案用）
+                try:
+                    actor_nick = self._store.get_group_display_name(
+                        int(group_id), int(sender_uid)
+                    ) or "某群友"
+                except (ValueError, TypeError):
+                    actor_nick = "某群友"
+                try:
+                    owner_nick_for_msg = self._store.get_group_display_name(
+                        int(group_id), int(target_uid)
+                    ) or "某群友"
+                except (ValueError, TypeError):
+                    owner_nick_for_msg = "某群友"
+
+                ls_result = await interop.apply_lifespan_damage_from_impact(
+                    group_id, wid, sender_uid,
+                    actor_nick=actor_nick,
+                    delta=size_delta,
+                    owner_nick=owner_nick_for_msg,
+                )
 
         volume_ml = round(random.uniform(self._config.fuck_wife_volume_min, self._config.fuck_wife_volume_max), 3) if success else 0.0
 
@@ -396,9 +432,23 @@ class ImpactServiceGameplayMixin(ImpactServiceGameplaySupportMixin):
             except (ValueError, TypeError):
                 owner_name_retrieved = str(target_uid) if self._config.nickname_fallback_to_user_id else "对方"
 
+        # Phase 6: 寿命扣减 + 死亡/损伤文案
+        # 注意：``0 or -1`` 是陷阱（0 是合法值，会被替换成 -1）
+        _delta_applied = ls_result.get("delta_applied")
+        _new_lifespan = ls_result.get("new_lifespan")
+        _lifespan_damage = int(_delta_applied) if _delta_applied is not None else 0
+        _wife_new_lifespan = int(_new_lifespan) if _new_lifespan is not None else -1
+        _wife_death_occurred = bool(ls_result.get("death_occurred", False))
+        _lifespan_announce = (
+            ls_result.get("death_announce", "")
+            if _wife_death_occurred
+            else ls_result.get("damage_announce", "")
+        )
+
         return FuckWifeResult(
             ok=True, success=success, is_ntr=True,
             wife_wid=wid, wife_name=wife_name,
+            wife_rarity=peek_result.get("rarity", ""),
             owner_name=owner_name_retrieved,
             intimacy_gain=intimacy_gain,
             new_intimacy=new_intimacy,
@@ -409,4 +459,8 @@ class ImpactServiceGameplayMixin(ImpactServiceGameplaySupportMixin):
             charm_tier=charm_tier,
             sender_length=_sl,
             resistance_flags=resistance_result,
+            lifespan_damage=_lifespan_damage,
+            wife_new_lifespan=_wife_new_lifespan,
+            wife_death_occurred=_wife_death_occurred,
+            lifespan_announce=_lifespan_announce,
         )

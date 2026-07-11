@@ -46,6 +46,7 @@ class FuckWifeResult:
     reason: str = ""
     wife_wid: str = ""
     wife_name: str = ""
+    wife_rarity: str = ""  # Phase 6: animewifexI 联动需要
     owner_name: str = ""
     intimacy_gain: int = 0
     new_intimacy: int = 0
@@ -58,3 +59,8 @@ class FuckWifeResult:
     sender_length: float = 0.0
     cooldown_text: str = ""
     resistance_flags: dict | None = field(default=None)
+    # Phase 6: animewifexI 寿命系统联动（仅 NTR 路径）
+    lifespan_damage: int = 0            # 本次对老婆寿命的扣减（0 = 没扣）
+    wife_new_lifespan: int = -1         # 扣后寿命
+    wife_death_occurred: bool = False  # 本次是否导致老婆死亡
+    lifespan_announce: str = ""        # 恶趣味 / 损伤文案（死亡/损伤时非空）

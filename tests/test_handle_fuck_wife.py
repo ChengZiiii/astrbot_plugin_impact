@@ -15,14 +15,25 @@ _astrbot_mock = MagicMock()
 sys.modules.setdefault("astrbot", _astrbot_mock)
 sys.modules.setdefault("astrbot.api", _astrbot_mock.api)
 sys.modules.setdefault("astrbot.api.event", _astrbot_mock.api.event)
+# message_components 模块（impact_plugin_handlers 会导入）
+sys.modules.setdefault("astrbot.api.message_components", MagicMock())
 
 
-def _make_mock_interop(peek_result=None, resistance_result=None, record_result=None):
+def _make_mock_interop(peek_result=None, resistance_result=None, record_result=None,
+                       lifespan_result=None):
     """Create a mock animewifexI interop facade."""
     mock = MagicMock()
     mock.peek_wife = AsyncMock(return_value=peek_result or {})
     mock.compute_ntr_resistance = AsyncMock(return_value=resistance_result or {})
     mock.record_sex_act = AsyncMock(return_value=record_result or {"ok": True, "new_intimacy": 50})
+    # Phase 6: 寿命扣减（默认走默认 mock，调用方按需改）
+    if lifespan_result is None:
+        lifespan_result = {
+            "ok": True, "delta_applied": 0, "new_lifespan": -1,
+            "death_occurred": False, "death_announce": "", "damage_announce": "",
+            "wid": "", "wife_owner_uid": "", "wife_name": "", "wife_rarity": "",
+        }
+    mock.apply_lifespan_damage_from_impact = AsyncMock(return_value=lifespan_result)
     return mock
 
 
@@ -462,3 +473,270 @@ class TestNtrTargetLengthFactor:
             f"(len_factor=1.0) must behave identically on the same roll. "
             f"Got unknown={r_unknown.success}, long={r_long.success}."
         )
+
+
+# ==================== Phase 6 / 寿命系统联动测试 ====================
+
+
+class TestLifespanDamage:
+    """Phase 6: animewifexI 寿命系统联动 — 按丁丁尺寸扣减目标老婆寿命"""
+
+    def _make_ntr_setup(self, sender_length=40.0, target_uid="u_victim", wife_name="Saber",
+                        wife_rarity="SSR", lifespan_result=None):
+        """构造 NTR success 路径的输入。"""
+        peek = {
+            "wid": "w_v", "name": wife_name, "rarity": wife_rarity,
+            "intimacy": 50, "is_primary": True,
+        }
+        resistance = {
+            "resistance": 1.0, "locked": False,
+            "target_owner_uid": target_uid,
+        }
+        record = {"ok": True, "new_intimacy": 45}
+        return peek, resistance, record, lifespan_result
+
+    @pytest.mark.asyncio
+    async def test_size_below_30_no_lifespan_call(self):
+        """sender_length < 30 → 不调 interop lifespan（不扣寿命）"""
+        peek, resistance, record, _ = self._make_ntr_setup(sender_length=25.0)
+        mock = _make_mock_interop(peek_result=peek, resistance_result=resistance, record_result=record)
+        cfg = _make_config()
+        cfg.fuck_wife_charm_thresholds = (5.0, 15.0, 30.0, 50.0)
+        cfg.fuck_wife_intimacy_gain_tiers = (-1, 1, 2, 3, 5)
+
+        with _patch_interop(mock):
+            svc = _make_service(config=cfg)
+            # 设置 sender 长度 < 30
+            svc._store.ensure_user(1, 25.0)
+            res = await svc.handle_fuck_wife(
+                True, "g1", "1", target_uid="u_victim",
+                normalized="日老婆 @u_victim", roll_seed=0.0,
+            )
+
+        assert res.success
+        # 关键：没调 apply_lifespan_damage_from_impact
+        mock.apply_lifespan_damage_from_impact.assert_not_called()
+        assert res.lifespan_damage == 0
+        assert res.wife_death_occurred is False
+
+    @pytest.mark.asyncio
+    async def test_size_50_deducts_10_lifespan(self):
+        """size=50 → delta = clamp((50-30)*0.5, 0, 20) = 10"""
+        peek, resistance, record, _ = self._make_ntr_setup(sender_length=50.0)
+        # lifespan_result 期望：size_delta=10
+        mock = _make_mock_interop(peek_result=peek, resistance_result=resistance, record_result=record)
+        cfg = _make_config()
+        cfg.fuck_wife_charm_thresholds = (5.0, 15.0, 30.0, 50.0)
+        cfg.fuck_wife_intimacy_gain_tiers = (-1, 1, 2, 3, 5)
+
+        with _patch_interop(mock):
+            svc = _make_service(config=cfg)
+            svc._store.ensure_user(1, 50.0)
+            res = await svc.handle_fuck_wife(
+                True, "g1", "1", target_uid="u_victim",
+                normalized="日老婆 @u_victim", roll_seed=0.0,
+            )
+
+        assert res.success
+        # 调了 lifespan 接口
+        mock.apply_lifespan_damage_from_impact.assert_called_once()
+        call = mock.apply_lifespan_damage_from_impact.call_args
+        # Phase 6.1: impact 用 positional (gid, wid, actor_uid) + kwarg (actor_nick, delta, owner_nick)
+        call_args = call.args
+        call_kwargs = call.kwargs
+        assert call_args[0] == "g1"  # gid
+        assert call_args[1] == "w_v"  # wid
+        assert call_args[2] == "1"  # actor_uid (positional)
+        # delta 参数：30→(50-30)*0.5 = 10
+        assert call_kwargs["delta"] == 10
+        assert call_kwargs["actor_nick"]  # 必填
+        assert res.lifespan_damage == 0  # mock 返回的 delta_applied=0
+        assert res.wife_new_lifespan == -1
+
+    @pytest.mark.asyncio
+    async def test_size_100_caps_at_20_lifespan(self):
+        """size=100 → delta = clamp((100-30)*0.5, 0, 20) = 20（上限）"""
+        peek, resistance, record, _ = self._make_ntr_setup(sender_length=100.0)
+        mock = _make_mock_interop(peek_result=peek, resistance_result=resistance, record_result=record)
+        cfg = _make_config()
+        cfg.fuck_wife_charm_thresholds = (5.0, 15.0, 30.0, 50.0)
+        cfg.fuck_wife_intimacy_gain_tiers = (-1, 1, 2, 3, 5)
+
+        with _patch_interop(mock):
+            svc = _make_service(config=cfg)
+            svc._store.ensure_user(1, 100.0)
+            res = await svc.handle_fuck_wife(
+                True, "g1", "1", target_uid="u_victim",
+                normalized="日老婆 @u_victim", roll_seed=0.0,
+            )
+
+        assert res.success
+        call_kwargs = mock.apply_lifespan_damage_from_impact.call_args.kwargs
+        # clamp 到 20
+        assert call_kwargs["delta"] == 20
+        assert call_kwargs["actor_nick"]
+
+    @pytest.mark.asyncio
+    async def test_lifespan_death_announce_propagated(self):
+        """animewifexI 返回 death_announce → FuckWifeResult.lifespan_announce 也填上"""
+        ls_result = {
+            "ok": True, "delta_applied": 50, "new_lifespan": 0,
+            "death_occurred": True,
+            "death_announce": "💀 Alice 的 [Saber] SSR 实在撑不住了，被 Bob 活活玩死……",
+            "damage_announce": "",
+        }
+        peek, resistance, record, _ = self._make_ntr_setup(
+            sender_length=80.0, lifespan_result=ls_result,
+        )
+        mock = _make_mock_interop(peek_result=peek, resistance_result=resistance,
+                                  record_result=record, lifespan_result=ls_result)
+        cfg = _make_config()
+        cfg.fuck_wife_charm_thresholds = (5.0, 15.0, 30.0, 50.0)
+        cfg.fuck_wife_intimacy_gain_tiers = (-1, 1, 2, 3, 5)
+
+        with _patch_interop(mock):
+            svc = _make_service(config=cfg)
+            svc._store.ensure_user(1, 80.0)
+            res = await svc.handle_fuck_wife(
+                True, "g1", "1", target_uid="u_victim",
+                normalized="日老婆 @u_victim", roll_seed=0.0,
+            )
+
+        assert res.success
+        assert res.wife_death_occurred is True
+        assert res.wife_new_lifespan == 0
+        assert "Saber" in res.lifespan_announce
+        assert "Alice" in res.lifespan_announce
+        assert "Bob" in res.lifespan_announce
+
+    @pytest.mark.asyncio
+    async def test_lifespan_damage_announce_propagated(self):
+        """没死但扣了 → 走 damage_announce（lifespan_announce 也填上）"""
+        ls_result = {
+            "ok": True, "delta_applied": 5, "new_lifespan": 95,
+            "death_occurred": False,
+            "death_announce": "",
+            "damage_announce": "💢 Alice 的 [Saber] SSR 脸色苍白……（寿命 -5）",
+        }
+        peek, resistance, record, _ = self._make_ntr_setup(
+            sender_length=40.0, lifespan_result=ls_result,
+        )
+        mock = _make_mock_interop(peek_result=peek, resistance_result=resistance,
+                                  record_result=record, lifespan_result=ls_result)
+        cfg = _make_config()
+        cfg.fuck_wife_charm_thresholds = (5.0, 15.0, 30.0, 50.0)
+        cfg.fuck_wife_intimacy_gain_tiers = (-1, 1, 2, 3, 5)
+
+        with _patch_interop(mock):
+            svc = _make_service(config=cfg)
+            svc._store.ensure_user(1, 40.0)
+            res = await svc.handle_fuck_wife(
+                True, "g1", "1", target_uid="u_victim",
+                normalized="日老婆 @u_victim", roll_seed=0.0,
+            )
+
+        assert res.success
+        assert res.wife_death_occurred is False
+        assert res.lifespan_damage == 5
+        assert res.wife_new_lifespan == 95
+        # damage_announce 复制到 lifespan_announce（让 _format_fuck_wife_result 统一处理）
+        assert "Alice" in res.lifespan_announce
+        assert "寿命 -5" in res.lifespan_announce
+
+    @pytest.mark.asyncio
+    async def test_self_ri_no_lifespan_call(self):
+        """自己 ri 自己 → 走 own-wife 路径，根本不会调 lifespan"""
+        peek = {"wid": "w_self", "name": "SelfWife", "rarity": "N",
+                "intimacy": 80, "is_primary": True}
+        record = {"ok": True, "new_intimacy": 83}
+        mock = _make_mock_interop(peek_result=peek, record_result=record)
+        cfg = _make_config()
+        cfg.fuck_wife_charm_thresholds = (5.0, 15.0, 30.0, 50.0)
+        cfg.fuck_wife_intimacy_gain_tiers = (-1, 1, 2, 3, 5)
+
+        with _patch_interop(mock):
+            svc = _make_service(config=cfg)
+            svc._store.ensure_user(1, 50.0)
+            res = await svc.handle_fuck_wife(
+                True, "g1", "1", target_uid=None,
+                normalized="日老婆", roll_seed=0.0,
+            )
+
+        assert res.success
+        assert res.is_ntr is False
+        # 自己 ri 自己根本不调 lifespan
+        mock.apply_lifespan_damage_from_impact.assert_not_called()
+        assert res.lifespan_damage == 0
+
+    @pytest.mark.asyncio
+    async def test_ntr_fail_no_lifespan_call(self):
+        """NTR 失败 → 不调 lifespan（不扣寿命）"""
+        peek = {"wid": "w_v", "name": "Saber", "rarity": "SSR",
+                "intimacy": 50, "is_primary": True}
+        resistance = {"resistance": 1.0, "locked": False, "target_owner_uid": "u_victim"}
+        mock = _make_mock_interop(peek_result=peek, resistance_result=resistance)
+        cfg = _make_config()
+        cfg.fuck_wife_charm_thresholds = (5.0, 15.0, 30.0, 50.0)
+        cfg.fuck_wife_intimacy_gain_tiers = (-1, 1, 2, 3, 5)
+
+        with _patch_interop(mock):
+            svc = _make_service(config=cfg)
+            svc._store.ensure_user(1, 50.0)
+            # roll_seed=0.99 → 大概率失败（prob=1.0；roll > prob = fail）
+            res = await svc.handle_fuck_wife(
+                True, "g1", "1", target_uid="u_victim",
+                normalized="日老婆 @u_victim", roll_seed=0.99,
+            )
+
+        assert res.success is False
+        # 失败不调 lifespan
+        mock.apply_lifespan_damage_from_impact.assert_not_called()
+        assert res.lifespan_damage == 0
+
+
+# ==================== Phase 6 / _format_fuck_wife_result 集成测试 ====================
+
+
+class TestFormatLifespanTail:
+    """_format_lifespan_tail 静态方法输出"""
+
+    def test_death_returns_announce(self):
+        from astrbot_plugin_impact.impact_plugin_handlers import ImpactPluginHandlersMixin
+        from astrbot_plugin_impact.impact_models import FuckWifeResult
+        res = FuckWifeResult(
+            ok=True, success=True, is_ntr=True,
+            wife_name="Saber", wife_rarity="SSR",
+            owner_name="Alice", sender_length=80.0,
+            wife_death_occurred=True,
+            lifespan_announce="💀 Alice 的 [Saber] SSR 已离世",
+        )
+        out = ImpactPluginHandlersMixin._format_lifespan_tail(res)
+        assert "💀" in out
+        assert "Saber" in out
+        assert "Alice" in out
+
+    def test_damage_returns_warning(self):
+        from astrbot_plugin_impact.impact_plugin_handlers import ImpactPluginHandlersMixin
+        from astrbot_plugin_impact.impact_models import FuckWifeResult
+        res = FuckWifeResult(
+            ok=True, success=True, is_ntr=True,
+            wife_name="Saber", wife_rarity="R",
+            owner_name="Alice", sender_length=40.0,
+            lifespan_damage=10, wife_new_lifespan=90,
+            lifespan_announce="💢 Alice 的 [Saber] R 脸色苍白……（寿命 -10）",
+        )
+        out = ImpactPluginHandlersMixin._format_lifespan_tail(res)
+        assert "寿命 -10" in out
+        assert "剩 90" in out
+        assert "Alice" in out
+
+    def test_no_damage_returns_empty(self):
+        from astrbot_plugin_impact.impact_plugin_handlers import ImpactPluginHandlersMixin
+        from astrbot_plugin_impact.impact_models import FuckWifeResult
+        res = FuckWifeResult(
+            ok=True, success=True, is_ntr=True,
+            wife_name="Saber", sender_length=20.0,
+            lifespan_damage=0,
+        )
+        out = ImpactPluginHandlersMixin._format_lifespan_tail(res)
+        assert out == ""

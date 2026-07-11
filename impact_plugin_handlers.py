@@ -338,10 +338,25 @@ class ImpactPluginHandlersMixin:
             pool = FUCK_WIFE_NTR.get(res.charm_tier) or FUCK_WIFE_NTR[2]
             fmt["cuckold"] = res.owner_name or "对方"
             text = pick(pool).format(**fmt)
-            return text + f"（{res.wife_name}对你的亲密度{res.intimacy_gain:+d}）"
+            tail = f"（{res.wife_name}对你的亲密度{res.intimacy_gain:+d}）"
+            # Phase 6: 寿命扣减 / 死亡 / 损伤 公告
+            tail += self._format_lifespan_tail(res)
+            return text + tail
         if res.is_ntr and not res.success:
             return pick(FUCK_WIFE_NTR_FAIL).format(name=res.wife_name)
         return "日老婆发生未知情况。"
+
+    @staticmethod
+    def _format_lifespan_tail(res) -> str:
+        """Phase 6: 拼寿命/死亡公告尾巴。"""
+        if res.wife_death_occurred:
+            # 死亡文案（animewifexI interop 已 format 好）
+            return "\n\n" + (res.lifespan_announce or
+                              f"💀 {res.owner_name or '某群友'} 的 [{res.wife_name}] {res.wife_rarity} 已离世……")
+        if res.lifespan_damage > 0:
+            return (f"\n\n❤️ {res.wife_name} 寿命 -{res.lifespan_damage}（剩 {res.wife_new_lifespan}）"
+                    + (f"\n{res.lifespan_announce}" if res.lifespan_announce else ""))
+        return ""
 
     async def _notify_cuckold(self, group_id, owner_uid, attacker_uid, res):
         umo = self._store.get_group_session(group_id)
@@ -353,4 +368,17 @@ class ImpactPluginHandlersMixin:
         attacker_name = self._store.get_group_display_name(group_id, int(attacker_uid)) or "某群友"
         text = FUCK_WIFE_NOTIFY.format(name=res.wife_name, attacker=attacker_name,
                                         dvol=f"{res.daily_injection_ml:.1f}", dcnt=res.daily_injection_count)
-        await self.context.send_message(umo, MessageChain([Comp.At(qq=owner_uid), Comp.Plain(text)]))
+        # Phase 6: 死亡/寿命扣减额外通知（cuckold 必须知道老婆被玩死了）
+        lifespan_tail = ""
+        if res.wife_death_occurred:
+            lifespan_tail = (
+                f"\n☠️ 更糟的是——{res.wife_name} {res.wife_rarity} 已当场离世，"
+                f"凶手就是 {attacker_name}。\n"
+                f"💡 发送「老婆 休息 <编号>」可以花老婆币让她复活。"
+            )
+        elif res.lifespan_damage > 0:
+            lifespan_tail = (
+                f"\n💢 顺带一提：{res.wife_name} 的寿命被 {attacker_name} "
+                f"砍了 {res.lifespan_damage} 点（剩 {res.wife_new_lifespan}）……"
+            )
+        await self.context.send_message(umo, MessageChain([Comp.At(qq=owner_uid), Comp.Plain(text + lifespan_tail)]))
