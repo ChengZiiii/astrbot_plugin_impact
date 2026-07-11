@@ -3,6 +3,8 @@ from __future__ import annotations
 import random
 import time
 
+from astrbot.api import logger
+
 from .impact_copy_bank import (
     COOLDOWN_DAJIAO,
     COOLDOWN_FUCK_WIFE,
@@ -332,6 +334,22 @@ class ImpactServiceGameplayMixin(ImpactServiceGameplaySupportMixin):
 
         roll = roll_seed if roll_seed is not None else random.random()
         success = roll < prob
+
+        # Debug: print probability breakdown so we can see why NTR succeeded/failed
+        # in the AstrBot console. Gated on log_debug to avoid noise in production.
+        if self._config.log_debug:
+            try:
+                _tol = self._store.get_length(int(target_uid))
+            except (ValueError, TypeError):
+                _tol = None
+            logger.info(
+                f"[ntr] sender={sender_uid} target={target_uid} wid={wid} "
+                f"sender_L={sender_length:.1f} target_L={_tol!r} "
+                f"base={base} charm={charm} length_factor={length_factor} "
+                f"revenge={revenge} streak={streak} resistance={resistance} "
+                f"resistance_flags={ {k: v for k, v in resistance_result.items() if k != 'intimacy'} } "
+                f"roll={roll:.4f} prob={prob:.4f} success={success}"
+            )
 
         # NTR intimacy = -自妻同档涨幅（短→B涨，长→B跌）
         tiers = self._config.fuck_wife_intimacy_gain_tiers
