@@ -304,17 +304,21 @@ class ImpactServiceGameplayMixin(ImpactServiceGameplaySupportMixin):
 
         # Target length factor: target owner's jj_length linear scaling
         # (shorter owner → easier NTR). Clamped to configured endpoints.
+        # If target owner has never interacted with impact (no row in users
+        # table), we have no length to scale on — fall back to a neutral 1.0
+        # instead of the old 0.0 (which would silently inflate every
+        # unknown-target NTR by factor 1.25 and erase the short/long difference).
         try:
             target_owner_length = self._store.get_length(int(target_uid))
+            length_factor = self._compute_target_length_factor(
+                target_owner_length,
+                self._config.fuck_wife_ntr_target_length_min,
+                self._config.fuck_wife_ntr_target_length_max,
+                self._config.fuck_wife_ntr_target_length_factor_min,
+                self._config.fuck_wife_ntr_target_length_factor_max,
+            )
         except (ValueError, TypeError):
-            target_owner_length = 0.0
-        length_factor = self._compute_target_length_factor(
-            target_owner_length,
-            self._config.fuck_wife_ntr_target_length_min,
-            self._config.fuck_wife_ntr_target_length_max,
-            self._config.fuck_wife_ntr_target_length_factor_min,
-            self._config.fuck_wife_ntr_target_length_factor_max,
-        )
+            length_factor = 1.0
 
         # Revenge factor: was NTR'd by target owner before
         revenge = self._config.fuck_wife_revenge_multiplier if self._store.was_ntrd_by(sender_uid, target_uid) else 1.0

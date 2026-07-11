@@ -401,3 +401,64 @@ class TestNtrTargetLengthFactor:
                 normalized="日老婆 @9001", roll_seed=0.26,
             )
             assert res.success is True
+
+    @pytest.mark.asyncio
+    async def test_target_not_in_impact_store_uses_neutral_factor(self):
+        """Target owner has never used impact → no row in users table.
+
+        Pre-fix: get_length() raised ValueError, target_owner_length fell
+        back to 0.0, length_factor became 1.25 → ALL unknown targets
+        silently got +25% NTR bonus → short/long difference disappeared.
+
+        Post-fix: length_factor falls back to 1.0 (neutral). roll=0.26
+        against prob=0.25 (base) must fail, same as the no-effect baseline.
+        """
+        peek, resistance = self._peek_resistance()
+        mock = _make_mock_interop(peek_result=peek, resistance_result=resistance)
+        with _patch_interop(mock):
+            cfg = self._make_cfg()
+            svc = _make_service(config=cfg)
+            # Note: NO ensure_user(9001, ...) — target is unknown to impact.
+            res = await svc.handle_fuck_wife(
+                True, "g1", "u_att", target_uid="9001",
+                normalized="日老婆 @9001", roll_seed=0.26,
+            )
+            assert res.success is False, (
+                "with neutral length_factor=1.0, prob=0.25, roll=0.26 should fail. "
+                "If this passes, the fallback is back to inflating the probability."
+            )
+
+    @pytest.mark.asyncio
+    async def test_target_not_in_impact_store_matches_factor_max_baseline(self):
+        """Unknown target (length_factor=1.0) must match a known long target
+        (length_factor=1.0) on the same roll. Regression guard against
+        the two paths diverging again.
+        """
+        peek, resistance = self._peek_resistance()
+        mock_unknown = _make_mock_interop(peek_result=peek, resistance_result=resistance)
+        with _patch_interop(mock_unknown):
+            cfg = self._make_cfg()
+            svc = _make_service(config=cfg)
+            # Don't ensure_user — target unknown
+            r_unknown = await svc.handle_fuck_wife(
+                True, "g1", "u_att", target_uid="9001",
+                normalized="日老婆 @9001", roll_seed=0.42,
+            )
+
+        # Now reset and use a known long target (length=+50 → factor=1.0)
+        peek, resistance = self._peek_resistance()
+        mock_long = _make_mock_interop(peek_result=peek, resistance_result=resistance)
+        with _patch_interop(mock_long):
+            cfg = self._make_cfg()
+            svc = _make_service(config=cfg)
+            svc._store.ensure_user(9001, 50.0)
+            r_long = await svc.handle_fuck_wife(
+                True, "g1", "u_att", target_uid="9001",
+                normalized="日老婆 @9001", roll_seed=0.42,
+            )
+
+        assert r_unknown.success == r_long.success, (
+            f"unknown-target (len_factor=1.0) and known-long-target "
+            f"(len_factor=1.0) must behave identically on the same roll. "
+            f"Got unknown={r_unknown.success}, long={r_long.success}."
+        )
