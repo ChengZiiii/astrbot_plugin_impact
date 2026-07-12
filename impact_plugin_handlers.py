@@ -11,6 +11,13 @@ from .impact_command_defs import COMMAND_GROUP_MAP
 from .impact_copy_bank import (
     DISABLED_COMMAND,
     DISABLED_GROUP,
+    FUCK_WIFE_SELF,
+    FUCK_WIFE_SELF_SAFE,
+    FUCK_WIFE_NTR,
+    FUCK_WIFE_NTR_SAFE,
+    FUCK_WIFE_NTR_FAIL,
+    FUCK_WIFE_NOTIFY,
+    FUCK_WIFE_NOTIFY_SAFE,
     NO_DATA_RANK,
     NO_DATA_WEEKLY,
     NO_HONOR,
@@ -22,7 +29,9 @@ from .impact_copy_bank import (
     YINPA_NO_MEMBERS,
     YINPA_NO_TARGET,
     YINPA_PREFACE,
+    YINPA_PREFACE_SAFE,
     YINPA_RESULT_T,
+    YINPA_RESULT_T_SAFE,
     YINPA_SELF_TARGET,
     pick,
 )
@@ -31,6 +40,10 @@ from .impact_time import get_current_week_key
 
 
 class ImpactPluginHandlersMixin:
+    def _cs(self, normal, safe):
+        """Select copy pool based on safe_mode config."""
+        return safe if self._impact_config.safe_mode else normal
+
     async def _remember_group_display_name(self, event: AstrMessageEvent, group_id: int, user_id: int, members: list[dict] | None = None) -> None:
         display_name = await self._get_display_name(event, user_id, members)
         if display_name and display_name != str(user_id):
@@ -165,7 +178,7 @@ class ImpactPluginHandlersMixin:
         target_name = await self._get_display_name(event, target_id, members)
         self._store.upsert_group_display_name(group_id, sender_id, sender_name)
         self._store.upsert_group_display_name(group_id, target_id, target_name)
-        preface_text = pick(YINPA_PREFACE).format(sender=sender_name, target=target_name)
+        preface_text = pick(self._cs(YINPA_PREFACE, YINPA_PREFACE_SAFE)).format(sender=sender_name, target=target_name)
         injected_volume = self._service.finish_yinpa(sender_id, target_id, group_id)
         total_volume = self._service.get_today_injection(target_id)
         duration_seconds = random.randint(1, 20)
@@ -184,7 +197,7 @@ class ImpactPluginHandlersMixin:
             yinpa_tier = 3
         elif len(yinpa_thr) >= 1 and yinpa_len >= yinpa_thr[0]:
             yinpa_tier = 2
-        yinpa_pool = YINPA_RESULT_T.get(yinpa_tier, YINPA_RESULT_T[2])
+        yinpa_pool = self._cs(YINPA_RESULT_T, YINPA_RESULT_T_SAFE).get(yinpa_tier, self._cs(YINPA_RESULT_T, YINPA_RESULT_T_SAFE)[2])
         return PlainReply(
             pick(yinpa_pool).format(sender=sender_name, target=target_name, length=f"{yinpa_len:.1f}",
                                     duration=duration_seconds, volume=injected_volume, total=total_volume),
@@ -314,7 +327,8 @@ class ImpactPluginHandlersMixin:
         return None
 
     def _format_fuck_wife_result(self, res, sender_id):
-        from .impact_copy_bank import pick, FUCK_WIFE_SELF, FUCK_WIFE_NTR, FUCK_WIFE_NTR_FAIL, \
+        from .impact_copy_bank import pick, FUCK_WIFE_SELF, FUCK_WIFE_SELF_SAFE, FUCK_WIFE_NTR, FUCK_WIFE_NTR_SAFE, \
+            FUCK_WIFE_NTR_FAIL, \
             FUCK_WIFE_LOCKED, FUCK_WIFE_NO_WIFE_SELF, FUCK_WIFE_NO_WIFE_TARGET
         if res.reason == "animewifexi_unavailable":
             return "animewifexI 未就绪，无法日老婆。"
@@ -331,11 +345,11 @@ class ImpactPluginHandlersMixin:
                    intimacy_gain=res.intimacy_gain, new_intimacy=res.new_intimacy,
                    length=f"{res.sender_length:.1f}")
         if not res.is_ntr and res.success:
-            pool = FUCK_WIFE_SELF.get(res.charm_tier) or FUCK_WIFE_SELF[2]
+            pool = self._cs(FUCK_WIFE_SELF, FUCK_WIFE_SELF_SAFE).get(res.charm_tier) or self._cs(FUCK_WIFE_SELF, FUCK_WIFE_SELF_SAFE)[2]
             text = pick(pool).format(**fmt)
             return text + f"（{res.wife_name}对你的亲密度{res.intimacy_gain:+d}）"
         if res.is_ntr and res.success:
-            pool = FUCK_WIFE_NTR.get(res.charm_tier) or FUCK_WIFE_NTR[2]
+            pool = self._cs(FUCK_WIFE_NTR, FUCK_WIFE_NTR_SAFE).get(res.charm_tier) or self._cs(FUCK_WIFE_NTR, FUCK_WIFE_NTR_SAFE)[2]
             fmt["cuckold"] = res.owner_name or "对方"
             text = pick(pool).format(**fmt)
             tail = f"（{res.wife_name}对你的亲密度{res.intimacy_gain:+d}）"
@@ -362,11 +376,11 @@ class ImpactPluginHandlersMixin:
         umo = self._store.get_group_session(group_id)
         if not umo:
             return
-        from .impact_copy_bank import FUCK_WIFE_NOTIFY
+        from .impact_copy_bank import FUCK_WIFE_NOTIFY, FUCK_WIFE_NOTIFY_SAFE
         from astrbot.api.event import MessageChain
         import astrbot.api.message_components as Comp
         attacker_name = self._store.get_group_display_name(group_id, int(attacker_uid)) or "某群友"
-        text = FUCK_WIFE_NOTIFY.format(name=res.wife_name, attacker=attacker_name,
+        text = self._cs(FUCK_WIFE_NOTIFY, FUCK_WIFE_NOTIFY_SAFE).format(name=res.wife_name, attacker=attacker_name,
                                         dvol=f"{res.daily_injection_ml:.1f}", dcnt=res.daily_injection_count)
         # Phase 6: 死亡/寿命扣减额外通知（cuckold 必须知道老婆被玩死了）
         lifespan_tail = ""

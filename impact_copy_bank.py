@@ -16,12 +16,27 @@ DAJIAO_GROWTH = (
     "这把可以，{jj}涨了{delta}cm，没白忙活。",
 )
 
+DAJIAO_GROWTH_SAFE = (
+    "手感在线！{jj}见长了，+{delta}cm，今天状态拉满。",
+    "涨了{delta}cm。{jj}今天争气了，继续保持别掉链子。",
+    "稳了，+{delta}cm。{jj}终于干了件正经事。",
+    "这把可以，{jj}涨了{delta}cm，没白忙活。",
+)
+
 DAJIAO_SHRINK = (
     "翻车了。{jj}掉了{delta}cm，今天是来搞笑的吧。",
     "-{delta}cm。{jj}今天罢工了，建议检查一下。",
     "亏了{delta}cm。这把操作，{jj}看了都摇头。",
     "掉了{delta}cm。{jj}：今天不在状态，勿cue。",
 )
+
+DAJIAO_SHRINK_SAFE = (
+    "翻车了。{jj}掉了{delta}cm，今天是来搞笑的吧。",
+    "-{delta}cm。{jj}今天罢工了，建议检查一下。",
+    "亏了{delta}cm。这把操作，{jj}看了都摇头。",
+    "掉了{delta}cm。{jj}：今天不在状态，勿cue。",
+)
+
 
 # ── 嗦牛子结果 ────────────────────────────────────────────
 
@@ -31,15 +46,34 @@ SUO_GROWTH = (
     "+{delta}cm。这口下去，{jj}直接起飞。",
 )
 
+SUO_GROWTH_SAFE = (
+    "这口功夫不错，{jj}长了{delta}cm，技术到位了。",
+    "涨了{delta}cm。看来你手法老练。",
+    "+{delta}cm。这一下，{jj}直接起飞。",
+)
+
 SUO_SHRINK = (
     "嗦歪了，{jj}掉了{delta}cm。嘴瓢了吧。",
     "-{delta}cm。这口下去，{jj}直接缩水。下次瞄准点。",
     "亏了{delta}cm。嘴是好嘴，就是方向不太对。",
 )
 
+SUO_SHRINK_SAFE = (
+    "技术出了点偏差，{jj}掉了{delta}cm。手法还得练。",
+    "-{delta}cm。这一下，{jj}直接缩水。下次注意点。",
+    "亏了{delta}cm。功夫是好功夫，就是方向不太对。",
+)
+
+
 # ── PK结果 ────────────────────────────────────────────────
 
 PK_WIN_POSITIVE = (
+    "KO！{jj}加了{delta}cm，对面直接躺平，血赚。",
+    "赢了！+{delta}cm到手。对面今天就是来送的。",
+    "这把你赢，{jj}涨了{delta}cm。对面：？？？",
+)
+
+PK_WIN_POSITIVE_SAFE = (
     "KO！{jj}加了{delta}cm，对面直接躺平，血赚。",
     "赢了！+{delta}cm到手。对面今天就是来送的。",
     "这把你赢，{jj}涨了{delta}cm。对面：？？？",
@@ -51,7 +85,19 @@ PK_WIN_NEGATIVE = (
     "赢了，但也没赢多少。{jj}掉了{delta}cm，对面也没好到哪去。",
 )
 
+PK_WIN_NEGATIVE_SAFE = (
+    "赢是赢了，但赢得不好看。你掉了{delta}cm，对面也掉了，属于互殴。",
+    "惨胜。你和对面一起掉，{jj}今天谁都没讨到好。",
+    "赢了，但也没赢多少。{jj}掉了{delta}cm，对面也没好到哪去。",
+)
+
 PK_LOSE_NEGATIVE = (
+    "被暴打了。{jj}掉了{delta}cm，对面反而涨了。脸呢？",
+    "输了，-{delta}cm。对面加了，你掉了。这差距，不忍看。",
+    "被按在地上摩擦。{jj}掉了{delta}cm，对面还在笑。",
+)
+
+PK_LOSE_NEGATIVE_SAFE = (
     "被暴打了。{jj}掉了{delta}cm，对面反而涨了。脸呢？",
     "输了，-{delta}cm。对面加了，你掉了。这差距，不忍看。",
     "被按在地上摩擦。{jj}掉了{delta}cm，对面还在笑。",
@@ -63,6 +109,13 @@ PK_LOSE_BOTH = (
     "这把谁都没赢。你掉了{delta}cm，对面也掉了，双输。",
 )
 
+PK_LOSE_BOTH_SAFE = (
+    "输了，而且输得不体面。你掉了{delta}cm，对面也没好到哪去。两个菜鸡互啄。",
+    "你没赢，场面也没多体面。{jj}掉了{delta}cm，对面也掉了。",
+    "这把谁都没赢。你掉了{delta}cm，对面也掉了，双输。",
+)
+
+
 # ── 银趴前奏 ──────────────────────────────────────────────
 
 YINPA_PREFACE = (
@@ -72,6 +125,15 @@ YINPA_PREFACE = (
     "{sender}对{target}发起了冲锋。围观群众请就座。",
     "气氛到位了。{sender}，{target}，你俩上吧，我们看着。",
 )
+
+YINPA_PREFACE_SAFE = (
+    "来活了！{target}，{sender}已经就位，你准备好了吗？",
+    "{sender}盯上了{target}。各位，好戏开场了。",
+    "点名{target}！{sender}，该你表演了，别让观众失望。",
+    "{sender}对{target}发起了邀请。围观群众请就座。",
+    "气氛到位了。{sender}，{target}，你俩上吧，我们看着。",
+)
+
 
 # ── 银趴结果 ──────────────────────────────────────────────
 
@@ -102,6 +164,35 @@ YINPA_RESULT_T = {
         "{sender}那{length}cm的凶器不是{target}能承受的，{duration}秒后{target}已经说不出话了……{volume}ml白浊。今日战绩：{total}ml。",
     ],
 }
+
+YINPA_RESULT_T_SAFE = {
+    1: [
+        "{sender}用{length}cm的迷你装备忙活了{duration}秒，{target}收到了{volume}ml精华。今日{target}累计：{total}ml。",
+        "{sender}才{length}cm就想挑战{target}，忙活了{duration}秒贡献了{volume}ml精华。今日战绩：{total}ml。",
+        "{sender}用仅有的{length}cm折腾了{duration}秒，{target}获得{volume}ml精华。今日累计：{total}ml。",
+    ],
+    2: [
+        "{sender}花了{duration}秒，给{target}送上了{volume}毫升精华。{target}今天已经收到了{total}毫升。",
+        "{sender}磨蹭了{duration}秒，{target}收获{volume}毫升精华。今日累计：{total}毫升。",
+        "{sender}操作了{duration}秒，{target}被赠予{volume}毫升精华。今日战绩：{total}毫升。",
+    ],
+    3: [
+        "{sender}那{length}cm的尺寸让{target}有点招架不住，{duration}秒后交出了{volume}ml。今日战绩：{total}ml。",
+        "{sender}用{length}cm的尺寸好好招待了{target}一番，{duration}秒献上{volume}ml精华。今日累计：{total}ml。",
+        "{sender}用{length}cm的尺寸冲刺了{duration}秒，{target}收到了{volume}ml。今日战绩：{total}ml。",
+    ],
+    4: [
+        "{sender}那{length}cm的重器把{target}折腾到腿发软，{duration}秒贡献了{volume}ml精华。今日累计：{total}ml。",
+        "{sender}仗着{length}cm的大家伙好好招待了{target}，{duration}秒交付{volume}ml精华。今日战绩：{total}ml。",
+        "{sender}的{length}cm王牌让{target}七荤八素，{duration}秒收获{volume}ml精华。今日累计：{total}ml。",
+    ],
+    5: [
+        "{sender}的{length}cm超规格重器让{target}直接昏了过去，{duration}秒贡献了{volume}ml精华。今日战绩：{total}ml。",
+        "{sender}用{length}cm巨物把{target}折腾到失神，{duration}秒交付{volume}ml精华。今日累计：{total}ml。",
+        "{sender}那{length}cm的重器不是{target}能承受的，{duration}秒后{target}已经说不出话了……{volume}ml精华。今日战绩：{total}ml。",
+    ],
+}
+
 
 # ── 查询分级 ──────────────────────────────────────────────
 
@@ -134,6 +225,33 @@ QUERY_SELF_T = {
         "{length}cm。你老婆还好吗？",
     ),
 }
+QUERY_SELF_T_SAFE = {
+    1: (
+        "你才{length}cm？还没发育好吧，多练练。",
+        "{length}cm。你这也太短了，让人笑话。",
+        "{length}cm……这么小你也好意思查？",
+    ),
+    2: (
+        "你才{length}cm？建议先去补补。",
+        "{length}cm……这数据说出来有点丢人。",
+        "{length}cm。别急，垫底也是一种体验。",
+    ),
+    3: (
+        "{length}cm，及格线附近徘徊。继续努力。",
+        "{length}cm，不上不下，不好不坏。",
+        "{length}cm。一般般，看你后面能不能冲。",
+    ),
+    4: (
+        "{length}cm。难怪这么招摇，确实有资本。",
+        "{length}cm……这已经不是正常范围了吧？",
+        "{length}cm。牛。这数据摆出来，谁看了不嫉妒。",
+    ),
+    5: (
+        "{length}cm？你是人类吗？这已经不是正常范畴了。",
+        "{length}cm——建议你不要随便让别人知道，会被当怪物。",
+        "{length}cm。你的另一半还好吗？",
+    ),
+}
 QUERY_TARGET_T = {
     1: (
         "TA才{length}cm。还没发育好，建议捐款。",
@@ -161,6 +279,34 @@ QUERY_TARGET_T = {
         "TA {length}cm……这是什么神仙数据？你认真的？",
     ),
 }
+QUERY_TARGET_T_SAFE = {
+    1: (
+        "TA才{length}cm。还没发育好，建议观望。",
+        "TA {length}cm。这么小，你查来干嘛？",
+        "TA {length}cm……这么短，不忍直视。",
+    ),
+    2: (
+        "TA才{length}cm。你查这个干嘛，没什么好看的。",
+        "TA {length}cm。还在起步阶段，别对TA期望太高。",
+        "TA {length}cm……你确定要和这个比？",
+    ),
+    3: (
+        "TA {length}cm，中规中矩，没什么好炫耀的。",
+        "TA {length}cm，还行吧，不算丢人。",
+        "TA {length}cm。不上不下，和你半斤八两。",
+    ),
+    4: (
+        "TA {length}cm。难怪你专门来查，确实有点东西。",
+        "TA {length}cm……这数据，说实话有点离谱。",
+        "TA {length}cm。你确定要和这个比？勇气可嘉。",
+    ),
+    5: (
+        "TA {length}cm。这已经不是人类范畴了，你在查什么怪物。",
+        "TA {length}cm。建议不要和TA比，你会自闭的。",
+        "TA {length}cm……这是什么神仙数据？你认真的？",
+    ),
+}
+
 
 # ── 周报开头 ──────────────────────────────────────────────
 
@@ -192,13 +338,31 @@ COOLDOWN_DAJIAO = (
     "你的{jj}刚经历过一轮，让它喘口气。{cd}秒。",
 )
 
+COOLDOWN_DAJIAO_SAFE = (
+    "刚打完，{jj}不需要休息的吗？{cd}秒后再来。",
+    "急什么，{jj}刚用完。{cd}秒后再说。",
+    "你的{jj}刚经历过一轮，让它喘口气。{cd}秒。",
+)
+
 COOLDOWN_SUO = (
     "刚嗦过，嘴也要歇会。{cd}秒后再来。",
     "嘴速太快了，歇一下。{cd}秒。",
     "刚嗦完就又来？{cd}秒后再试。",
 )
 
+COOLDOWN_SUO_SAFE = (
+    "刚来过，也要歇会。{cd}秒后再来。",
+    "速度太快了，歇一下。{cd}秒。",
+    "刚完事就又来？{cd}秒后再试。",
+)
+
 COOLDOWN_PK = (
+    "刚打完一场，脸还没消肿呢。{cd}秒后再来。",
+    "急什么，上一场的伤还没好。{cd}秒。",
+    "连续打 pk 你不要命了？{cd}秒后再来。",
+)
+
+COOLDOWN_PK_SAFE = (
     "刚打完一场，脸还没消肿呢。{cd}秒后再来。",
     "急什么，上一场的伤还没好。{cd}秒。",
     "连续打 pk 你不要命了？{cd}秒后再来。",
@@ -210,11 +374,24 @@ COOLDOWN_YINPA = (
     "刚搞完就又来？{cd}秒后再说。",
 )
 
+COOLDOWN_YINPA_SAFE = (
+    "刚结束，你这体力也太差了。{cd}秒后再来。",
+    "喘口气吧你。{cd}秒。",
+    "刚活动完又来？{cd}秒后再说。",
+)
+
 COOLDOWN_FUCK_WIFE = (
     "刚完事，歇会儿吧。{cd}秒后再来。",
     "你这体力不行啊，{cd}秒后再来。",
     "刚交完公粮就又来？{cd}秒后再说。",
 )
+
+COOLDOWN_FUCK_WIFE_SAFE = (
+    "刚完事，歇会儿吧。{cd}秒后再来。",
+    "你这体力不行啊，{cd}秒后再来。",
+    "刚交完差就又来？{cd}秒后再说。",
+)
+
 
 # ── 其他杂项 ──────────────────────────────────────────────
 
@@ -228,9 +405,19 @@ TOGGLE_ON = (
     "银趴已开启，各位准备好了吗。",
 )
 
+TOGGLE_ON_SAFE = (
+    "开了，想玩就继续造。",
+    "派对已开启，各位准备好了吗。",
+)
+
 TOGGLE_OFF = (
     "关了，今天到此为止。",
     "银趴已关闭，各位洗洗睡吧。",
+)
+
+TOGGLE_OFF_SAFE = (
+    "关了，今天到此为止。",
+    "派对已关闭，各位洗洗睡吧。",
 )
 
 PK_NO_TARGET = (
@@ -318,10 +505,21 @@ INJECTION_TODAY = (
     "{object}今天被灌了{volume}ml黄浊液体，还行吧。",
 )
 
+INJECTION_TODAY_SAFE = (
+    "{object}当日累计接收精华{volume}ml。",
+    "{object}今天收到了{volume}ml精华，还行吧。",
+)
+
 INJECTION_HISTORY = (
     "{object}历史总被配种液注射量为{volume}ml。",
     "{object}累计被注入{volume}ml配种液，铁打的身子。",
 )
+
+INJECTION_HISTORY_SAFE = (
+    "{object}历史累计接收精华{volume}ml。",
+    "{object}累计被赠予{volume}ml精华，铁打的身子。",
+)
+
 
 # ── 日老婆结果 ──────────────────────────────────────────────
 # charm_tier: 1=小牙签, 2=普通, 3=凶器, 4=巨炮, 5=怪物
@@ -352,6 +550,35 @@ FUCK_WIFE_SELF = {
         "{name}被你{length}cm擎天柱干得翻着白眼吐着舌头，意识已经飞走，{vol}ml配种液全灌了进去。今日她已被注入{dvol}ml（{dcnt}次）。",
     ],
 }
+
+FUCK_WIFE_SELF_SAFE = {
+    1: [
+        "{name}低头看了看你{length}cm的迷你装备，叹了口气：'就这？'你委屈地贡献了{vol}ml精华。今日她已收到{dvol}ml（{dcnt}次）。",
+        "你趴在{name}身上忙活半天，她打了个哈欠：'你那{length}cm就完了？'{vol}ml精华，也就这样了。今日她已收到{dvol}ml（{dcnt}次）。",
+        "{name}皱了皱眉：'你{length}cm的装备是不是没吃饭……'你委屈地交出了{vol}ml精华，她一脸嫌弃。今日她已收到{dvol}ml（{dcnt}次）。",
+    ],
+    2: [
+        "你把{name}揽入怀中，{length}cm的尺寸让她脸红着小声说'轻点……'这次留下了{vol}ml精华。今日她已收到{dvol}ml（{dcnt}次）。",
+        "你搂住{name}的腰，{length}cm的尺寸缓缓贴近，她喘息着说'嗯……'留下了{vol}ml。今日她已收到{dvol}ml（{dcnt}次）。",
+        "{name}被你{length}cm的尺寸抵在墙上，{vol}ml精华一股脑全交了出去，她腿都软了。今日她已收到{dvol}ml（{dcnt}次）。",
+    ],
+    3: [
+        "{name}被你{length}cm的大家伙弄得浑身发抖，带着哭腔喊'不行了不行了……'你一股脑留下了{vol}ml精华。今日她已收到{dvol}ml（{dcnt}次）。",
+        "你按住{name}的腰用{length}cm重器冲刺，她尖叫着瘫软下去，{vol}ml精华全数奉上。今日她已收到{dvol}ml（{dcnt}次）。",
+        "{name}被你{length}cm大家伙折腾得翻着白眼，断断续续地说'要……要……'一股脑留下了{vol}ml精华。今日她已收到{dvol}ml（{dcnt}次）。",
+    ],
+    4: [
+        "{name}被你{length}cm的重器折腾到眼神失焦，嘴角流着口水喃喃'不行了……'，{vol}ml精华全数奉上。今日她已收到{dvol}ml（{dcnt}次）。",
+        "你毫不客气地用{length}cm巨物照顾{name}，她颤抖着一阵又一阵，{vol}ml全交了出去。今日她已收到{dvol}ml（{dcnt}次）。",
+        "{name}已经说不出话，{length}cm重器还在继续，{vol}ml精华把她灌得小腹微隆。今日她已收到{dvol}ml（{dcnt}次）。",
+    ],
+    5: [
+        "{name}被你{length}cm的超规格重器折腾到昏睡过去，你还在继续……她醒来时发现自己已经收到了{vol}ml精华。今日她已收到{dvol}ml（{dcnt}次）。",
+        "你{length}cm的王牌过于庞大，{name}直接昏了过去，你只好自己来……{vol}ml精华一滴不漏。今日她已收到{dvol}ml（{dcnt}次）。",
+        "{name}被你{length}cm的王牌折腾得翻着白眼，意识已经飞走，{vol}ml精华全数奉上。今日她已收到{dvol}ml（{dcnt}次）。",
+    ],
+}
+
 FUCK_WIFE_NTR = {
     1: [
         "你掏出{length}cm的小牙签，{name}就笑出了声：'就这尺寸也敢来？'你脸一红射了{vol}ml。今日她已被注入{dvol}ml（{dcnt}次）。",
@@ -379,12 +606,50 @@ FUCK_WIFE_NTR = {
         "你把{cuckold}的老婆{name}用{length}cm擎天柱干得失禁，她醒来后哭着求你不要告诉别人，{vol}ml浓汁早就灌满了。今日她已被注入{dvol}ml（{dcnt}次）。",
     ],
 }
+
+FUCK_WIFE_NTR_SAFE = {
+    1: [
+        "你掏出{length}cm的迷你装备，{name}就笑出了声：'就这尺寸也敢来？'你脸一红交出了{vol}ml。今日她已收到{dvol}ml（{dcnt}次）。",
+        "{name}看了一眼你{length}cm的袖珍款，嫌弃地说'还不如我家那位'，勉强收了你{vol}ml精华。今日她已收到{dvol}ml（{dcnt}次）。",
+        "你忙活半天{name}毫无波澜——你那{length}cm迷你装备她根本没感觉，她甚至在看手机：'完了？那我走了。'{vol}ml精华，太丢人了。今日她已收到{dvol}ml（{dcnt}次）。",
+    ],
+    2: [
+        "{name}本来是{cuckold}的伴侣，现在被你的{length}cm的尺寸弄得在你怀里求饶……{vol}ml精华全给了她。今日她已收到{dvol}ml（{dcnt}次）。",
+        "你趁{cuckold}不在，用{length}cm的尺寸把{name}按在沙发上……{vol}ml精华交付完毕，她咬着嘴唇说不出话。今日她已收到{dvol}ml（{dcnt}次）。",
+        "{name}那位{cuckold}还不知道，你正用{length}cm的尺寸照顾她，{vol}ml精华已经留下了……今日她已收到{dvol}ml（{dcnt}次）。",
+    ],
+    3: [
+        "你{length}cm的大家伙把{name}折腾得语无伦次，她一边喊{cuckold}的名字一边抓紧你……{vol}ml精华一滴不漏。今日她已收到{dvol}ml（{dcnt}次）。",
+        "{name}被你{length}cm重器吓到了，咬着被子不敢出声，被你留下了{vol}ml精华后瘫在床上起不来。今日她已收到{dvol}ml（{dcnt}次）。",
+        "{name}翻着白眼，你{length}cm大家伙还在继续，她断断续续地说'要被你折腾坏了……'，你{vol}ml精华全数奉上。今日她已收到{dvol}ml（{dcnt}次）。",
+    ],
+    4: [
+        "你把{cuckold}的伴侣{name}折腾得两眼翻白，{length}cm重器全根没入，她颤抖着抓紧你，{vol}ml精华全数交付。今日她已收到{dvol}ml（{dcnt}次）。",
+        "趁{cuckold}不在你把{name}按在床上，{length}cm巨物折腾到她站不稳，她咬着拳头不敢出声，{vol}ml精华一滴没漏。今日她已收到{dvol}ml（{dcnt}次）。",
+        "{name}在你{length}cm重器下颤抖着一阵又一阵，{cuckold}的帽子已经戴稳了……{vol}ml精华全给了她。今日她已收到{dvol}ml（{dcnt}次）。",
+    ],
+    5: [
+        "{name}被你{length}cm超规格重器折腾到翻白眼，{cuckold}的伴侣现在像只破布娃娃，{vol}ml精华尽数奉上。今日她已收到{dvol}ml（{dcnt}次）。",
+        "你{length}cm王牌一出手{name}就昏了，{cuckold}的伴侣被你折腾到失去意识，{vol}ml精华全数交付。今日她已收到{dvol}ml（{dcnt}次）。",
+        "你把{cuckold}的伴侣{name}用{length}cm王牌折腾到失态，她醒来后哭着求你不要告诉别人，{vol}ml精华早就留下了。今日她已收到{dvol}ml（{dcnt}次）。",
+    ],
+}
+
 FUCK_WIFE_NTR_FAIL = [
     "你想对{name}下手，但她狠狠蹬开了你——好感度太高，护得死死的。",
     "{name}对你翻了个白眼：'就你？做梦吧。'失败了。",
     "你刚靠近{name}，她就大喊救命，你只好灰溜溜跑了。",
 ]
+
 FUCK_WIFE_LOCKED = "对方老婆被锁定，你无从下手。"
 FUCK_WIFE_NO_WIFE_SELF = "你还没有老婆，先去 animewifexI 抽一个吧。"
 FUCK_WIFE_NO_WIFE_TARGET = "对方还没有老婆，换个目标吧。"
-FUCK_WIFE_NOTIFY = "⚠️ 你的老婆{name}刚刚被{attacker}日了……她今日已被注入{dvol}ml配种液（{dcnt}次）。"
+FUCK_WIFE_NOTIFY = (
+    "⚠️ 你的老婆{name}刚刚被{attacker}日了……"
+    "她今日已被注入{dvol}ml配种液（{dcnt}次）。"
+)
+
+FUCK_WIFE_NOTIFY_SAFE = (
+    "⚠️ 你的伴侣{name}刚刚被{attacker}光顾了……"
+    "她今日已收到{dvol}ml精华（{dcnt}次）。"
+)

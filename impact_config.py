@@ -114,6 +114,7 @@ class ImpactConfig:
     fuck_cd_time: int
     enable_inactive_penalty: bool
     default_group_enabled: bool
+    safe_mode: bool
     rank_min_users: int
     rank_top_count: int
     rank_bottom_count: int
@@ -217,6 +218,7 @@ class ImpactConfig:
             fuck_cd_time=_to_int(config.get("fuckcdtime"), 3600),
             enable_inactive_penalty=_to_bool(config.get("isalive"), False),
             default_group_enabled=_to_bool(config.get("default_group_enabled"), False),
+            safe_mode=_to_bool(config.get("safe_mode"), False),
             rank_min_users=max(1, _to_int(config.get("rank_min_users"), 5)),
             rank_top_count=max(1, _to_int(config.get("rank_top_count"), 5)),
             rank_bottom_count=max(1, _to_int(config.get("rank_bottom_count"), 5)),

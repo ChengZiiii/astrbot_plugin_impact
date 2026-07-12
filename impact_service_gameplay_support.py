@@ -14,9 +14,13 @@ from .impact_copy_bank import (
     DAJIAO_GROWTH,
     DAJIAO_SHRINK,
     PK_LOSE_BOTH,
+    PK_LOSE_BOTH_SAFE,
     PK_LOSE_NEGATIVE,
+    PK_LOSE_NEGATIVE_SAFE,
     PK_WIN_NEGATIVE,
+    PK_WIN_NEGATIVE_SAFE,
     PK_WIN_POSITIVE,
+    PK_WIN_POSITIVE_SAFE,
     SUO_GROWTH,
     SUO_SHRINK,
     pick,
@@ -40,6 +44,11 @@ class ImpactServiceGameplaySupportMixin:
         if self._config.admin_only_toggle:
             return self.is_admin(event)
         return True
+
+    def _cs(self, normal, safe):
+        """Select copy pool based on safe_mode config.
+        Returns safe pool when safe_mode is enabled, otherwise normal pool."""
+        return safe if self._config.safe_mode else normal
 
     def _random_delta(self) -> tuple[float, bool]:
         base_value = random.random()
@@ -115,9 +124,9 @@ class ImpactServiceGameplaySupportMixin:
         critical_prefix = "暴击。" if is_critical else ""
         jj = self._jj_name()
         if base_delta_cm >= 0:
-            pool = PK_WIN_POSITIVE if is_sender_winner else PK_LOSE_NEGATIVE
+            pool = self._cs(PK_WIN_POSITIVE, PK_WIN_POSITIVE_SAFE) if is_sender_winner else self._cs(PK_LOSE_NEGATIVE, PK_LOSE_NEGATIVE_SAFE)
         else:
-            pool = PK_WIN_NEGATIVE if is_sender_winner else PK_LOSE_BOTH
+            pool = self._cs(PK_WIN_NEGATIVE, PK_WIN_NEGATIVE_SAFE) if is_sender_winner else self._cs(PK_LOSE_BOTH, PK_LOSE_BOTH_SAFE)
         result = critical_prefix + pick(pool).format(delta=round(abs(sender_delta_cm), 3), jj=jj)
         if sender_length > 0 and target_length > 0:
             result += f"你{sender_length}cm，对方{target_length}cm。"

@@ -7,22 +7,34 @@ from astrbot.api import logger
 
 from .impact_copy_bank import (
     COOLDOWN_DAJIAO,
+    COOLDOWN_DAJIAO_SAFE,
     COOLDOWN_FUCK_WIFE,
+    COOLDOWN_FUCK_WIFE_SAFE,
     COOLDOWN_PK,
+    COOLDOWN_PK_SAFE,
     COOLDOWN_SUO,
+    COOLDOWN_SUO_SAFE,
     COOLDOWN_YINPA,
+    COOLDOWN_YINPA_SAFE,
     DAJIAO_GROWTH,
+    DAJIAO_GROWTH_SAFE,
     DAJIAO_SHRINK,
+    DAJIAO_SHRINK_SAFE,
     INJECTION_HISTORY,
+    INJECTION_HISTORY_SAFE,
     INJECTION_TODAY,
+    INJECTION_TODAY_SAFE,
     NEW_USER_REPLY,
     PK_NO_TARGET,
     PK_SELF_TARGET,
     QUERY_SELF_T,
-
+    QUERY_SELF_T_SAFE,
     QUERY_TARGET_T,
+    QUERY_TARGET_T_SAFE,
     SUO_GROWTH,
+    SUO_GROWTH_SAFE,
     SUO_SHRINK,
+    SUO_SHRINK_SAFE,
     TOGGLE_ADMIN_ONLY,
     pick,
 )
@@ -41,14 +53,14 @@ class ImpactServiceGameplayMixin(ImpactServiceGameplaySupportMixin):
         if not self._store.has_user(sender_id):
             self._store.ensure_user(sender_id, self._config.user_initial_length)
             return PlainReply(pick(NEW_USER_REPLY).format(length=self._config.user_initial_length), mention_sender=True)
-        wait_text = self._cooldown_text(self._dj_cd_data, str(sender_id), self._config.dj_cd_time, COOLDOWN_DAJIAO, jj=self._jj_name())
+        wait_text = self._cooldown_text(self._dj_cd_data, str(sender_id), self._config.dj_cd_time, self._cs(COOLDOWN_DAJIAO, COOLDOWN_DAJIAO_SAFE), jj=self._jj_name())
         if wait_text is not None:
             return PlainReply(wait_text, mention_sender=True)
         self._dj_cd_data[str(sender_id)] = time.time()
         delta_cm, is_critical = self._random_delta()
         current_length = self._store.change_length(sender_id, delta_cm)
         self._record_group_length_change(group_id, sender_id, delta_cm, current_length, "dajiao_count", True)
-        return PlainReply(self._format_single_change(DAJIAO_GROWTH, DAJIAO_SHRINK, delta_cm, current_length, is_critical), media_request=self._build_media_request("dajiao", self._config.dajiao_media_mode, delta_cm < 0, sender_id, None), mention_sender=True)
+        return PlainReply(self._format_single_change(self._cs(DAJIAO_GROWTH, DAJIAO_GROWTH_SAFE), self._cs(DAJIAO_SHRINK, DAJIAO_SHRINK_SAFE), delta_cm, current_length, is_critical), media_request=self._build_media_request("dajiao", self._config.dajiao_media_mode, delta_cm < 0, sender_id, None), mention_sender=True)
 
     def handle_suo(self, group_enabled: bool, sender_id: int, at_id: str | None, group_id: int | None = None) -> PlainReply:
         if not group_enabled:
@@ -60,7 +72,7 @@ class ImpactServiceGameplayMixin(ImpactServiceGameplaySupportMixin):
             self._store.ensure_user(target_id, self._config.user_initial_length)
             prefix = "你" if target_id == sender_id else "TA"
             return PlainReply(f"{prefix}还没建档，先补个 {self._config.user_initial_length}cm 的起步款。", mention_sender=True)
-        wait_text = self._cooldown_text(self._suo_cd_data, str(sender_id), self._config.suo_cd_time, COOLDOWN_SUO)
+        wait_text = self._cooldown_text(self._suo_cd_data, str(sender_id), self._config.suo_cd_time, self._cs(COOLDOWN_SUO, COOLDOWN_SUO_SAFE))
         if wait_text is not None:
             return PlainReply(wait_text, mention_sender=True)
         self._suo_cd_data[str(sender_id)] = time.time()
@@ -71,7 +83,7 @@ class ImpactServiceGameplayMixin(ImpactServiceGameplaySupportMixin):
         else:
             self._record_group_length_change(group_id, sender_id, 0.0, self._store.get_length(sender_id), "suo_count", True)
             self._record_group_length_change(group_id, target_id, delta_cm, current_length, None, False)
-        return PlainReply(self._format_single_change(SUO_GROWTH, SUO_SHRINK, delta_cm, current_length, is_critical), media_request=self._build_media_request("suo", self._config.suo_media_mode, delta_cm < 0, sender_id, target_id), mention_sender=True)
+        return PlainReply(self._format_single_change(self._cs(SUO_GROWTH, SUO_GROWTH_SAFE), self._cs(SUO_SHRINK, SUO_SHRINK_SAFE), delta_cm, current_length, is_critical), media_request=self._build_media_request("suo", self._config.suo_media_mode, delta_cm < 0, sender_id, target_id), mention_sender=True)
 
     def handle_query(self, group_enabled: bool, sender_id: int, at_id: str | None, group_id: int | None = None) -> PlainReply:
         if not group_enabled:
@@ -95,7 +107,7 @@ class ImpactServiceGameplayMixin(ImpactServiceGameplaySupportMixin):
             _tier = 3
         elif len(_thr) >= 1 and current_length >= _thr[0]:
             _tier = 2
-        pool = QUERY_SELF_T if is_self else QUERY_TARGET_T
+        pool = self._cs(QUERY_SELF_T, QUERY_SELF_T_SAFE) if is_self else self._cs(QUERY_TARGET_T, QUERY_TARGET_T_SAFE)
         query_text = pick(pool.get(_tier, pool[2]))
         display_text = query_text.format(length=current_length)
         mention_sender = is_self
@@ -115,7 +127,7 @@ class ImpactServiceGameplayMixin(ImpactServiceGameplaySupportMixin):
         target_created = self._store.ensure_user(target_id, self._config.user_initial_length)
         if sender_created or target_created:
             return PlainReply(self._format_pk_creation_reply(sender_created, target_created))
-        wait_text = self._cooldown_text(self._pk_cd_data, str(sender_id), self._config.pk_cd_time, COOLDOWN_PK)
+        wait_text = self._cooldown_text(self._pk_cd_data, str(sender_id), self._config.pk_cd_time, self._cs(COOLDOWN_PK, COOLDOWN_PK_SAFE))
         if wait_text is not None:
             return PlainReply(wait_text)
         self._pk_cd_data[str(sender_id)] = time.time()
@@ -139,8 +151,8 @@ class ImpactServiceGameplayMixin(ImpactServiceGameplaySupportMixin):
             return PlainReply(pick(TOGGLE_ADMIN_ONLY))
         enabled = "开启" in normalized or "开始" in normalized
         self._store.set_group_enabled(group_id, enabled)
-        from .impact_copy_bank import TOGGLE_ON, TOGGLE_OFF
-        return PlainReply(pick(TOGGLE_ON) if enabled else pick(TOGGLE_OFF))
+        from .impact_copy_bank import TOGGLE_ON, TOGGLE_OFF, TOGGLE_ON_SAFE, TOGGLE_OFF_SAFE
+        return PlainReply(pick(self._cs(TOGGLE_ON, TOGGLE_ON_SAFE)) if enabled else pick(self._cs(TOGGLE_OFF, TOGGLE_OFF_SAFE)))
 
     def handle_injection(self, group_enabled: bool, sender_id: int, normalized: str, at_id: str | None, group_id: int | None = None) -> PlainReply | tuple[dict[str, float], str]:
         if not group_enabled:
@@ -149,17 +161,17 @@ class ImpactServiceGameplayMixin(ImpactServiceGameplaySupportMixin):
         object_name = "您" if target_id == sender_id else "该用户"
         self._record_group_query(group_id, sender_id)
         if "历史" not in normalized and "全部" not in normalized:
-            return PlainReply(pick(INJECTION_TODAY).format(object=object_name, volume=self._store.get_today_injection(target_id)), mention_sender=True)
+            return PlainReply(pick(self._cs(INJECTION_TODAY, INJECTION_TODAY_SAFE)).format(object=object_name, volume=self._store.get_today_injection(target_id)), mention_sender=True)
         history = self._store.get_injection_history(target_id)
         total_volume = round(sum(item.volume_ml for item in history), 3)
         if len(history) < 2:
-            return PlainReply(pick(INJECTION_HISTORY).format(object=object_name, volume=total_volume), mention_sender=True)
-        return ({item.date_text: item.volume_ml for item in history}, pick(INJECTION_HISTORY).format(object=object_name, volume=total_volume))
+            return PlainReply(pick(self._cs(INJECTION_HISTORY, INJECTION_HISTORY_SAFE)).format(object=object_name, volume=total_volume), mention_sender=True)
+        return ({item.date_text: item.volume_ml for item in history}, pick(self._cs(INJECTION_HISTORY, INJECTION_HISTORY_SAFE)).format(object=object_name, volume=total_volume))
 
     def can_yinpa(self, group_enabled: bool, sender_id: int) -> PlainReply | None:
         if not group_enabled:
             return PlainReply(self._config.not_enabled_reply)
-        wait_text = self._cooldown_text(self._yinpa_cd_data, str(sender_id), self._config.fuck_cd_time, COOLDOWN_YINPA)
+        wait_text = self._cooldown_text(self._yinpa_cd_data, str(sender_id), self._config.fuck_cd_time, self._cs(COOLDOWN_YINPA, COOLDOWN_YINPA_SAFE))
         if wait_text is not None:
             return PlainReply(wait_text)
         return None
@@ -199,7 +211,7 @@ class ImpactServiceGameplayMixin(ImpactServiceGameplaySupportMixin):
 
         # Cooldown check
         wait_text = self._cooldown_text(
-            self._fuck_wife_cd_data, sender_uid, self._config.fuck_wife_cd_time, COOLDOWN_FUCK_WIFE
+            self._fuck_wife_cd_data, sender_uid, self._config.fuck_wife_cd_time, self._cs(COOLDOWN_FUCK_WIFE, COOLDOWN_FUCK_WIFE_SAFE)
         )
         if wait_text is not None:
             return FuckWifeResult(ok=False, reason="cooldown", cooldown_text=wait_text)

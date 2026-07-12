@@ -41,6 +41,12 @@
     "default": false,
     "hint": "开启后，插件会按天惩罚超过 24 小时未活跃的用户。"
   },
+  "safe_mode": {
+    "description": "安全文案模式",
+    "type": "bool",
+    "default": false,
+    "hint": "开启后回复文案替换为隐晦版本，降低安全词检测风险。替换的是言辞的露骨程度，不改变玩法。"
+  },
   "default_group_enabled": {
     "description": "新群默认开启",
     "type": "bool",
