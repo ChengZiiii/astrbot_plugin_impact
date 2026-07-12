@@ -65,6 +65,10 @@ def _make_config(**overrides):
     cfg.fuck_wife_ntr_target_length_max = 50.0
     cfg.fuck_wife_ntr_target_length_factor_min = 1.5
     cfg.fuck_wife_ntr_target_length_factor_max = 1.0
+    cfg.fuck_wife_lifespan_damage_enabled = overrides.get("lifespan_damage_enabled", True)
+    cfg.fuck_wife_lifespan_damage_threshold = overrides.get("lifespan_damage_threshold", 30.0)
+    cfg.fuck_wife_lifespan_damage_ratio = overrides.get("lifespan_damage_ratio", 0.5)
+    cfg.fuck_wife_lifespan_damage_max = overrides.get("lifespan_damage_max", 20)
     return cfg
 
 
@@ -740,3 +744,154 @@ class TestFormatLifespanTail:
         )
         out = ImpactPluginHandlersMixin._format_lifespan_tail(res)
         assert out == ""
+
+
+# ==================== Phase 6 / 寿命损失公式配置驱动验证 ====================
+
+
+class TestLifespanDamageFormulaConfigDriven:
+    """验证寿命损失换算使用配置值而非硬编码。"""
+
+    def _make_ntr_peek_resistance_record(self, sender_length: float = 50.0, lifespan_result: dict | None = None):
+        peek = {
+            "wid": "w_v", "name": "Saber", "rarity": "SSR",
+            "intimacy": 50, "level": 3, "level_name": "亲密",
+            "is_primary": True,
+        }
+        resistance = {
+            "resistance": 1.0, "locked": False, "shielded": False,
+            "working": False, "newbie_protected": False,
+            "has_charm": False, "target_owner_uid": "u_victim",
+            "intimacy": 50, "level": 3,
+        }
+        record = {"ok": True, "new_intimacy": 48, "level": 3, "level_name": "亲密"}
+        if lifespan_result is None:
+            lifespan_result = {
+                "ok": True, "delta_applied": 0, "new_lifespan": -1,
+                "death_occurred": False, "death_announce": "",
+                "damage_announce": "", "wid": "w_v",
+                "wife_owner_uid": "u_victim",
+            }
+        return peek, resistance, record, lifespan_result
+
+    @pytest.mark.asyncio
+    async def test_default_config_matches_old_hardcode(self):
+        """默认配置下（30/0.5/20），size=50 → delta=10，保持向后兼容"""
+        peek, resistance, record, ls_result = self._make_ntr_peek_resistance_record(
+            sender_length=50.0,
+            lifespan_result={
+                "ok": True, "delta_applied": 10, "new_lifespan": 90,
+                "death_occurred": False,
+                "death_announce": "", "damage_announce": "",
+                "wid": "w_v", "wife_owner_uid": "u_victim",
+            },
+        )
+        mock = _make_mock_interop(peek_result=peek, resistance_result=resistance,
+                                  record_result=record, lifespan_result=ls_result)
+        cfg = _make_config()  # 默认配置：threshold=30, ratio=0.5, max=20
+        with _patch_interop(mock):
+            svc = _make_service(config=cfg)
+            svc._store.ensure_user(1, 50.0)
+            res = await svc.handle_fuck_wife(
+                True, "g1", "1", target_uid="u_victim",
+                normalized="日老婆 @u_victim", roll_seed=0.0,
+            )
+        assert res.success
+        call_kwargs = mock.apply_lifespan_damage_from_impact.call_args.kwargs
+        assert call_kwargs["delta"] == 10
+
+    @pytest.mark.asyncio
+    async def test_custom_threshold(self):
+        """threshold=10 → size=20 → delta = (20-10)*0.5 = 5"""
+        peek, resistance, record, ls_result = self._make_ntr_peek_resistance_record(
+            sender_length=20.0,
+            lifespan_result={
+                "ok": True, "delta_applied": 5, "new_lifespan": 95,
+                "death_occurred": False,
+                "death_announce": "", "damage_announce": "",
+                "wid": "w_v", "wife_owner_uid": "u_victim",
+            },
+        )
+        mock = _make_mock_interop(peek_result=peek, resistance_result=resistance,
+                                  record_result=record, lifespan_result=ls_result)
+        cfg = _make_config(lifespan_damage_threshold=10.0)
+        with _patch_interop(mock):
+            svc = _make_service(config=cfg)
+            svc._store.ensure_user(1, 20.0)
+            res = await svc.handle_fuck_wife(
+                True, "g1", "1", target_uid="u_victim",
+                normalized="日老婆 @u_victim", roll_seed=0.0,
+            )
+        assert res.success
+        call_kwargs = mock.apply_lifespan_damage_from_impact.call_args.kwargs
+        assert call_kwargs["delta"] == 5
+
+    @pytest.mark.asyncio
+    async def test_custom_ratio(self):
+        """ratio=1.0 → size=40 → (40-30)*1.0 = 10"""
+        peek, resistance, record, ls_result = self._make_ntr_peek_resistance_record(
+            sender_length=40.0,
+            lifespan_result={
+                "ok": True, "delta_applied": 10, "new_lifespan": 90,
+                "death_occurred": False,
+                "death_announce": "", "damage_announce": "",
+                "wid": "w_v", "wife_owner_uid": "u_victim",
+            },
+        )
+        mock = _make_mock_interop(peek_result=peek, resistance_result=resistance,
+                                  record_result=record, lifespan_result=ls_result)
+        cfg = _make_config(lifespan_damage_ratio=1.0)
+        with _patch_interop(mock):
+            svc = _make_service(config=cfg)
+            svc._store.ensure_user(1, 40.0)
+            res = await svc.handle_fuck_wife(
+                True, "g1", "1", target_uid="u_victim",
+                normalized="日老婆 @u_victim", roll_seed=0.0,
+            )
+        assert res.success
+        call_kwargs = mock.apply_lifespan_damage_from_impact.call_args.kwargs
+        assert call_kwargs["delta"] == 10
+
+    @pytest.mark.asyncio
+    async def test_custom_max(self):
+        """max=5 → size=50 → (50-30)*0.5=10 → clamp(10,0,5)=5"""
+        peek, resistance, record, ls_result = self._make_ntr_peek_resistance_record(
+            sender_length=50.0,
+            lifespan_result={
+                "ok": True, "delta_applied": 5, "new_lifespan": 95,
+                "death_occurred": False,
+                "death_announce": "", "damage_announce": "",
+                "wid": "w_v", "wife_owner_uid": "u_victim",
+            },
+        )
+        mock = _make_mock_interop(peek_result=peek, resistance_result=resistance,
+                                  record_result=record, lifespan_result=ls_result)
+        cfg = _make_config(lifespan_damage_max=5)
+        with _patch_interop(mock):
+            svc = _make_service(config=cfg)
+            svc._store.ensure_user(1, 50.0)
+            res = await svc.handle_fuck_wife(
+                True, "g1", "1", target_uid="u_victim",
+                normalized="日老婆 @u_victim", roll_seed=0.0,
+            )
+        assert res.success
+        call_kwargs = mock.apply_lifespan_damage_from_impact.call_args.kwargs
+        assert call_kwargs["delta"] == 5
+
+    @pytest.mark.asyncio
+    async def test_disabled_no_lifespan_call(self):
+        """启用关闭 → size=100 也不调 lifespan"""
+        peek, resistance, record, _ = self._make_ntr_peek_resistance_record(sender_length=100.0)
+        mock = _make_mock_interop(peek_result=peek, resistance_result=resistance, record_result=record)
+        cfg = _make_config(lifespan_damage_enabled=False)
+        with _patch_interop(mock):
+            svc = _make_service(config=cfg)
+            svc._store.ensure_user(1, 100.0)
+            res = await svc.handle_fuck_wife(
+                True, "g1", "1", target_uid="u_victim",
+                normalized="日老婆 @u_victim", roll_seed=0.0,
+            )
+        assert res.success
+        mock.apply_lifespan_damage_from_impact.assert_not_called()
+        assert res.lifespan_damage == 0
+

@@ -375,13 +375,12 @@ class ImpactServiceGameplayMixin(ImpactServiceGameplaySupportMixin):
             new_intimacy = record_result.get("new_intimacy", 0)
 
             # Phase 6 / 跨插件联动：日成功后 animewifexI 老婆寿命扣减
-            # 规则（按用户原话）：
-            #   - sender_dj < 30  → delta=0（不调本方法）
-            #   - 30 <= size     → delta = clamp(int((size - 30) * 0.5), 0, 20)
-            # 注意：delta 是绝对寿命值，animewifexI 内部走概率判定死亡
+            # 规则从配置读取：fuck_wife_lifespan_damage_enabled / _threshold / _ratio / _max
+            # delta 是绝对寿命值，animewifexI 内部走概率判定死亡
             size_delta = 0
-            if sender_length >= 30:
-                size_delta = max(0, min(20, int((sender_length - 30) * 0.5)))
+            if self._config.fuck_wife_lifespan_damage_enabled and sender_length >= self._config.fuck_wife_lifespan_damage_threshold:
+                _diff = int((sender_length - self._config.fuck_wife_lifespan_damage_threshold) * self._config.fuck_wife_lifespan_damage_ratio)
+                size_delta = max(0, min(self._config.fuck_wife_lifespan_damage_max, _diff))
 
             if size_delta > 0:
                 # 解析 actor / owner 昵称（拼恶趣味文案用）

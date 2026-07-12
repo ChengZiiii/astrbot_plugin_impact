@@ -169,6 +169,10 @@ class ImpactConfig:
     fuck_wife_charm_thresholds: tuple[float, ...]
     fuck_wife_revenge_multiplier: float
     fuck_wife_ntr_notify: bool
+    fuck_wife_lifespan_damage_enabled: bool
+    fuck_wife_lifespan_damage_threshold: float
+    fuck_wife_lifespan_damage_ratio: float
+    fuck_wife_lifespan_damage_max: int
     fuck_wife_ntr_target_length_min: float
     fuck_wife_ntr_target_length_max: float
     fuck_wife_ntr_target_length_factor_min: float
@@ -272,6 +276,10 @@ class ImpactConfig:
             ),
             fuck_wife_revenge_multiplier=_to_float(config.get("fuck_wife_revenge_multiplier"), 1.5),
             fuck_wife_ntr_notify=_to_bool(config.get("fuck_wife_ntr_notify"), True),
+            fuck_wife_lifespan_damage_enabled=_to_bool(config.get("fuck_wife_lifespan_damage_enabled"), True),
+            fuck_wife_lifespan_damage_threshold=_to_float(config.get("fuck_wife_lifespan_damage_threshold"), 30.0),
+            fuck_wife_lifespan_damage_ratio=_to_float(config.get("fuck_wife_lifespan_damage_ratio"), 0.5),
+            fuck_wife_lifespan_damage_max=_to_int(config.get("fuck_wife_lifespan_damage_max"), 20),
             fuck_wife_ntr_target_length_min=_to_float(config.get("fuck_wife_ntr_target_length_min"), -50.0),
             fuck_wife_ntr_target_length_max=_to_float(config.get("fuck_wife_ntr_target_length_max"), 50.0),
             fuck_wife_ntr_target_length_factor_min=_to_float(config.get("fuck_wife_ntr_target_length_factor_min"), 1.5),

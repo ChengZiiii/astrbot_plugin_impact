@@ -400,5 +400,29 @@
     "type": "bool",
     "default": true,
     "hint": "开启后，NTR 成功时通知被绿的用户。"
+  },
+  "fuck_wife_lifespan_damage_enabled": {
+    "description": "日老婆寿命损失总开关",
+    "type": "bool",
+    "default": true,
+    "hint": "关闭后 NTR 老婆不再扣减寿命（需要 animewifexI 寿命系统也启用才生效）。"
+  },
+  "fuck_wife_lifespan_damage_threshold": {
+    "description": "起扣长度",
+    "type": "float",
+    "default": 30.0,
+    "hint": "牛牛长度超过此值才触发寿命扣减。"
+  },
+  "fuck_wife_lifespan_damage_ratio": {
+    "description": "每厘米倍率",
+    "type": "float",
+    "default": 0.5,
+    "hint": "超过起扣长度后，每 1cm 扣多少寿命。公式：delta = clamp(int((len - threshold) * ratio), 0, max)"
+  },
+  "fuck_wife_lifespan_damage_max": {
+    "description": "单次最大扣寿命",
+    "type": "int",
+    "default": 20,
+    "hint": "单次 NTR 最多扣减的寿命值上限。"
   }
 }
