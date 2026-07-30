@@ -63,6 +63,22 @@ class ImpactServiceGameplaySupportMixin:
     def _jj_name(self) -> str:
         return random.choice(self._config.jj_names)
 
+    def _resolve_target_name(self, group_id: int | None, target_id: int, is_self: bool) -> str:
+        """解析被作用方的展示名。
+
+        - self → "你"（主句里已经以"你"开头的玩法用）
+        - other → 群内 display_name；缺则按配置 fallback（user_id 或 "群友"）
+
+        通用：被 SUO/MINE 等 need-target_name 的玩法共用。
+        """
+        if is_self:
+            return "你"
+        if group_id is not None:
+            display_name = self._store.get_group_display_name(group_id, target_id)
+            if display_name:
+                return display_name
+        return str(target_id) if self._config.nickname_fallback_to_user_id else "群友"
+
     def _record_group_query(self, group_id: int | None, sender_id: int) -> None:
         if group_id is None:
             return
@@ -113,17 +129,22 @@ class ImpactServiceGameplaySupportMixin:
             return None
         return ActionMediaRequest(action=action, mode=mode, negative=negative, sender_id=sender_id, target_id=target_id)
 
-    def _format_single_change(self, growth_pool: tuple[str, ...], shrink_pool: tuple[str, ...], delta_cm: float, current_length: float, is_critical: bool, **extra_fmt: object) -> str:
+    def _format_single_change(self, growth_pool: tuple[str, ...], shrink_pool: tuple[str, ...], delta_cm: float, current_length: float, is_critical: bool, *, current_subject: str = "", **extra_fmt: object) -> str:
         """拼「涨/跌 + 现在多少」的标准句。
 
         `extra_fmt` 允许文案池携带额外占位符（例如挖矿的 {fluid} / {name}），
         既有调用方不传则行为完全不变。
+
+        `current_subject`（keyword-only，默认空串）：为空时末尾用 `现在是Xcm。`，
+        传非空时末尾用 `{current_subject}现在是Xcm。` —— 用于在 other 路径给当前
+        长度补主语（避免与发送者混淆）。self 路径不传，行为与原版完全一致。
         """
         critical_prefix = "暴击。" if is_critical else ""
         jj = self._jj_name()
+        suffix = f"{current_subject}现在是{current_length}cm。" if current_subject else f"现在是{current_length}cm。"
         if delta_cm >= 0:
-            return critical_prefix + pick(growth_pool).format(delta=round(delta_cm, 3), jj=jj, **extra_fmt) + f"现在是{current_length}cm。"
-        return critical_prefix + pick(shrink_pool).format(delta=round(abs(delta_cm), 3), jj=jj, **extra_fmt) + f"现在是{current_length}cm。"
+            return critical_prefix + pick(growth_pool).format(delta=round(delta_cm, 3), jj=jj, **extra_fmt) + suffix
+        return critical_prefix + pick(shrink_pool).format(delta=round(abs(delta_cm), 3), jj=jj, **extra_fmt) + suffix
 
     def _format_pk_result(self, is_sender_winner: bool, base_delta_cm: float, sender_delta_cm: float, target_delta_cm: float, is_critical: bool, sender_length: float = 0.0, target_length: float = 0.0) -> str:
         critical_prefix = "暴击。" if is_critical else ""

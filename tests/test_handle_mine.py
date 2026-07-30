@@ -146,9 +146,15 @@ class TestMineSelf:
 
 class TestMineOther:
     def test_other_hit_changes_target_only(self):
+        """挖别人命中：target 长度变化、sender 不变。
+
+        现在还断言：回复末尾**必须**包含 "{target_name}的{jj}现在是"，
+        避免与发送者混淆（fix-other-length-attribution）。
+        """
         svc = _make_service(_make_config(mine_other_prob=1.0, mine_other_change_range=(-2.0, 1.0)))
         svc._store.ensure_user(1, 10.0)
         svc._store.ensure_user(2, 10.0)
+        svc._store.upsert_group_display_name(10086, 2, "Bob")
         svc._store.add_injection(2, 50.0)
         sender_before = svc._store.get_length(1)
         target_before = svc._store.get_length(2)
@@ -163,6 +169,32 @@ class TestMineOther:
         target_after = svc._store.get_length(2)
         assert target_after != target_before
         assert target_before - 2.0 <= target_after <= target_before + 1.0
+
+        # 关键：other 路径末尾必须带主语归属（避免与发送者混淆）
+        text = result.reply.text
+        assert "Bob的牛子现在是" in text, (
+            f"expected 'Bob的牛子现在是' in reply text, got: {text!r}"
+        )
+
+    def test_other_hit_uses_user_id_fallback_when_no_display_name(self):
+        """没设 display_name → target_name=str(target_id)="2"，末尾含 "2的牛子现在是"。"""
+        svc = _make_service(_make_config(mine_other_prob=1.0, mine_other_change_range=(-2.0, 1.0)))
+        svc._store.ensure_user(1, 10.0)
+        svc._store.ensure_user(2, 10.0)
+        # 注意：故意不 upsert_group_display_name
+        svc._store.add_injection(2, 50.0)
+
+        p_random, p_uniform = _patch_random(random_value=0.0)
+        with p_random, p_uniform:
+            result = svc.handle_mine(True, 10086, 1, _spec(2, False), "2")
+
+        assert result.hit is True
+        target_after = svc._store.get_length(2)
+        text = result.reply.text
+        assert "2的牛子现在是" in text, (
+            f"expected '2的牛子现在是' in reply text, got: {text!r}"
+        )
+        assert f"{target_after}cm。" in text
 
     @pytest.mark.asyncio
     async def test_other_hit_notifies_target(self):

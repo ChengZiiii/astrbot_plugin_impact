@@ -97,7 +97,11 @@ class ImpactServiceGameplayMixin(ImpactServiceGameplaySupportMixin):
         else:
             self._record_group_length_change(group_id, sender_id, 0.0, self._store.get_length(sender_id), "suo_count", True)
             self._record_group_length_change(group_id, target_id, delta_cm, current_length, None, False)
-        return PlainReply(self._format_single_change(self._cs(SUO_GROWTH, SUO_GROWTH_SAFE), self._cs(SUO_SHRINK, SUO_SHRINK_SAFE), delta_cm, current_length, is_critical), media_request=self._build_media_request("suo", self._config.suo_media_mode, delta_cm < 0, sender_id, target_id), mention_sender=True)
+        # current_subject：self 路径不传（主句已含"你的{jj}"），other 路径补主语
+        is_self = target_id == sender_id
+        target_name = self._resolve_target_name(group_id, target_id, is_self)
+        current_subject = "" if is_self else f"{target_name}的{self._jj_name()}"
+        return PlainReply(self._format_single_change(self._cs(SUO_GROWTH, SUO_GROWTH_SAFE), self._cs(SUO_SHRINK, SUO_SHRINK_SAFE), delta_cm, current_length, is_critical, current_subject=current_subject), media_request=self._build_media_request("suo", self._config.suo_media_mode, delta_cm < 0, sender_id, target_id), mention_sender=True)
 
     def handle_query(self, group_enabled: bool, sender_id: int, at_id: str | None, group_id: int | None = None) -> PlainReply:
         if not group_enabled:
@@ -218,15 +222,6 @@ class ImpactServiceGameplayMixin(ImpactServiceGameplaySupportMixin):
             low, high = default
         return (low, high) if low <= high else (high, low)
 
-    def _mine_target_name(self, group_id: int | None, target_id: int, is_self: bool) -> str:
-        if is_self:
-            return "你"
-        if group_id is not None:
-            display_name = self._store.get_group_display_name(group_id, target_id)
-            if display_name:
-                return display_name
-        return str(target_id) if self._config.nickname_fallback_to_user_id else "群友"
-
     def handle_mine(
         self,
         group_enabled: bool,
@@ -256,7 +251,7 @@ class ImpactServiceGameplayMixin(ImpactServiceGameplaySupportMixin):
         if wait_text is not None:
             return MineResult(reply=PlainReply(wait_text, mention_sender=True))
 
-        target_name = self._mine_target_name(group_id, target_id, spec.is_self)
+        target_name = self._resolve_target_name(group_id, target_id, spec.is_self)
 
         # v1 仅 "user" 矿脉：储量 = 目标今日被注入量。
         reserve = self._store.get_today_injection(target_id)
@@ -294,9 +289,12 @@ class ImpactServiceGameplayMixin(ImpactServiceGameplaySupportMixin):
         if random.random() < prob:
             delta_cm = round(random.uniform(*change_range), 3)
             current_length = self._store.change_length(target_id, delta_cm)
+            # current_subject：self 路径不传（主句已含"你的{jj}"），other 路径补主语
+            current_subject = "" if spec.is_self else f"{target_name}的{self._jj_name()}"
             text = self._format_single_change(
                 growth_pool, shrink_pool, delta_cm, current_length, False,
                 fluid=dug, name=target_name,
+                current_subject=current_subject,
             )
             return MineResult(
                 reply=PlainReply(text, mention_sender=True),

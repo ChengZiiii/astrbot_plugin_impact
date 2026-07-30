@@ -212,6 +212,10 @@ async def scenario_other(h: Harness) -> None:
     random.seed(0.0)
     await h.send("u3", "挖矿", at="u2")
     h.expect_match(r"挖|液体|cm")
+    # fix-other-length-attribution: other 路径末尾必须带主语归属
+    # u2 没设 display_name → fallback str(target_id)="2" → 末尾含 "{2}的{jj}现在是"
+    # (jj_name 是从 config.jj_names 随机抽的，所以用通配)
+    h.expect_match(r"2的.+?现在是")
     # seed 0.0 → random.uniform(-2.0, 1.0) ≈ -0.262（确定性）
     h.assert_that("被挖者 u2 长度变化 ≈ -0.738",
                   lambda: abs(h.get_state("u2", "length") - (u2_len_before - 0.738)) < 1e-3)
