@@ -12,6 +12,7 @@ COMMAND_ALIASES = {
     "rival": ("我的恩怨簿", "我的宿敌", "恩怨"),
     "honor": ("群荣誉墙", "群荣誉", "荣誉墙"),
     "fuck_wife": ("日老婆", "透老婆"),
+    "mine": ("挖群友", "挖矿"),
 }
 
 COMMAND_GROUP_MAP = {
@@ -29,6 +30,7 @@ COMMAND_GROUP_MAP = {
     "rival": COMMAND_ALIASES["rival"],
     "honor": COMMAND_ALIASES["honor"],
     "fuck_wife": COMMAND_ALIASES["fuck_wife"],
+    "mine": COMMAND_ALIASES["mine"],
     "help": ("淫趴介绍",),
 }
 
@@ -46,4 +48,5 @@ USAGE_TEXT = """指令1: 嗦牛子 (给目标牛牛增加长度, 自己或者他
 指令12: 我的恩怨簿 | 我的宿敌 | 恩怨 (查看你在本群当前周的复仇目标和宿敌)
 指令13: 群荣誉墙 | 群荣誉 | 荣誉墙 (查看本群最近几周的荣誉墙)
 指令14: 日老婆 | 透老婆 (与老婆亲密互动，也可能NTR别人的老婆)
-指令15: 淫趴介绍 (输出淫趴插件的命令列表)"""
+指令15: 挖群友 | 挖矿 (挖出目标今日被注入的液体, 没at时挖自己, at谁挖谁; 挖到液体时被挖者牛子长度有概率随机变化)
+指令16: 淫趴介绍 (输出淫趴插件的命令列表)"""

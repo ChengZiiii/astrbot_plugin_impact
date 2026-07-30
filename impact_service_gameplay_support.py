@@ -113,12 +113,17 @@ class ImpactServiceGameplaySupportMixin:
             return None
         return ActionMediaRequest(action=action, mode=mode, negative=negative, sender_id=sender_id, target_id=target_id)
 
-    def _format_single_change(self, growth_pool: tuple[str, ...], shrink_pool: tuple[str, ...], delta_cm: float, current_length: float, is_critical: bool) -> str:
+    def _format_single_change(self, growth_pool: tuple[str, ...], shrink_pool: tuple[str, ...], delta_cm: float, current_length: float, is_critical: bool, **extra_fmt: object) -> str:
+        """拼「涨/跌 + 现在多少」的标准句。
+
+        `extra_fmt` 允许文案池携带额外占位符（例如挖矿的 {fluid} / {name}），
+        既有调用方不传则行为完全不变。
+        """
         critical_prefix = "暴击。" if is_critical else ""
         jj = self._jj_name()
         if delta_cm >= 0:
-            return critical_prefix + pick(growth_pool).format(delta=round(delta_cm, 3), jj=jj) + f"现在是{current_length}cm。"
-        return critical_prefix + pick(shrink_pool).format(delta=round(abs(delta_cm), 3), jj=jj) + f"现在是{current_length}cm。"
+            return critical_prefix + pick(growth_pool).format(delta=round(delta_cm, 3), jj=jj, **extra_fmt) + f"现在是{current_length}cm。"
+        return critical_prefix + pick(shrink_pool).format(delta=round(abs(delta_cm), 3), jj=jj, **extra_fmt) + f"现在是{current_length}cm。"
 
     def _format_pk_result(self, is_sender_winner: bool, base_delta_cm: float, sender_delta_cm: float, target_delta_cm: float, is_critical: bool, sender_length: float = 0.0, target_length: float = 0.0) -> str:
         critical_prefix = "暴击。" if is_critical else ""

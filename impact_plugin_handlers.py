@@ -35,7 +35,7 @@ from .impact_copy_bank import (
     YINPA_SELF_TARGET,
     pick,
 )
-from .impact_models import ActionMediaRequest, ImageReply, PlainReply
+from .impact_models import ActionMediaRequest, ImageReply, MineTargetSpec, PlainReply
 from .impact_time import get_current_week_key
 
 
@@ -113,6 +113,8 @@ class ImpactPluginHandlersMixin:
             return await self._handle_yinpa(group_enabled, group_id, sender_id, normalized, at_id, event)
         if command_key == "fuck_wife" and not is_private:
             return await self._handle_fuck_wife(group_enabled, group_id, sender_id, normalized, at_id, event)
+        if command_key == "mine" and not is_private:
+            return await self._handle_mine(group_enabled, group_id, sender_id, at_id, event)
         if command_key == "inject":
             return await self._handle_injection(group_enabled, sender_id, normalized, at_id, None if is_private else group_id)
         if command_key == "weekly_report" and not is_private:
@@ -285,6 +287,38 @@ class ImpactPluginHandlersMixin:
         if res.is_ntr and res.success and self._impact_config.fuck_wife_ntr_notify:
             await self._notify_cuckold(group_id, owner, sender_id, res)
         return PlainReply(text, mention_sender=True)
+
+    @staticmethod
+    def _resolve_mine_target(event: AstrMessageEvent, at_id: str | None, sender_id: int) -> MineTargetSpec:
+        """解析挖矿目标。无 at → 挖自己；有 at → 挖对方。
+
+        v1 只产出 ``vein_type="user"``（储量来自 injections 今日量）；后续接
+        animewifexI 老婆矿时只需在这里加 ``wife`` 分支，结算层无需改动。
+        """
+        if at_id is None:
+            return MineTargetSpec(vein_type="user", target_id=sender_id, is_self=True)
+        return MineTargetSpec(vein_type="user", target_id=int(at_id), is_self=False)
+
+    async def _handle_mine(self, group_enabled: bool, group_id: int, sender_id: int, at_id: str | None, event: AstrMessageEvent) -> PlainReply:
+        spec = self._resolve_mine_target(event, at_id, sender_id)
+        result = self._service.handle_mine(group_enabled, group_id, sender_id, spec, at_id)
+        if not spec.is_self and result.dug > 0 and self._impact_config.mine_other_notify:
+            await self._notify_mine_target(group_id, spec.target_id, sender_id, result.dug)
+        return result.reply
+
+    async def _notify_mine_target(self, group_id: int, target_id: int, attacker_id: int, dug: float) -> None:
+        umo = self._store.get_group_session(group_id)
+        if not umo:
+            return
+        from astrbot.api.event import MessageChain
+
+        from .impact_copy_bank import MINE_OTHER_NOTIFY, MINE_OTHER_NOTIFY_SAFE
+
+        attacker_name = self._store.get_group_display_name(group_id, int(attacker_id)) or "某群友"
+        text = self._cs(MINE_OTHER_NOTIFY, MINE_OTHER_NOTIFY_SAFE).format(
+            attacker=attacker_name, fluid=dug,
+        )
+        await self.context.send_message(umo, MessageChain([Comp.At(qq=str(target_id)), Comp.Plain(text)]))
 
     @staticmethod
     def _extract_at_qq(event: AstrMessageEvent) -> str | None:

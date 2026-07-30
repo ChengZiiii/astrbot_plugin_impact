@@ -392,6 +392,18 @@ COOLDOWN_FUCK_WIFE_SAFE = (
     "刚交完差就又来？{cd}秒后再说。",
 )
 
+COOLDOWN_MINE = (
+    "矿镐还烫着呢，歇会儿。{cd}秒后再挖。",
+    "刚挖完一轮，手都抖了。{cd}秒后再来。",
+    "挖这么勤是想把人掏空？{cd}秒后再说。",
+)
+
+COOLDOWN_MINE_SAFE = (
+    "矿镐还烫着呢，歇会儿。{cd}秒后再挖。",
+    "刚挖完一轮，手都抖了。{cd}秒后再来。",
+    "挖这么勤是想把矿脉挖穿？{cd}秒后再说。",
+)
+
 
 # ── 其他杂项 ──────────────────────────────────────────────
 
@@ -652,4 +664,90 @@ FUCK_WIFE_NOTIFY = (
 FUCK_WIFE_NOTIFY_SAFE = (
     "⚠️ 你的伴侣{name}刚刚被{attacker}光顾了……"
     "她今日已收到{dvol}ml精华（{dcnt}次）。"
+)
+
+
+# ── 挖矿 ──────────────────────────────────────────────────
+# 说明：GROW / SHRINK 四组会作为 `_format_single_change` 的文案池使用，
+# 因此可用占位符为 {delta} {jj} {fluid} {name}，句尾的「现在是xxcm。」由
+# `_format_single_change` 统一补上。
+
+MINE_SELF_GROW = (
+    "你抡起矿镐往自己身上刨，挖出{fluid}ml存货，{jj}被这么一折腾反倒涨了{delta}cm。",
+    "自挖自受，{fluid}ml到手。奇怪的是{jj}还跟着长了{delta}cm。",
+    "挖出{fluid}ml，矿脉一通乱窜，{jj}莫名其妙+{delta}cm。",
+)
+
+MINE_SELF_GROW_SAFE = (
+    "你抡起矿镐往自家矿脉刨，挖出{fluid}ml存货，{jj}被这么一折腾反倒涨了{delta}cm。",
+    "自挖自得，{fluid}ml到手。奇怪的是{jj}还跟着长了{delta}cm。",
+    "挖出{fluid}ml，矿脉一通乱窜，{jj}莫名其妙+{delta}cm。",
+)
+
+MINE_SELF_SHRINK = (
+    "挖是挖出{fluid}ml了，代价是{jj}缩了{delta}cm。挖矿有风险。",
+    "{fluid}ml到手，{jj}当场瘪了{delta}cm。这买卖亏不亏你自己算。",
+    "一镐下去挖出{fluid}ml，顺手把自己的{jj}削掉{delta}cm。",
+)
+
+MINE_SELF_SHRINK_SAFE = (
+    "挖是挖出{fluid}ml了，代价是{jj}缩了{delta}cm。挖矿有风险。",
+    "{fluid}ml到手，{jj}当场瘪了{delta}cm。这买卖亏不亏你自己算。",
+    "一镐下去挖出{fluid}ml，顺手把自己的{jj}削掉{delta}cm。",
+)
+
+MINE_OTHER_GROW = (
+    "你在{name}身上刨出{fluid}ml，结果TA的{jj}被你挖爽了，涨了{delta}cm。",
+    "挖了{name}{fluid}ml，倒贴——TA的{jj}反手+{delta}cm。",
+    "{fluid}ml从{name}那儿挖走了，可TA的{jj}居然长了{delta}cm，这镐白抡了。",
+)
+
+MINE_OTHER_GROW_SAFE = (
+    "你在{name}的矿脉里刨出{fluid}ml，结果TA的{jj}被你挖舒服了，涨了{delta}cm。",
+    "挖了{name}{fluid}ml，倒贴——TA的{jj}反手+{delta}cm。",
+    "{fluid}ml从{name}那儿挖走了，可TA的{jj}居然长了{delta}cm，这镐白抡了。",
+)
+
+MINE_OTHER_SHRINK = (
+    "你从{name}身上挖走{fluid}ml，顺便把TA的{jj}挖短了{delta}cm。",
+    "{name}被你刨出{fluid}ml，{jj}当场缩水{delta}cm，惨。",
+    "一镐见血：{name}损失{fluid}ml，{jj}还掉了{delta}cm。",
+)
+
+MINE_OTHER_SHRINK_SAFE = (
+    "你从{name}的矿脉挖走{fluid}ml，顺便把TA的{jj}挖短了{delta}cm。",
+    "{name}被你刨出{fluid}ml，{jj}当场缩水{delta}cm，惨。",
+    "一镐落下：{name}损失{fluid}ml，{jj}还掉了{delta}cm。",
+)
+
+MINE_NO_CHANGE = (
+    "挖出{fluid}ml，{name}的{jj}纹丝不动，啥也没发生。",
+    "{fluid}ml到手，除此之外{name}毫发无损，{jj}一点没变。",
+    "挖到{fluid}ml就到此为止了，{name}的{jj}没有任何变化。",
+)
+
+MINE_NO_CHANGE_SAFE = (
+    "挖出{fluid}ml，{name}的{jj}纹丝不动，啥也没发生。",
+    "{fluid}ml到手，除此之外{name}毫发无损，{jj}一点没变。",
+    "挖到{fluid}ml就到此为止了，{name}的{jj}没有任何变化。",
+)
+
+MINE_MISS = (
+    "空镐。{name}今天干干净净，一滴都挖不出来。",
+    "挖了半天，{name}那儿早就见底了，什么也没有。",
+    "{name}今日库存为零，你只刨出一手空气。",
+)
+
+MINE_MISS_SAFE = (
+    "空镐。{name}今天矿脉干涸，一点都挖不出来。",
+    "挖了半天，{name}那儿早就见底了，什么也没有。",
+    "{name}今日库存为零，你只刨出一手空气。",
+)
+
+MINE_OTHER_NOTIFY = (
+    "⛏️ 你被{attacker}挖矿了……对方从你身上挖走了{fluid}ml。"
+)
+
+MINE_OTHER_NOTIFY_SAFE = (
+    "⛏️ 你被{attacker}挖矿了……对方从你的矿脉里带走了{fluid}ml。"
 )

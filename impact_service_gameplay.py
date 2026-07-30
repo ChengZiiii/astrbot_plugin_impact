@@ -20,10 +20,24 @@ from .impact_copy_bank import (
     DAJIAO_GROWTH_SAFE,
     DAJIAO_SHRINK,
     DAJIAO_SHRINK_SAFE,
+    COOLDOWN_MINE,
+    COOLDOWN_MINE_SAFE,
     INJECTION_HISTORY,
     INJECTION_HISTORY_SAFE,
     INJECTION_TODAY,
     INJECTION_TODAY_SAFE,
+    MINE_MISS,
+    MINE_MISS_SAFE,
+    MINE_NO_CHANGE,
+    MINE_NO_CHANGE_SAFE,
+    MINE_OTHER_GROW,
+    MINE_OTHER_GROW_SAFE,
+    MINE_OTHER_SHRINK,
+    MINE_OTHER_SHRINK_SAFE,
+    MINE_SELF_GROW,
+    MINE_SELF_GROW_SAFE,
+    MINE_SELF_SHRINK,
+    MINE_SELF_SHRINK_SAFE,
     NEW_USER_REPLY,
     PK_NO_TARGET,
     PK_SELF_TARGET,
@@ -41,7 +55,7 @@ from .impact_copy_bank import (
 
 from astrbot.api.event import AstrMessageEvent
 
-from .impact_models import FuckWifeResult, PlainReply
+from .impact_models import FuckWifeResult, MineResult, MineTargetSpec, PlainReply
 from .impact_service_gameplay_support import ImpactServiceGameplaySupportMixin
 from .impact_time import get_current_week_key
 
@@ -190,6 +204,120 @@ class ImpactServiceGameplayMixin(ImpactServiceGameplaySupportMixin):
 
     def get_today_injection(self, target_id: int) -> float:
         return self._store.get_today_injection(target_id)
+
+    # ── 挖矿 ───────────────────────────────────────────────
+
+    @staticmethod
+    def _range_pair(values: tuple[float, ...], default: tuple[float, float]) -> tuple[float, float]:
+        """把配置里的区间元组安全地取成 (low, high)。"""
+        if len(values) >= 2:
+            low, high = float(values[0]), float(values[1])
+        elif len(values) == 1:
+            low = high = float(values[0])
+        else:
+            low, high = default
+        return (low, high) if low <= high else (high, low)
+
+    def _mine_target_name(self, group_id: int | None, target_id: int, is_self: bool) -> str:
+        if is_self:
+            return "你"
+        if group_id is not None:
+            display_name = self._store.get_group_display_name(group_id, target_id)
+            if display_name:
+                return display_name
+        return str(target_id) if self._config.nickname_fallback_to_user_id else "群友"
+
+    def handle_mine(
+        self,
+        group_enabled: bool,
+        group_id: int | None,
+        sender_id: int,
+        spec: MineTargetSpec,
+        at_id: str | None = None,
+    ) -> MineResult:
+        """挖矿结算（同步）。
+
+        返回 ``MineResult``（含回复文案与挖出量），由 handler 决定是否 @ 通知被挖者。
+        不使用全局可变状态，避免并发请求相互覆盖。
+        """
+        target_id = spec.target_id
+        if not group_enabled:
+            return MineResult(reply=PlainReply(self._config.not_enabled_reply))
+
+        self._store.ensure_user(sender_id, self._config.user_initial_length)
+        self._store.ensure_user(target_id, self._config.user_initial_length)
+
+        wait_text = self._cooldown_text(
+            self._mine_cd_data,
+            str(sender_id),
+            self._config.mine_cd_time,
+            self._cs(COOLDOWN_MINE, COOLDOWN_MINE_SAFE),
+        )
+        if wait_text is not None:
+            return MineResult(reply=PlainReply(wait_text, mention_sender=True))
+
+        target_name = self._mine_target_name(group_id, target_id, spec.is_self)
+
+        # v1 仅 "user" 矿脉：储量 = 目标今日被注入量。
+        reserve = self._store.get_today_injection(target_id)
+        fluid_low, fluid_high = self._range_pair(self._config.mine_fluid_range, (1.0, 20.0))
+        want = random.uniform(fluid_low, fluid_high)
+        cap = max(0.0, reserve) * self._config.mine_fluid_max_ratio_to_reserve
+        dug = self._store.consume_today_injection(target_id, min(want, reserve, cap))
+
+        self._mine_cd_data[str(sender_id)] = time.time()
+        self._store.touch_user(sender_id, self._config.user_initial_length)
+        self._store.touch_user(target_id, self._config.user_initial_length)
+
+        if dug <= 0:
+            return MineResult(
+                reply=PlainReply(
+                    pick(self._cs(MINE_MISS, MINE_MISS_SAFE)).format(name=target_name),
+                    mention_sender=True,
+                ),
+                dug=dug,
+                is_self=spec.is_self,
+                target_id=target_id,
+            )
+
+        if spec.is_self:
+            prob = self._config.mine_self_prob
+            change_range = self._range_pair(self._config.mine_self_change_range, (-1.0, 2.0))
+            growth_pool = self._cs(MINE_SELF_GROW, MINE_SELF_GROW_SAFE)
+            shrink_pool = self._cs(MINE_SELF_SHRINK, MINE_SELF_SHRINK_SAFE)
+        else:
+            prob = self._config.mine_other_prob
+            change_range = self._range_pair(self._config.mine_other_change_range, (-2.0, 1.0))
+            growth_pool = self._cs(MINE_OTHER_GROW, MINE_OTHER_GROW_SAFE)
+            shrink_pool = self._cs(MINE_OTHER_SHRINK, MINE_OTHER_SHRINK_SAFE)
+
+        if random.random() < prob:
+            delta_cm = round(random.uniform(*change_range), 3)
+            current_length = self._store.change_length(target_id, delta_cm)
+            text = self._format_single_change(
+                growth_pool, shrink_pool, delta_cm, current_length, False,
+                fluid=dug, name=target_name,
+            )
+            return MineResult(
+                reply=PlainReply(text, mention_sender=True),
+                dug=dug,
+                hit=True,
+                is_self=spec.is_self,
+                target_id=target_id,
+            )
+
+        current_length = self._store.get_length(target_id)
+        return MineResult(
+            reply=PlainReply(
+                pick(self._cs(MINE_NO_CHANGE, MINE_NO_CHANGE_SAFE)).format(
+                    fluid=dug, name=target_name, jj=self._jj_name(),
+                ),
+                mention_sender=True,
+            ),
+            dug=dug,
+            is_self=spec.is_self,
+            target_id=target_id,
+        )
 
     async def handle_fuck_wife(
         self,

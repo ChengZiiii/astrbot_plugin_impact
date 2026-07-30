@@ -23,6 +23,7 @@ DEFAULT_COMMANDS = [
     "rival",
     "honor",
     "fuck_wife",
+    "mine",
 ]
 
 
@@ -178,6 +179,14 @@ class ImpactConfig:
     fuck_wife_ntr_target_length_max: float
     fuck_wife_ntr_target_length_factor_min: float
     fuck_wife_ntr_target_length_factor_max: float
+    mine_cd_time: int
+    mine_self_prob: float
+    mine_self_change_range: tuple[float, ...]
+    mine_other_prob: float
+    mine_other_change_range: tuple[float, ...]
+    mine_other_notify: bool
+    mine_fluid_range: tuple[float, ...]
+    mine_fluid_max_ratio_to_reserve: float
 
     @staticmethod
     def from_dict(raw: dict | None) -> ImpactConfig:
@@ -286,4 +295,12 @@ class ImpactConfig:
             fuck_wife_ntr_target_length_max=_to_float(config.get("fuck_wife_ntr_target_length_max"), 50.0),
             fuck_wife_ntr_target_length_factor_min=_to_float(config.get("fuck_wife_ntr_target_length_factor_min"), 1.5),
             fuck_wife_ntr_target_length_factor_max=_to_float(config.get("fuck_wife_ntr_target_length_factor_max"), 1.0),
+            mine_cd_time=_to_int(config.get("minecdtime"), 300),
+            mine_self_prob=_to_float(config.get("mine_self_prob"), 0.7),
+            mine_self_change_range=_parse_float_tuple(config.get("mine_self_change_range"), (-1.0, 2.0)),
+            mine_other_prob=_to_float(config.get("mine_other_prob"), 0.5),
+            mine_other_change_range=_parse_float_tuple(config.get("mine_other_change_range"), (-2.0, 1.0)),
+            mine_other_notify=_to_bool(config.get("mine_other_notify"), True),
+            mine_fluid_range=_parse_float_tuple(config.get("mine_fluid_range"), (1.0, 20.0)),
+            mine_fluid_max_ratio_to_reserve=_to_float(config.get("mine_fluid_max_ratio_to_reserve"), 1.0),
         )

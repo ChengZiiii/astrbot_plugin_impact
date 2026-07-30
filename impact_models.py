@@ -29,6 +29,35 @@ class ImageReply:
 
 
 @dataclass(frozen=True, slots=True)
+class MineTargetSpec:
+    """挖矿目标描述。
+
+    vein_type: 矿脉类型，v1 仅 "user"（储量=injections 今日量）；
+               后续 animewifexI 老婆矿可扩展 "wife"。
+    target_id: 被挖者 QQ（user 矿脉）。
+    is_self:   是否挖自己（决定使用 self / other 两套配置）。
+    """
+
+    vein_type: str
+    target_id: int
+    is_self: bool
+
+
+@dataclass(frozen=True, slots=True)
+class MineResult:
+    """挖矿结算结果。
+
+    handle_mine 返回它而非写全局可变状态，避免并发请求相互覆盖。
+    """
+
+    reply: "PlainReply | ImageReply | None"
+    dug: float = 0.0
+    hit: bool = False
+    is_self: bool = True
+    target_id: int = 0
+
+
+@dataclass(frozen=True, slots=True)
 class WeeklyResultEntry:
     category: str
     rank_no: int

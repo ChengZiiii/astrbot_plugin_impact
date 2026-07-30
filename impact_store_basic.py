@@ -191,6 +191,30 @@ class ImpactStoreBasicMixin:
             ).fetchone()
         return round(float(row["volume_ml"]), 3) if row is not None else 0.0
 
+    def consume_today_injection(self, user_id: int, want_ml: float) -> float:
+        """从目标「今日被注入量」中挖走液体，返回实际挖出量。
+
+        实际挖出量 = min(max(want_ml, 0), 今日剩余量)，因此永远 >= 0，
+        且减记后的剩余量永远 >= 0（不会出现负数库存）。
+        """
+        today_text = self._today_text()
+        with self._connect() as connection:
+            row = connection.execute(
+                "SELECT volume_ml FROM injections WHERE user_id = ? AND date_text = ?",
+                (user_id, today_text),
+            ).fetchone()
+            available = float(row["volume_ml"]) if row is not None else 0.0
+            if available < 0.0:
+                available = 0.0
+            dug = round(min(max(want_ml, 0.0), available), 3)
+            if dug > 0:
+                connection.execute(
+                    "INSERT INTO injections(user_id, date_text, volume_ml) VALUES (?, ?, ?) "
+                    "ON CONFLICT(user_id, date_text) DO UPDATE SET volume_ml = excluded.volume_ml",
+                    (user_id, today_text, round(max(0.0, available - dug), 3)),
+                )
+        return dug
+
     def get_injection_history(self, user_id: int) -> list[InjectionEntry]:
         with self._connect() as connection:
             rows = connection.execute(

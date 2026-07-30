@@ -35,6 +35,12 @@
     "default": 3600,
     "hint": "用户执行 日群友 / 透群友 / 日群主 / 透管理 等命令的冷却时间。"
   },
+  "minecdtime": {
+    "description": "挖矿冷却秒数",
+    "type": "int",
+    "default": 300,
+    "hint": "用户执行 挖矿 / 挖群友 的冷却时间，按发送者计。"
+  },
   "isalive": {
     "description": "启用不活跃惩罚",
     "type": "bool",
@@ -206,8 +212,8 @@
   "commands_enabled": {
     "description": "启用的命令组",
     "type": "list",
-    "default": ["dajiao", "suo", "query", "pk", "rank", "toggle", "yinpa", "inject", "help", "weekly_report", "last_weekly_report", "weekly_stats", "rival", "honor", "fuck_wife"],
-    "hint": "可选键：dajiao,suo,query,pk,rank,toggle,yinpa,inject,help,weekly_report,last_weekly_report,weekly_stats,rival,honor,fuck_wife。删除某项即可禁用对应命令组。"
+    "default": ["dajiao", "suo", "query", "pk", "rank", "toggle", "yinpa", "inject", "help", "weekly_report", "last_weekly_report", "weekly_stats", "rival", "honor", "fuck_wife", "mine"],
+    "hint": "可选键：dajiao,suo,query,pk,rank,toggle,yinpa,inject,help,weekly_report,last_weekly_report,weekly_stats,rival,honor,fuck_wife,mine。删除某项即可禁用对应命令组。"
   },
   "weekly_rival_threshold": {
     "description": "宿敌触发阈值",
@@ -430,5 +436,47 @@
     "type": "int",
     "default": 20,
     "hint": "单次 NTR 最多扣减的寿命值上限。"
+  },
+  "mine_self_prob": {
+    "description": "挖自己命中概率",
+    "type": "float",
+    "default": 0.7,
+    "hint": "挖自己且挖到液体时，牛牛长度发生变化的概率，推荐 0~1。"
+  },
+  "mine_self_change_range": {
+    "description": "挖自己长度变化区间",
+    "type": "list",
+    "default": [-1.0, 2.0],
+    "hint": "两个浮点数（下限,上限）。挖自己命中后按此区间随机变化，负数=缩水。"
+  },
+  "mine_other_prob": {
+    "description": "挖别人命中概率",
+    "type": "float",
+    "default": 0.5,
+    "hint": "挖别人且挖到液体时，被挖者牛牛长度发生变化的概率，推荐 0~1。"
+  },
+  "mine_other_change_range": {
+    "description": "挖别人长度变化区间",
+    "type": "list",
+    "default": [-2.0, 1.0],
+    "hint": "两个浮点数（下限,上限）。挖别人命中后按此区间随机变化，默认偏向缩水。"
+  },
+  "mine_other_notify": {
+    "description": "挖别人成功通知被挖者",
+    "type": "bool",
+    "default": true,
+    "hint": "开启后，挖别人且挖到液体时 @ 通知被挖的用户。"
+  },
+  "mine_fluid_range": {
+    "description": "单次挖出液体范围",
+    "type": "list",
+    "default": [1.0, 20.0],
+    "hint": "两个浮点数（下限,上限），单位 ml。实际挖出量还会受目标今日剩余注入量与比例上限约束。"
+  },
+  "mine_fluid_max_ratio_to_reserve": {
+    "description": "单次最大挖出比例",
+    "type": "float",
+    "default": 1.0,
+    "hint": "单次最多挖走「目标今日剩余注入量 × 该比例」。填小于 1 可防止一次掏空。"
   }
 }
